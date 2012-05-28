@@ -1,0 +1,259 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>button.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_button.js.html">button.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A button control. This implementation extends {@link
+<a name="line17"></a> * goog.ui.Control}.
+<a name="line18"></a> *
+<a name="line19"></a> * @see ../demos/button.html
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.ui.Button&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.ui.Button.Side&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line26"></a>goog.require(&#39;goog.ui.ButtonRenderer&#39;);
+<a name="line27"></a>goog.require(&#39;goog.ui.ButtonSide&#39;);
+<a name="line28"></a>goog.require(&#39;goog.ui.Control&#39;);
+<a name="line29"></a>goog.require(&#39;goog.ui.ControlContent&#39;);
+<a name="line30"></a>goog.require(&#39;goog.ui.NativeButtonRenderer&#39;);
+<a name="line31"></a>
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>/**
+<a name="line35"></a> * A button control, rendered as a native browser button by default.
+<a name="line36"></a> *
+<a name="line37"></a> * @param {goog.ui.ControlContent} content Text caption or existing DOM
+<a name="line38"></a> *     structure to display as the button&#39;s caption.
+<a name="line39"></a> * @param {goog.ui.ButtonRenderer=} opt_renderer Renderer used to render or
+<a name="line40"></a> *     decorate the button; defaults to {@link goog.ui.NativeButtonRenderer}.
+<a name="line41"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM hepler, used for
+<a name="line42"></a> *     document interaction.
+<a name="line43"></a> * @constructor
+<a name="line44"></a> * @extends {goog.ui.Control}
+<a name="line45"></a> */
+<a name="line46"></a>goog.ui.Button = function(content, opt_renderer, opt_domHelper) {
+<a name="line47"></a>  goog.ui.Control.call(this, content, opt_renderer ||
+<a name="line48"></a>      goog.ui.NativeButtonRenderer.getInstance(), opt_domHelper);
+<a name="line49"></a>};
+<a name="line50"></a>goog.inherits(goog.ui.Button, goog.ui.Control);
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>/**
+<a name="line54"></a> * Constants for button sides, see {@link goog.ui.Button.prototype.setCollapsed}
+<a name="line55"></a> * for details. Aliased from goog.ui.ButtonSide to support legacy users without
+<a name="line56"></a> * creating a circular dependency in {@link goog.ui.ButtonRenderer}.
+<a name="line57"></a> * @enum {number}
+<a name="line58"></a> * @deprecated use {@link goog.ui.ButtonSide} instead.
+<a name="line59"></a> */
+<a name="line60"></a>goog.ui.Button.Side = goog.ui.ButtonSide;
+<a name="line61"></a>
+<a name="line62"></a>
+<a name="line63"></a>/**
+<a name="line64"></a> * Value associated with the button.
+<a name="line65"></a> * @type {*}
+<a name="line66"></a> * @private
+<a name="line67"></a> */
+<a name="line68"></a>goog.ui.Button.prototype.value_;
+<a name="line69"></a>
+<a name="line70"></a>
+<a name="line71"></a>/**
+<a name="line72"></a> * Tooltip text for the button, displayed on hover.
+<a name="line73"></a> * @type {string|undefined}
+<a name="line74"></a> * @private
+<a name="line75"></a> */
+<a name="line76"></a>goog.ui.Button.prototype.tooltip_;
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>// goog.ui.Button API implementation.
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>/**
+<a name="line83"></a> * Returns the value associated with the button.
+<a name="line84"></a> * @return {*} Button value (undefined if none).
+<a name="line85"></a> */
+<a name="line86"></a>goog.ui.Button.prototype.getValue = function() {
+<a name="line87"></a>  return this.value_;
+<a name="line88"></a>};
+<a name="line89"></a>
+<a name="line90"></a>
+<a name="line91"></a>/**
+<a name="line92"></a> * Sets the value associated with the button, and updates its DOM.
+<a name="line93"></a> * @param {*} value New button value.
+<a name="line94"></a> */
+<a name="line95"></a>goog.ui.Button.prototype.setValue = function(value) {
+<a name="line96"></a>  this.value_ = value;
+<a name="line97"></a>  this.getRenderer().setValue(this.getElement(), value);
+<a name="line98"></a>};
+<a name="line99"></a>
+<a name="line100"></a>
+<a name="line101"></a>/**
+<a name="line102"></a> * Sets the value associated with the button.  Unlike {@link #setValue},
+<a name="line103"></a> * doesn&#39;t update the button&#39;s DOM.  Considered protected; to be called only
+<a name="line104"></a> * by renderer code during element decoration.
+<a name="line105"></a> * @param {*} value New button value.
+<a name="line106"></a> * @protected
+<a name="line107"></a> */
+<a name="line108"></a>goog.ui.Button.prototype.setValueInternal = function(value) {
+<a name="line109"></a>  this.value_ = value;
+<a name="line110"></a>};
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/**
+<a name="line114"></a> * Returns the tooltip for the button.
+<a name="line115"></a> * @return {string|undefined} Tooltip text (undefined if none).
+<a name="line116"></a> */
+<a name="line117"></a>goog.ui.Button.prototype.getTooltip = function() {
+<a name="line118"></a>  return this.tooltip_;
+<a name="line119"></a>};
+<a name="line120"></a>
+<a name="line121"></a>
+<a name="line122"></a>/**
+<a name="line123"></a> * Sets the tooltip for the button, and updates its DOM.
+<a name="line124"></a> * @param {string} tooltip New tooltip text.
+<a name="line125"></a> */
+<a name="line126"></a>goog.ui.Button.prototype.setTooltip = function(tooltip) {
+<a name="line127"></a>  this.tooltip_ = tooltip;
+<a name="line128"></a>  this.getRenderer().setTooltip(this.getElement(), tooltip);
+<a name="line129"></a>};
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * Sets the tooltip for the button.  Unlike {@link #setTooltip}, doesn&#39;t update
+<a name="line134"></a> * the button&#39;s DOM.  Considered protected; to be called only by renderer code
+<a name="line135"></a> * during element decoration.
+<a name="line136"></a> * @param {string} tooltip New tooltip text.
+<a name="line137"></a> * @protected
+<a name="line138"></a> */
+<a name="line139"></a>goog.ui.Button.prototype.setTooltipInternal = function(tooltip) {
+<a name="line140"></a>  this.tooltip_ = tooltip;
+<a name="line141"></a>};
+<a name="line142"></a>
+<a name="line143"></a>
+<a name="line144"></a>/**
+<a name="line145"></a> * Collapses the border on one or both sides of the button, allowing it to be
+<a name="line146"></a> * combined with the adjancent button(s), forming a single UI componenet with
+<a name="line147"></a> * multiple targets.
+<a name="line148"></a> * @param {number} sides Bitmap of one or more {@link goog.ui.ButtonSide}s for
+<a name="line149"></a> *     which borders should be collapsed.
+<a name="line150"></a> */
+<a name="line151"></a>goog.ui.Button.prototype.setCollapsed = function(sides) {
+<a name="line152"></a>  this.getRenderer().setCollapsed(this, sides);
+<a name="line153"></a>};
+<a name="line154"></a>
+<a name="line155"></a>
+<a name="line156"></a>// goog.ui.Control &amp; goog.ui.Component API implementation.
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/** @override */
+<a name="line160"></a>goog.ui.Button.prototype.disposeInternal = function() {
+<a name="line161"></a>  goog.ui.Button.superClass_.disposeInternal.call(this);
+<a name="line162"></a>  delete this.value_;
+<a name="line163"></a>  delete this.tooltip_;
+<a name="line164"></a>};
+<a name="line165"></a>
+<a name="line166"></a>
+<a name="line167"></a>/** @override */
+<a name="line168"></a>goog.ui.Button.prototype.enterDocument = function() {
+<a name="line169"></a>  goog.ui.Button.superClass_.enterDocument.call(this);
+<a name="line170"></a>  if (this.isSupportedState(goog.ui.Component.State.FOCUSED)) {
+<a name="line171"></a>    var keyTarget = this.getKeyEventTarget();
+<a name="line172"></a>    if (keyTarget) {
+<a name="line173"></a>      this.getHandler().listen(keyTarget, goog.events.EventType.KEYUP,
+<a name="line174"></a>          this.handleKeyEventInternal);
+<a name="line175"></a>    }
+<a name="line176"></a>  }
+<a name="line177"></a>};
+<a name="line178"></a>
+<a name="line179"></a>
+<a name="line180"></a>/**
+<a name="line181"></a> * Attempts to handle a keyboard event; returns true if the event was handled,
+<a name="line182"></a> * false otherwise.  If the button is enabled and the Enter/Space key was
+<a name="line183"></a> * pressed, handles the event by dispatching an {@code ACTION} event,
+<a name="line184"></a> * and returns true. Overrides {@link goog.ui.Control#handleKeyEventInternal}.
+<a name="line185"></a> * @param {goog.events.KeyEvent} e Key event to handle.
+<a name="line186"></a> * @return {boolean} Whether the key event was handled.
+<a name="line187"></a> * @protected
+<a name="line188"></a> * @override
+<a name="line189"></a> */
+<a name="line190"></a>goog.ui.Button.prototype.handleKeyEventInternal = function(e) {
+<a name="line191"></a>  if (e.keyCode == goog.events.KeyCodes.ENTER &amp;&amp;
+<a name="line192"></a>      e.type == goog.events.KeyHandler.EventType.KEY ||
+<a name="line193"></a>      e.keyCode == goog.events.KeyCodes.SPACE &amp;&amp;
+<a name="line194"></a>      e.type == goog.events.EventType.KEYUP) {
+<a name="line195"></a>    return this.performActionInternal(e);
+<a name="line196"></a>  }
+<a name="line197"></a>  // Return true for space keypress (even though the event is handled on keyup)
+<a name="line198"></a>  // as preventDefault needs to be called up keypress to take effect in IE and
+<a name="line199"></a>  // WebKit.
+<a name="line200"></a>  return e.keyCode == goog.events.KeyCodes.SPACE;
+<a name="line201"></a>};
+<a name="line202"></a>
+<a name="line203"></a>
+<a name="line204"></a>// Register a decorator factory function for goog.ui.Buttons.
+<a name="line205"></a>goog.ui.registry.setDecoratorByClassName(goog.ui.ButtonRenderer.CSS_CLASS,
+<a name="line206"></a>    function() {
+<a name="line207"></a>      return new goog.ui.Button(null);
+<a name="line208"></a>    });
+</pre>
+
+
+</body>
+</html>

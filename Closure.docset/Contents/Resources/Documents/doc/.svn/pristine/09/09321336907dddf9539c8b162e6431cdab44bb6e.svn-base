@@ -1,0 +1,1060 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>EventContract (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+     google.load("visualization", "1", {packages:["orgchart"]});
+     var _loadingVisualizations = true;
+  </script>
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+        <span class="fn">jsaction.EventContract</span>
+        <span>Extends</span>
+        <span class="fn-name">
+          Object
+        </span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Instantiates EventContract, the object responsible for jsaction-related
+event handling and queuing.
+  </div>
+
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_goog_jsaction_eventcontract.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/jsaction/eventcontract.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+
+
+
+
+
+<h2 class="g-first">Inheritance</h2>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+  <tr><td>goog.jsaction.EventContract</td><td></td></tr>
+</table>
+</div>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+</table>
+</div>
+
+
+
+
+  <h2>Constructor</h2>
+      <div class="fn-constructor">
+    goog.jsaction.EventContract(<span></span>)
+  </div>
+
+
+
+<h2>Instance Methods</h2>
+
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_jsaction_EventContract.html">
+              goog.jsaction.EventContract
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.prototype.addContainer"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addContainer<span class="args">(<span class="arg">containerElem</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Adds a container element. Container elements is where EventContract
+registeres actual DOM event handlers. Adding a container element
+will enable jsaction-handling for its whole subtree.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">containerElem</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span></div>
+        <div class="entryOverview">The element.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line213">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.prototype.addEvent"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addEvent<span class="args">(<span class="arg">eventType</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Adds an event type to listen for.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">eventType</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The event type.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line242">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.prototype.getQueue"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getQueue<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>&nbsp;
+            The array containing the replay info for queued events.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line261">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.prototype.handleEvent_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">handleEvent_<span class="args">(<span class="arg">e</span>,&nbsp;<span class="arg">containerElem</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Handles a browser event.
+Walks up the DOM tree starting at the target element of the event until
+it finds an eligible action for the event or reaches the container element.
+If an action is found, the event is handed to the dispatcher
+to invoke an associated action handler (TODO, coming real soon).
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">e</span>
+        : <div class="fullType"><span class="type">Event</span></div>
+        <div class="entryOverview">The native event object.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">containerElem</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span></div>
+        <div class="entryOverview">The container element.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line358">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.prototype.setDispatcher"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">setDispatcher<span class="args">(<span class="arg">dispatcher</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the dispatcher.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">dispatcher</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_jsaction_Dispatcher.html">goog.jsaction.Dispatcher</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The dispatcher.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line270">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Instance Properties</h2>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_jsaction_EventContract.html">
+              goog.jsaction.EventContract
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.prototype.containers_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">containers_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The container elements.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line132">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.prototype.dispatcher_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dispatcher_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_jsaction_Dispatcher.html">goog.jsaction.Dispatcher</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The dispatcher object. As long as this isn't set, all events for which
+an action has been found will be queued.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line154">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.prototype.eventTypes_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">eventTypes_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The event types handled by this instance.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line139">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.prototype.queue_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">queue_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Array of queued events for later replay.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line146">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Static Methods</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.createEventHandler_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">createEventHandler_<span class="args">(<span class="arg">contract</span>,&nbsp;<span class="arg">container</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span>?</span><span class="type">function (Event): </span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates the event handler function to be used for a container element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">contract</span>
+        : <div class="fullType"><span class="type"><a href="class_goog_jsaction_EventContract.html">goog.jsaction.EventContract</a></span></div>
+        <div class="entryOverview">The EventContract instance.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">container</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span></div>
+        <div class="entryOverview">The container element.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span>?</span><span class="type">function (Event): </span></div>&nbsp;
+            The event handler function.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line340">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.getAction_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">getAction_<span class="args">(<span class="arg">elem</span>,&nbsp;<span class="arg">eventType</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Gets the action for the given element and event type.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">elem</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span></div>
+        <div class="entryOverview">The element.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">eventType</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The event type.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>&nbsp;
+            The action (or null if there is none).
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line282">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.EventContract.parseJsActionAttribute_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">parseJsActionAttribute_<span class="args">(<span class="arg">elem</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Parses the jsaction-attribute on the given element and returns
+a map from event type to action.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">elem</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span></div>
+        <div class="entryOverview">The element.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span></div>&nbsp;
+            A map from event type to an action.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line300">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+<h2>Static Properties</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.ATTRIBUTE_NAME_JSACTION_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">ATTRIBUTE_NAME_JSACTION_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       A constant for the name of the 'jsaction'-attribute.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line164">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.DEFAULT_EVENT_TYPE_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">DEFAULT_EVENT_TYPE_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The default event type used if no type is specified in the jsaction
+attribute for an action.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line203">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.PROPERTY_KEY_ACTION_MAP_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">PROPERTY_KEY_ACTION_MAP_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Constant for the name of the property attached to DOM nodes which constains
+a map from event type to action name.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line174">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.PROPERTY_KEY_EVENT_HANDLER_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">PROPERTY_KEY_EVENT_HANDLER_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Constant for the name of the property attached to container elements. The
+property contains the event handler function for the container in question.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line184">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.EventContract.PROPERTY_KEY_REPLAY_INFO"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.EventContract.</span><span class="entryName">PROPERTY_KEY_REPLAY_INFO</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Constant for the name of the property attached to event objects when they're
+replayed. The property contains an object of type goog.jsaction.ReplayInfo.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_eventcontract.js.source.html#line193">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package jsaction</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="jsaction.EventContract"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

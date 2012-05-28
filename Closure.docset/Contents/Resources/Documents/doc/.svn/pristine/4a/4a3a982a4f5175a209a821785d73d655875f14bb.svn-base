@@ -1,0 +1,1422 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>control.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_control.js.html">control.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Base class for UI controls such as buttons, menus, menu items,
+<a name="line17"></a> * toolbar buttons, etc.  The implementation is based on a generalized version
+<a name="line18"></a> * of {@link goog.ui.MenuItem}.
+<a name="line19"></a> * TODO(user):  If the renderer framework works well, pull it into Component.
+<a name="line20"></a> *
+<a name="line21"></a> * @see ../demos/control.html
+<a name="line22"></a> * @see http://code.google.com/p/closure-library/wiki/IntroToControls
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.ui.Control&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.array&#39;);
+<a name="line28"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line29"></a>goog.require(&#39;goog.events.BrowserEvent.MouseButton&#39;);
+<a name="line30"></a>goog.require(&#39;goog.events.Event&#39;);
+<a name="line31"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line32"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line33"></a>goog.require(&#39;goog.events.KeyHandler&#39;);
+<a name="line34"></a>goog.require(&#39;goog.events.KeyHandler.EventType&#39;);
+<a name="line35"></a>goog.require(&#39;goog.string&#39;);
+<a name="line36"></a>goog.require(&#39;goog.ui.Component&#39;);
+<a name="line37"></a>goog.require(&#39;goog.ui.Component.Error&#39;);
+<a name="line38"></a>goog.require(&#39;goog.ui.Component.EventType&#39;);
+<a name="line39"></a>goog.require(&#39;goog.ui.Component.State&#39;);
+<a name="line40"></a>goog.require(&#39;goog.ui.ControlContent&#39;);
+<a name="line41"></a>goog.require(&#39;goog.ui.ControlRenderer&#39;);
+<a name="line42"></a>goog.require(&#39;goog.ui.decorate&#39;);
+<a name="line43"></a>goog.require(&#39;goog.ui.registry&#39;);
+<a name="line44"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line45"></a>
+<a name="line46"></a>
+<a name="line47"></a>
+<a name="line48"></a>/**
+<a name="line49"></a> * Base class for UI controls.  Extends {@link goog.ui.Component} by adding
+<a name="line50"></a> * the following:
+<a name="line51"></a> *  &lt;ul&gt;
+<a name="line52"></a> *    &lt;li&gt;a {@link goog.events.KeyHandler}, to simplify keyboard handling,
+<a name="line53"></a> *    &lt;li&gt;a pluggable &lt;em&gt;renderer&lt;/em&gt; framework, to simplify the creation of
+<a name="line54"></a> *        simple controls without the need to subclass this class,
+<a name="line55"></a> *    &lt;li&gt;the notion of component &lt;em&gt;content&lt;/em&gt;, like a text caption or DOM
+<a name="line56"></a> *        structure displayed in the component (e.g. a button label),
+<a name="line57"></a> *    &lt;li&gt;getter and setter for component content, as well as a getter and
+<a name="line58"></a> *        setter specifically for caption text (for convenience),
+<a name="line59"></a> *    &lt;li&gt;support for hiding/showing the component,
+<a name="line60"></a>      &lt;li&gt;fine-grained control over supported states and state transition
+<a name="line61"></a>          events, and
+<a name="line62"></a> *    &lt;li&gt;default mouse and keyboard event handling.
+<a name="line63"></a> *  &lt;/ul&gt;
+<a name="line64"></a> * This class has sufficient built-in functionality for most simple UI controls.
+<a name="line65"></a> * All controls dispatch SHOW, HIDE, ENTER, LEAVE, and ACTION events on show,
+<a name="line66"></a> * hide, mouseover, mouseout, and user action, respectively.  Additional states
+<a name="line67"></a> * are also supported.  See closure/demos/control.html
+<a name="line68"></a> * for example usage.
+<a name="line69"></a> * @param {goog.ui.ControlContent} content Text caption or DOM structure
+<a name="line70"></a> *     to display as the content of the component (if any).
+<a name="line71"></a> * @param {goog.ui.ControlRenderer=} opt_renderer Renderer used to render or
+<a name="line72"></a> *     decorate the component; defaults to {@link goog.ui.ControlRenderer}.
+<a name="line73"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
+<a name="line74"></a> *     document interaction.
+<a name="line75"></a> * @constructor
+<a name="line76"></a> * @extends {goog.ui.Component}
+<a name="line77"></a> */
+<a name="line78"></a>goog.ui.Control = function(content, opt_renderer, opt_domHelper) {
+<a name="line79"></a>  goog.ui.Component.call(this, opt_domHelper);
+<a name="line80"></a>  this.renderer_ = opt_renderer ||
+<a name="line81"></a>      goog.ui.registry.getDefaultRenderer(this.constructor);
+<a name="line82"></a>  this.setContentInternal(content);
+<a name="line83"></a>};
+<a name="line84"></a>goog.inherits(goog.ui.Control, goog.ui.Component);
+<a name="line85"></a>
+<a name="line86"></a>
+<a name="line87"></a>// Renderer registry.
+<a name="line88"></a>// TODO(user): Refactor existing usages inside Google in a follow-up CL.
+<a name="line89"></a>
+<a name="line90"></a>
+<a name="line91"></a>/**
+<a name="line92"></a> * Maps a CSS class name to a function that returns a new instance of
+<a name="line93"></a> * {@link goog.ui.Control} or a subclass thereof, suitable to decorate
+<a name="line94"></a> * an element that has the specified CSS class.  UI components that extend
+<a name="line95"></a> * {@link goog.ui.Control} and want {@link goog.ui.Container}s to be able
+<a name="line96"></a> * to discover and decorate elements using them should register a factory
+<a name="line97"></a> * function via this API.
+<a name="line98"></a> * @param {string} className CSS class name.
+<a name="line99"></a> * @param {Function} decoratorFunction Function that takes no arguments and
+<a name="line100"></a> *     returns a new instance of a control to decorate an element with the
+<a name="line101"></a> *     given class.
+<a name="line102"></a> * @deprecated Use {@link goog.ui.registry.setDecoratorByClassName} instead.
+<a name="line103"></a> */
+<a name="line104"></a>goog.ui.Control.registerDecorator = goog.ui.registry.setDecoratorByClassName;
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Takes an element and returns a new instance of {@link goog.ui.Control}
+<a name="line109"></a> * or a subclass, suitable to decorate it (based on the element&#39;s CSS class).
+<a name="line110"></a> * @param {Element} element Element to decorate.
+<a name="line111"></a> * @return {goog.ui.Control?} New control instance to decorate the element
+<a name="line112"></a> *     (null if none).
+<a name="line113"></a> * @deprecated Use {@link goog.ui.registry.getDecorator} instead.
+<a name="line114"></a> */
+<a name="line115"></a>goog.ui.Control.getDecorator =
+<a name="line116"></a>    /** @type {function(Element): goog.ui.Control} */ (
+<a name="line117"></a>        goog.ui.registry.getDecorator);
+<a name="line118"></a>
+<a name="line119"></a>
+<a name="line120"></a>/**
+<a name="line121"></a> * Takes an element, and decorates it with a {@link goog.ui.Control} instance
+<a name="line122"></a> * if a suitable decorator is found.
+<a name="line123"></a> * @param {Element} element Element to decorate.
+<a name="line124"></a> * @return {goog.ui.Control?} New control instance that decorates the element
+<a name="line125"></a> *     (null if none).
+<a name="line126"></a> * @deprecated Use {@link goog.ui.decorate} instead.
+<a name="line127"></a> */
+<a name="line128"></a>goog.ui.Control.decorate = /** @type {function(Element): goog.ui.Control} */ (
+<a name="line129"></a>    goog.ui.decorate);
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * Renderer associated with the component.
+<a name="line134"></a> * @type {goog.ui.ControlRenderer|undefined}
+<a name="line135"></a> * @private
+<a name="line136"></a> */
+<a name="line137"></a>goog.ui.Control.prototype.renderer_;
+<a name="line138"></a>
+<a name="line139"></a>
+<a name="line140"></a>/**
+<a name="line141"></a> * Text caption or DOM structure displayed in the component.
+<a name="line142"></a> * @type {goog.ui.ControlContent}
+<a name="line143"></a> * @private
+<a name="line144"></a> */
+<a name="line145"></a>goog.ui.Control.prototype.content_ = null;
+<a name="line146"></a>
+<a name="line147"></a>
+<a name="line148"></a>/**
+<a name="line149"></a> * Current component state; a bit mask of {@link goog.ui.Component.State}s.
+<a name="line150"></a> * @type {number}
+<a name="line151"></a> * @private
+<a name="line152"></a> */
+<a name="line153"></a>goog.ui.Control.prototype.state_ = 0x00;
+<a name="line154"></a>
+<a name="line155"></a>
+<a name="line156"></a>/**
+<a name="line157"></a> * A bit mask of {@link goog.ui.Component.State}s this component supports.
+<a name="line158"></a> * @type {number}
+<a name="line159"></a> * @private
+<a name="line160"></a> */
+<a name="line161"></a>goog.ui.Control.prototype.supportedStates_ =
+<a name="line162"></a>    goog.ui.Component.State.DISABLED |
+<a name="line163"></a>    goog.ui.Component.State.HOVER |
+<a name="line164"></a>    goog.ui.Component.State.ACTIVE |
+<a name="line165"></a>    goog.ui.Component.State.FOCUSED;
+<a name="line166"></a>
+<a name="line167"></a>
+<a name="line168"></a>/**
+<a name="line169"></a> * A bit mask of {@link goog.ui.Component.State}s for which this component
+<a name="line170"></a> * provides default event handling.  For example, a component that handles
+<a name="line171"></a> * the HOVER state automatically will highlight itself on mouseover, whereas
+<a name="line172"></a> * a component that doesn&#39;t handle HOVER automatically will only dispatch
+<a name="line173"></a> * ENTER and LEAVE events but not call {@link setHighlighted} on itself.
+<a name="line174"></a> * By default, components provide default event handling for all states.
+<a name="line175"></a> * Controls hosted in containers (e.g. menu items in a menu, or buttons in a
+<a name="line176"></a> * toolbar) will typically want to have their container manage their highlight
+<a name="line177"></a> * state.  Selectable controls managed by a selection model will also typically
+<a name="line178"></a> * want their selection state to be managed by the model.
+<a name="line179"></a> * @type {number}
+<a name="line180"></a> * @private
+<a name="line181"></a> */
+<a name="line182"></a>goog.ui.Control.prototype.autoStates_ = goog.ui.Component.State.ALL;
+<a name="line183"></a>
+<a name="line184"></a>
+<a name="line185"></a>/**
+<a name="line186"></a> * A bit mask of {@link goog.ui.Component.State}s for which this component
+<a name="line187"></a> * dispatches state transition events.  Because events are expensive, the
+<a name="line188"></a> * default behavior is to not dispatch any state transition events at all.
+<a name="line189"></a> * Use the {@link #setDispatchTransitionEvents} API to request transition
+<a name="line190"></a> * events  as needed.  Subclasses may enable transition events by default.
+<a name="line191"></a> * Controls hosted in containers or managed by a selection model will typically
+<a name="line192"></a> * want to dispatch transition events.
+<a name="line193"></a> * @type {number}
+<a name="line194"></a> * @private
+<a name="line195"></a> */
+<a name="line196"></a>goog.ui.Control.prototype.statesWithTransitionEvents_ = 0x00;
+<a name="line197"></a>
+<a name="line198"></a>
+<a name="line199"></a>/**
+<a name="line200"></a> * Component visibility.
+<a name="line201"></a> * @type {boolean}
+<a name="line202"></a> * @private
+<a name="line203"></a> */
+<a name="line204"></a>goog.ui.Control.prototype.visible_ = true;
+<a name="line205"></a>
+<a name="line206"></a>
+<a name="line207"></a>/**
+<a name="line208"></a> * Keyboard event handler.
+<a name="line209"></a> * @type {goog.events.KeyHandler}
+<a name="line210"></a> * @private
+<a name="line211"></a> */
+<a name="line212"></a>goog.ui.Control.prototype.keyHandler_;
+<a name="line213"></a>
+<a name="line214"></a>
+<a name="line215"></a>/**
+<a name="line216"></a> * Additional class name(s) to apply to the control&#39;s root element, if any.
+<a name="line217"></a> * @type {Array.&lt;string&gt;?}
+<a name="line218"></a> * @private
+<a name="line219"></a> */
+<a name="line220"></a>goog.ui.Control.prototype.extraClassNames_ = null;
+<a name="line221"></a>
+<a name="line222"></a>
+<a name="line223"></a>/**
+<a name="line224"></a> * Whether the control should listen for and handle mouse events; defaults to
+<a name="line225"></a> * true.
+<a name="line226"></a> * @type {boolean}
+<a name="line227"></a> * @private
+<a name="line228"></a> */
+<a name="line229"></a>goog.ui.Control.prototype.handleMouseEvents_ = true;
+<a name="line230"></a>
+<a name="line231"></a>
+<a name="line232"></a>/**
+<a name="line233"></a> * Whether the control allows text selection within its DOM.  Defaults to false.
+<a name="line234"></a> * @type {boolean}
+<a name="line235"></a> * @private
+<a name="line236"></a> */
+<a name="line237"></a>goog.ui.Control.prototype.allowTextSelection_ = false;
+<a name="line238"></a>
+<a name="line239"></a>
+<a name="line240"></a>/**
+<a name="line241"></a> * The control&#39;s preferred ARIA role.
+<a name="line242"></a> * @type {?goog.dom.a11y.Role}
+<a name="line243"></a> * @private
+<a name="line244"></a> */
+<a name="line245"></a>goog.ui.Control.prototype.preferredAriaRole_ = null;
+<a name="line246"></a>
+<a name="line247"></a>
+<a name="line248"></a>// Event handler and renderer management.
+<a name="line249"></a>
+<a name="line250"></a>
+<a name="line251"></a>/**
+<a name="line252"></a> * Returns true if the control is configured to handle its own mouse events,
+<a name="line253"></a> * false otherwise.  Controls not hosted in {@link goog.ui.Container}s have
+<a name="line254"></a> * to handle their own mouse events, but controls hosted in containers may
+<a name="line255"></a> * allow their parent to handle mouse events on their behalf.  Considered
+<a name="line256"></a> * protected; should only be used within this package and by subclasses.
+<a name="line257"></a> * @return {boolean} Whether the control handles its own mouse events.
+<a name="line258"></a> */
+<a name="line259"></a>goog.ui.Control.prototype.isHandleMouseEvents = function() {
+<a name="line260"></a>  return this.handleMouseEvents_;
+<a name="line261"></a>};
+<a name="line262"></a>
+<a name="line263"></a>
+<a name="line264"></a>/**
+<a name="line265"></a> * Enables or disables mouse event handling for the control.  Containers may
+<a name="line266"></a> * use this method to disable mouse event handling in their child controls.
+<a name="line267"></a> * Considered protected; should only be used within this package and by
+<a name="line268"></a> * subclasses.
+<a name="line269"></a> * @param {boolean} enable Whether to enable or disable mouse event handling.
+<a name="line270"></a> */
+<a name="line271"></a>goog.ui.Control.prototype.setHandleMouseEvents = function(enable) {
+<a name="line272"></a>  if (this.isInDocument() &amp;&amp; enable != this.handleMouseEvents_) {
+<a name="line273"></a>    // Already in the document; need to update event handler.
+<a name="line274"></a>    this.enableMouseEventHandling_(enable);
+<a name="line275"></a>  }
+<a name="line276"></a>  this.handleMouseEvents_ = enable;
+<a name="line277"></a>};
+<a name="line278"></a>
+<a name="line279"></a>
+<a name="line280"></a>/**
+<a name="line281"></a> * Returns the DOM element on which the control is listening for keyboard
+<a name="line282"></a> * events (null if none).
+<a name="line283"></a> * @return {Element} Element on which the control is listening for key
+<a name="line284"></a> *     events.
+<a name="line285"></a> */
+<a name="line286"></a>goog.ui.Control.prototype.getKeyEventTarget = function() {
+<a name="line287"></a>  // Delegate to renderer.
+<a name="line288"></a>  return this.renderer_.getKeyEventTarget(this);
+<a name="line289"></a>};
+<a name="line290"></a>
+<a name="line291"></a>
+<a name="line292"></a>/**
+<a name="line293"></a> * Returns the keyboard event handler for this component, lazily created the
+<a name="line294"></a> * first time this method is called.  Considered protected; should only be
+<a name="line295"></a> * used within this package and by subclasses.
+<a name="line296"></a> * @return {goog.events.KeyHandler} Keyboard event handler for this component.
+<a name="line297"></a> * @protected
+<a name="line298"></a> */
+<a name="line299"></a>goog.ui.Control.prototype.getKeyHandler = function() {
+<a name="line300"></a>  return this.keyHandler_ || (this.keyHandler_ = new goog.events.KeyHandler());
+<a name="line301"></a>};
+<a name="line302"></a>
+<a name="line303"></a>
+<a name="line304"></a>/**
+<a name="line305"></a> * Returns the renderer used by this component to render itself or to decorate
+<a name="line306"></a> * an existing element.
+<a name="line307"></a> * @return {goog.ui.ControlRenderer|undefined} Renderer used by the component
+<a name="line308"></a> *     (undefined if none).
+<a name="line309"></a> */
+<a name="line310"></a>goog.ui.Control.prototype.getRenderer = function() {
+<a name="line311"></a>  return this.renderer_;
+<a name="line312"></a>};
+<a name="line313"></a>
+<a name="line314"></a>
+<a name="line315"></a>/**
+<a name="line316"></a> * Registers the given renderer with the component.  Changing renderers after
+<a name="line317"></a> * the component has entered the document is an error.
+<a name="line318"></a> * @param {goog.ui.ControlRenderer} renderer Renderer used by the component.
+<a name="line319"></a> * @throws {Error} If the control is already in the document.
+<a name="line320"></a> */
+<a name="line321"></a>goog.ui.Control.prototype.setRenderer = function(renderer) {
+<a name="line322"></a>  if (this.isInDocument()) {
+<a name="line323"></a>    // Too late.
+<a name="line324"></a>    throw Error(goog.ui.Component.Error.ALREADY_RENDERED);
+<a name="line325"></a>  }
+<a name="line326"></a>
+<a name="line327"></a>  if (this.getElement()) {
+<a name="line328"></a>    // The component has already been rendered, but isn&#39;t yet in the document.
+<a name="line329"></a>    // Replace the renderer and delete the current DOM, so it can be re-rendered
+<a name="line330"></a>    // using the new renderer the next time someone calls render().
+<a name="line331"></a>    this.setElementInternal(null);
+<a name="line332"></a>  }
+<a name="line333"></a>
+<a name="line334"></a>  this.renderer_ = renderer;
+<a name="line335"></a>};
+<a name="line336"></a>
+<a name="line337"></a>
+<a name="line338"></a>// Support for additional styling.
+<a name="line339"></a>
+<a name="line340"></a>
+<a name="line341"></a>/**
+<a name="line342"></a> * Returns any additional class name(s) to be applied to the component&#39;s
+<a name="line343"></a> * root element, or null if no extra class names are needed.
+<a name="line344"></a> * @return {Array.&lt;string&gt;?} Additional class names to be applied to
+<a name="line345"></a> *     the component&#39;s root element (null if none).
+<a name="line346"></a> */
+<a name="line347"></a>goog.ui.Control.prototype.getExtraClassNames = function() {
+<a name="line348"></a>  return this.extraClassNames_;
+<a name="line349"></a>};
+<a name="line350"></a>
+<a name="line351"></a>
+<a name="line352"></a>/**
+<a name="line353"></a> * Adds the given class name to the list of classes to be applied to the
+<a name="line354"></a> * component&#39;s root element.
+<a name="line355"></a> * @param {string} className Additional class name to be applied to the
+<a name="line356"></a> *     component&#39;s root element.
+<a name="line357"></a> */
+<a name="line358"></a>goog.ui.Control.prototype.addClassName = function(className) {
+<a name="line359"></a>  if (className) {
+<a name="line360"></a>    if (this.extraClassNames_) {
+<a name="line361"></a>      if (!goog.array.contains(this.extraClassNames_, className)) {
+<a name="line362"></a>        this.extraClassNames_.push(className);
+<a name="line363"></a>      }
+<a name="line364"></a>    } else {
+<a name="line365"></a>      this.extraClassNames_ = [className];
+<a name="line366"></a>    }
+<a name="line367"></a>    this.renderer_.enableExtraClassName(this, className, true);
+<a name="line368"></a>  }
+<a name="line369"></a>};
+<a name="line370"></a>
+<a name="line371"></a>
+<a name="line372"></a>/**
+<a name="line373"></a> * Removes the given class name from the list of classes to be applied to
+<a name="line374"></a> * the component&#39;s root element.
+<a name="line375"></a> * @param {string} className Class name to be removed from the component&#39;s root
+<a name="line376"></a> *     element.
+<a name="line377"></a> */
+<a name="line378"></a>goog.ui.Control.prototype.removeClassName = function(className) {
+<a name="line379"></a>  if (className &amp;&amp; this.extraClassNames_) {
+<a name="line380"></a>    goog.array.remove(this.extraClassNames_, className);
+<a name="line381"></a>    if (this.extraClassNames_.length == 0) {
+<a name="line382"></a>      this.extraClassNames_ = null;
+<a name="line383"></a>    }
+<a name="line384"></a>    this.renderer_.enableExtraClassName(this, className, false);
+<a name="line385"></a>  }
+<a name="line386"></a>};
+<a name="line387"></a>
+<a name="line388"></a>
+<a name="line389"></a>/**
+<a name="line390"></a> * Adds or removes the given class name to/from the list of classes to be
+<a name="line391"></a> * applied to the component&#39;s root element.
+<a name="line392"></a> * @param {string} className CSS class name to add or remove.
+<a name="line393"></a> * @param {boolean} enable Whether to add or remove the class name.
+<a name="line394"></a> */
+<a name="line395"></a>goog.ui.Control.prototype.enableClassName = function(className, enable) {
+<a name="line396"></a>  if (enable) {
+<a name="line397"></a>    this.addClassName(className);
+<a name="line398"></a>  } else {
+<a name="line399"></a>    this.removeClassName(className);
+<a name="line400"></a>  }
+<a name="line401"></a>};
+<a name="line402"></a>
+<a name="line403"></a>
+<a name="line404"></a>// Standard goog.ui.Component implementation.
+<a name="line405"></a>
+<a name="line406"></a>
+<a name="line407"></a>/**
+<a name="line408"></a> * Creates the control&#39;s DOM.  Overrides {@link goog.ui.Component#createDom} by
+<a name="line409"></a> * delegating DOM manipulation to the control&#39;s renderer.
+<a name="line410"></a> * @override
+<a name="line411"></a> */
+<a name="line412"></a>goog.ui.Control.prototype.createDom = function() {
+<a name="line413"></a>  var element = this.renderer_.createDom(this);
+<a name="line414"></a>  this.setElementInternal(element);
+<a name="line415"></a>
+<a name="line416"></a>  // Initialize ARIA role.
+<a name="line417"></a>  this.renderer_.setAriaRole(element, this.getPreferredAriaRole());
+<a name="line418"></a>
+<a name="line419"></a>  // Initialize text selection.
+<a name="line420"></a>  if (!this.isAllowTextSelection()) {
+<a name="line421"></a>    // The renderer is assumed to create selectable elements.  Since making
+<a name="line422"></a>    // elements unselectable is expensive, only do it if needed (bug 1037090).
+<a name="line423"></a>    this.renderer_.setAllowTextSelection(element, false);
+<a name="line424"></a>  }
+<a name="line425"></a>
+<a name="line426"></a>  // Initialize visibility.
+<a name="line427"></a>  if (!this.isVisible()) {
+<a name="line428"></a>    // The renderer is assumed to create visible elements. Since hiding
+<a name="line429"></a>    // elements can be expensive, only do it if needed (bug 1037105).
+<a name="line430"></a>    this.renderer_.setVisible(element, false);
+<a name="line431"></a>  }
+<a name="line432"></a>};
+<a name="line433"></a>
+<a name="line434"></a>
+<a name="line435"></a>/**
+<a name="line436"></a> * Returns the control&#39;s preferred ARIA role. This can be used by a control to
+<a name="line437"></a> * override the role that would be assigned by the renderer.  This is useful in
+<a name="line438"></a> * cases where a different ARIA role is appropriate for a control because of the
+<a name="line439"></a> * context in which it&#39;s used.  E.g., a {@link goog.ui.MenuButton} added to a
+<a name="line440"></a> * {@link goog.ui.Select} should have an ARIA role of LISTBOX and not MENUITEM.
+<a name="line441"></a> * @return {?goog.dom.a11y.Role} This control&#39;s preferred ARIA role or null if
+<a name="line442"></a> *     no preferred ARIA role is set.
+<a name="line443"></a> */
+<a name="line444"></a>goog.ui.Control.prototype.getPreferredAriaRole = function() {
+<a name="line445"></a>  return this.preferredAriaRole_;
+<a name="line446"></a>};
+<a name="line447"></a>
+<a name="line448"></a>
+<a name="line449"></a>/**
+<a name="line450"></a> * Sets the control&#39;s preferred ARIA role. This can be used to override the role
+<a name="line451"></a> * that would be assigned by the renderer.  This is useful in cases where a
+<a name="line452"></a> * different ARIA role is appropriate for a control because of the
+<a name="line453"></a> * context in which it&#39;s used.  E.g., a {@link goog.ui.MenuButton} added to a
+<a name="line454"></a> * {@link goog.ui.Select} should have an ARIA role of LISTBOX and not MENUITEM.
+<a name="line455"></a> * @param {goog.dom.a11y.Role} role This control&#39;s preferred ARIA role.
+<a name="line456"></a> */
+<a name="line457"></a>goog.ui.Control.prototype.setPreferredAriaRole = function(role) {
+<a name="line458"></a>  this.preferredAriaRole_ = role;
+<a name="line459"></a>};
+<a name="line460"></a>
+<a name="line461"></a>
+<a name="line462"></a>/**
+<a name="line463"></a> * Returns the DOM element into which child components are to be rendered,
+<a name="line464"></a> * or null if the control itself hasn&#39;t been rendered yet.  Overrides
+<a name="line465"></a> * {@link goog.ui.Component#getContentElement} by delegating to the renderer.
+<a name="line466"></a> * @return {Element} Element to contain child elements (null if none).
+<a name="line467"></a> */
+<a name="line468"></a>goog.ui.Control.prototype.getContentElement = function() {
+<a name="line469"></a>  // Delegate to renderer.
+<a name="line470"></a>  return this.renderer_.getContentElement(this.getElement());
+<a name="line471"></a>};
+<a name="line472"></a>
+<a name="line473"></a>
+<a name="line474"></a>/**
+<a name="line475"></a> * Returns true if the given element can be decorated by this component.
+<a name="line476"></a> * Overrides {@link goog.ui.Component#canDecorate}.
+<a name="line477"></a> * @param {Element} element Element to decorate.
+<a name="line478"></a> * @return {boolean} Whether the element can be decorated by this component.
+<a name="line479"></a> */
+<a name="line480"></a>goog.ui.Control.prototype.canDecorate = function(element) {
+<a name="line481"></a>  // Controls support pluggable renderers; delegate to the renderer.
+<a name="line482"></a>  return this.renderer_.canDecorate(element);
+<a name="line483"></a>};
+<a name="line484"></a>
+<a name="line485"></a>
+<a name="line486"></a>/**
+<a name="line487"></a> * Decorates the given element with this component. Overrides {@link
+<a name="line488"></a> * goog.ui.Component#decorateInternal} by delegating DOM manipulation
+<a name="line489"></a> * to the control&#39;s renderer.
+<a name="line490"></a> * @param {Element} element Element to decorate.
+<a name="line491"></a> * @protected
+<a name="line492"></a> * @override
+<a name="line493"></a> */
+<a name="line494"></a>goog.ui.Control.prototype.decorateInternal = function(element) {
+<a name="line495"></a>  element = this.renderer_.decorate(this, element);
+<a name="line496"></a>  this.setElementInternal(element);
+<a name="line497"></a>
+<a name="line498"></a>  // Initialize ARIA role.
+<a name="line499"></a>  this.renderer_.setAriaRole(element, this.getPreferredAriaRole());
+<a name="line500"></a>
+<a name="line501"></a>  // Initialize text selection.
+<a name="line502"></a>  if (!this.isAllowTextSelection()) {
+<a name="line503"></a>    // Decorated elements are assumed to be selectable.  Since making elements
+<a name="line504"></a>    // unselectable is expensive, only do it if needed (bug 1037090).
+<a name="line505"></a>    this.renderer_.setAllowTextSelection(element, false);
+<a name="line506"></a>  }
+<a name="line507"></a>
+<a name="line508"></a>  // Initialize visibility based on the decorated element&#39;s styling.
+<a name="line509"></a>  this.visible_ = element.style.display != &#39;none&#39;;
+<a name="line510"></a>};
+<a name="line511"></a>
+<a name="line512"></a>
+<a name="line513"></a>/**
+<a name="line514"></a> * Configures the component after its DOM has been rendered, and sets up event
+<a name="line515"></a> * handling.  Overrides {@link goog.ui.Component#enterDocument}.
+<a name="line516"></a> * @override
+<a name="line517"></a> */
+<a name="line518"></a>goog.ui.Control.prototype.enterDocument = function() {
+<a name="line519"></a>  goog.ui.Control.superClass_.enterDocument.call(this);
+<a name="line520"></a>
+<a name="line521"></a>  // Call the renderer&#39;s initializeDom method to configure properties of the
+<a name="line522"></a>  // control&#39;s DOM that can only be done once it&#39;s in the document.
+<a name="line523"></a>  this.renderer_.initializeDom(this);
+<a name="line524"></a>
+<a name="line525"></a>  // Initialize event handling if at least one state other than DISABLED is
+<a name="line526"></a>  // supported.
+<a name="line527"></a>  if (this.supportedStates_ &amp; ~goog.ui.Component.State.DISABLED) {
+<a name="line528"></a>    // Initialize mouse event handling if the control is configured to handle
+<a name="line529"></a>    // its own mouse events.  (Controls hosted in containers don&#39;t need to
+<a name="line530"></a>    // handle their own mouse events.)
+<a name="line531"></a>    if (this.isHandleMouseEvents()) {
+<a name="line532"></a>      this.enableMouseEventHandling_(true);
+<a name="line533"></a>    }
+<a name="line534"></a>
+<a name="line535"></a>    // Initialize keyboard event handling if the control is focusable and has
+<a name="line536"></a>    // a key event target.  (Controls hosted in containers typically aren&#39;t
+<a name="line537"></a>    // focusable, allowing their container to handle keyboard events for them.)
+<a name="line538"></a>    if (this.isSupportedState(goog.ui.Component.State.FOCUSED)) {
+<a name="line539"></a>      var keyTarget = this.getKeyEventTarget();
+<a name="line540"></a>      if (keyTarget) {
+<a name="line541"></a>        var keyHandler = this.getKeyHandler();
+<a name="line542"></a>        keyHandler.attach(keyTarget);
+<a name="line543"></a>        this.getHandler().
+<a name="line544"></a>            listen(keyHandler, goog.events.KeyHandler.EventType.KEY,
+<a name="line545"></a>                this.handleKeyEvent).
+<a name="line546"></a>            listen(keyTarget, goog.events.EventType.FOCUS,
+<a name="line547"></a>                this.handleFocus).
+<a name="line548"></a>            listen(keyTarget, goog.events.EventType.BLUR,
+<a name="line549"></a>                this.handleBlur);
+<a name="line550"></a>      }
+<a name="line551"></a>    }
+<a name="line552"></a>  }
+<a name="line553"></a>};
+<a name="line554"></a>
+<a name="line555"></a>
+<a name="line556"></a>/**
+<a name="line557"></a> * Enables or disables mouse event handling on the control.
+<a name="line558"></a> * @param {boolean} enable Whether to enable mouse event handling.
+<a name="line559"></a> * @private
+<a name="line560"></a> */
+<a name="line561"></a>goog.ui.Control.prototype.enableMouseEventHandling_ = function(enable) {
+<a name="line562"></a>  var handler = this.getHandler();
+<a name="line563"></a>  var element = this.getElement();
+<a name="line564"></a>  if (enable) {
+<a name="line565"></a>    handler.
+<a name="line566"></a>        listen(element, goog.events.EventType.MOUSEOVER, this.handleMouseOver).
+<a name="line567"></a>        listen(element, goog.events.EventType.MOUSEDOWN, this.handleMouseDown).
+<a name="line568"></a>        listen(element, goog.events.EventType.MOUSEUP, this.handleMouseUp).
+<a name="line569"></a>        listen(element, goog.events.EventType.MOUSEOUT, this.handleMouseOut);
+<a name="line570"></a>    if (goog.userAgent.IE) {
+<a name="line571"></a>      handler.listen(element, goog.events.EventType.DBLCLICK,
+<a name="line572"></a>          this.handleDblClick);
+<a name="line573"></a>    }
+<a name="line574"></a>  } else {
+<a name="line575"></a>    handler.
+<a name="line576"></a>        unlisten(element, goog.events.EventType.MOUSEOVER,
+<a name="line577"></a>            this.handleMouseOver).
+<a name="line578"></a>        unlisten(element, goog.events.EventType.MOUSEDOWN,
+<a name="line579"></a>            this.handleMouseDown).
+<a name="line580"></a>        unlisten(element, goog.events.EventType.MOUSEUP, this.handleMouseUp).
+<a name="line581"></a>        unlisten(element, goog.events.EventType.MOUSEOUT, this.handleMouseOut);
+<a name="line582"></a>    if (goog.userAgent.IE) {
+<a name="line583"></a>      handler.unlisten(element, goog.events.EventType.DBLCLICK,
+<a name="line584"></a>          this.handleDblClick);
+<a name="line585"></a>    }
+<a name="line586"></a>  }
+<a name="line587"></a>};
+<a name="line588"></a>
+<a name="line589"></a>
+<a name="line590"></a>/**
+<a name="line591"></a> * Cleans up the component before its DOM is removed from the document, and
+<a name="line592"></a> * removes event handlers.  Overrides {@link goog.ui.Component#exitDocument}
+<a name="line593"></a> * by making sure that components that are removed from the document aren&#39;t
+<a name="line594"></a> * focusable (i.e. have no tab index).
+<a name="line595"></a> * @override
+<a name="line596"></a> */
+<a name="line597"></a>goog.ui.Control.prototype.exitDocument = function() {
+<a name="line598"></a>  goog.ui.Control.superClass_.exitDocument.call(this);
+<a name="line599"></a>  if (this.keyHandler_) {
+<a name="line600"></a>    this.keyHandler_.detach();
+<a name="line601"></a>  }
+<a name="line602"></a>  if (this.isVisible() &amp;&amp; this.isEnabled()) {
+<a name="line603"></a>    this.renderer_.setFocusable(this, false);
+<a name="line604"></a>  }
+<a name="line605"></a>};
+<a name="line606"></a>
+<a name="line607"></a>
+<a name="line608"></a>/** @override */
+<a name="line609"></a>goog.ui.Control.prototype.disposeInternal = function() {
+<a name="line610"></a>  goog.ui.Control.superClass_.disposeInternal.call(this);
+<a name="line611"></a>  if (this.keyHandler_) {
+<a name="line612"></a>    this.keyHandler_.dispose();
+<a name="line613"></a>    delete this.keyHandler_;
+<a name="line614"></a>  }
+<a name="line615"></a>  delete this.renderer_;
+<a name="line616"></a>  this.content_ = null;
+<a name="line617"></a>  this.extraClassNames_ = null;
+<a name="line618"></a>};
+<a name="line619"></a>
+<a name="line620"></a>
+<a name="line621"></a>// Component content management.
+<a name="line622"></a>
+<a name="line623"></a>
+<a name="line624"></a>/**
+<a name="line625"></a> * Returns the text caption or DOM structure displayed in the component.
+<a name="line626"></a> * @return {goog.ui.ControlContent} Text caption or DOM structure
+<a name="line627"></a> *     comprising the component&#39;s contents.
+<a name="line628"></a> */
+<a name="line629"></a>goog.ui.Control.prototype.getContent = function() {
+<a name="line630"></a>  return this.content_;
+<a name="line631"></a>};
+<a name="line632"></a>
+<a name="line633"></a>
+<a name="line634"></a>/**
+<a name="line635"></a> * Sets the component&#39;s content to the given text caption, element, or array of
+<a name="line636"></a> * nodes.  (If the argument is an array of nodes, it must be an actual array,
+<a name="line637"></a> * not an array-like object.)
+<a name="line638"></a> * @param {goog.ui.ControlContent} content Text caption or DOM
+<a name="line639"></a> *     structure to set as the component&#39;s contents.
+<a name="line640"></a> */
+<a name="line641"></a>goog.ui.Control.prototype.setContent = function(content) {
+<a name="line642"></a>  // Controls support pluggable renderers; delegate to the renderer.
+<a name="line643"></a>  this.renderer_.setContent(this.getElement(), content);
+<a name="line644"></a>
+<a name="line645"></a>  // setContentInternal needs to be after the renderer, since the implementation
+<a name="line646"></a>  // may depend on the content being in the DOM.
+<a name="line647"></a>  this.setContentInternal(content);
+<a name="line648"></a>};
+<a name="line649"></a>
+<a name="line650"></a>
+<a name="line651"></a>/**
+<a name="line652"></a> * Sets the component&#39;s content to the given text caption, element, or array
+<a name="line653"></a> * of nodes.  Unlike {@link #setContent}, doesn&#39;t modify the component&#39;s DOM.
+<a name="line654"></a> * Called by renderers during element decoration.  Considered protected; should
+<a name="line655"></a> * only be used within this package and by subclasses.
+<a name="line656"></a> * @param {goog.ui.ControlContent} content Text caption or DOM structure
+<a name="line657"></a> *     to set as the component&#39;s contents.
+<a name="line658"></a> * @protected
+<a name="line659"></a> */
+<a name="line660"></a>goog.ui.Control.prototype.setContentInternal = function(content) {
+<a name="line661"></a>  this.content_ = content;
+<a name="line662"></a>};
+<a name="line663"></a>
+<a name="line664"></a>
+<a name="line665"></a>/**
+<a name="line666"></a> * @return {string} Text caption of the control or empty string if none.
+<a name="line667"></a> */
+<a name="line668"></a>goog.ui.Control.prototype.getCaption = function() {
+<a name="line669"></a>  var content = this.getContent();
+<a name="line670"></a>  if (!content) {
+<a name="line671"></a>    return &#39;&#39;;
+<a name="line672"></a>  }
+<a name="line673"></a>  var caption =
+<a name="line674"></a>      goog.isString(content) ? content :
+<a name="line675"></a>      goog.isArray(content) ? goog.array.map(content,
+<a name="line676"></a>          goog.dom.getRawTextContent).join(&#39;&#39;) :
+<a name="line677"></a>      goog.dom.getTextContent(/** @type {!Node} */ (content));
+<a name="line678"></a>  return goog.string.collapseBreakingSpaces(caption);
+<a name="line679"></a>};
+<a name="line680"></a>
+<a name="line681"></a>
+<a name="line682"></a>/**
+<a name="line683"></a> * Sets the text caption of the component.
+<a name="line684"></a> * @param {string} caption Text caption of the component.
+<a name="line685"></a> */
+<a name="line686"></a>goog.ui.Control.prototype.setCaption = function(caption) {
+<a name="line687"></a>  this.setContent(caption);
+<a name="line688"></a>};
+<a name="line689"></a>
+<a name="line690"></a>
+<a name="line691"></a>// Component state management.
+<a name="line692"></a>
+<a name="line693"></a>
+<a name="line694"></a>/** @override */
+<a name="line695"></a>goog.ui.Control.prototype.setRightToLeft = function(rightToLeft) {
+<a name="line696"></a>  // The superclass implementation ensures the control isn&#39;t in the document.
+<a name="line697"></a>  goog.ui.Control.superClass_.setRightToLeft.call(this, rightToLeft);
+<a name="line698"></a>
+<a name="line699"></a>  var element = this.getElement();
+<a name="line700"></a>  if (element) {
+<a name="line701"></a>    this.renderer_.setRightToLeft(element, rightToLeft);
+<a name="line702"></a>  }
+<a name="line703"></a>};
+<a name="line704"></a>
+<a name="line705"></a>
+<a name="line706"></a>/**
+<a name="line707"></a> * Returns true if the control allows text selection within its DOM, false
+<a name="line708"></a> * otherwise.  Controls that disallow text selection have the appropriate
+<a name="line709"></a> * unselectable styling applied to their elements.  Note that controls hosted
+<a name="line710"></a> * in containers will report that they allow text selection even if their
+<a name="line711"></a> * container disallows text selection.
+<a name="line712"></a> * @return {boolean} Whether the control allows text selection.
+<a name="line713"></a> */
+<a name="line714"></a>goog.ui.Control.prototype.isAllowTextSelection = function() {
+<a name="line715"></a>  return this.allowTextSelection_;
+<a name="line716"></a>};
+<a name="line717"></a>
+<a name="line718"></a>
+<a name="line719"></a>/**
+<a name="line720"></a> * Allows or disallows text selection within the control&#39;s DOM.
+<a name="line721"></a> * @param {boolean} allow Whether the control should allow text selection.
+<a name="line722"></a> */
+<a name="line723"></a>goog.ui.Control.prototype.setAllowTextSelection = function(allow) {
+<a name="line724"></a>  this.allowTextSelection_ = allow;
+<a name="line725"></a>
+<a name="line726"></a>  var element = this.getElement();
+<a name="line727"></a>  if (element) {
+<a name="line728"></a>    this.renderer_.setAllowTextSelection(element, allow);
+<a name="line729"></a>  }
+<a name="line730"></a>};
+<a name="line731"></a>
+<a name="line732"></a>
+<a name="line733"></a>/**
+<a name="line734"></a> * Returns true if the component&#39;s visibility is set to visible, false if
+<a name="line735"></a> * it is set to hidden.  A component that is set to hidden is guaranteed
+<a name="line736"></a> * to be hidden from the user, but the reverse isn&#39;t necessarily true.
+<a name="line737"></a> * A component may be set to visible but can otherwise be obscured by another
+<a name="line738"></a> * element, rendered off-screen, or hidden using direct CSS manipulation.
+<a name="line739"></a> * @return {boolean} Whether the component is visible.
+<a name="line740"></a> */
+<a name="line741"></a>goog.ui.Control.prototype.isVisible = function() {
+<a name="line742"></a>  return this.visible_;
+<a name="line743"></a>};
+<a name="line744"></a>
+<a name="line745"></a>
+<a name="line746"></a>/**
+<a name="line747"></a> * Shows or hides the component.  Does nothing if the component already has
+<a name="line748"></a> * the requested visibility.  Otherwise, dispatches a SHOW or HIDE event as
+<a name="line749"></a> * appropriate, giving listeners a chance to prevent the visibility change.
+<a name="line750"></a> * When showing a component that is both enabled and focusable, ensures that
+<a name="line751"></a> * its key target has a tab index.  When hiding a component that is enabled
+<a name="line752"></a> * and focusable, blurs its key target and removes its tab index.
+<a name="line753"></a> * @param {boolean} visible Whether to show or hide the component.
+<a name="line754"></a> * @param {boolean=} opt_force If true, doesn&#39;t check whether the component
+<a name="line755"></a> *     already has the requested visibility, and doesn&#39;t dispatch any events.
+<a name="line756"></a> * @return {boolean} Whether the visibility was changed.
+<a name="line757"></a> */
+<a name="line758"></a>goog.ui.Control.prototype.setVisible = function(visible, opt_force) {
+<a name="line759"></a>  if (opt_force || (this.visible_ != visible &amp;&amp; this.dispatchEvent(visible ?
+<a name="line760"></a>      goog.ui.Component.EventType.SHOW : goog.ui.Component.EventType.HIDE))) {
+<a name="line761"></a>    var element = this.getElement();
+<a name="line762"></a>    if (element) {
+<a name="line763"></a>      this.renderer_.setVisible(element, visible);
+<a name="line764"></a>    }
+<a name="line765"></a>    if (this.isEnabled()) {
+<a name="line766"></a>      this.renderer_.setFocusable(this, visible);
+<a name="line767"></a>    }
+<a name="line768"></a>    this.visible_ = visible;
+<a name="line769"></a>    return true;
+<a name="line770"></a>  }
+<a name="line771"></a>  return false;
+<a name="line772"></a>};
+<a name="line773"></a>
+<a name="line774"></a>
+<a name="line775"></a>/**
+<a name="line776"></a> * Returns true if the component is enabled, false otherwise.
+<a name="line777"></a> * @return {boolean} Whether the component is enabled.
+<a name="line778"></a> */
+<a name="line779"></a>goog.ui.Control.prototype.isEnabled = function() {
+<a name="line780"></a>  return !this.hasState(goog.ui.Component.State.DISABLED);
+<a name="line781"></a>};
+<a name="line782"></a>
+<a name="line783"></a>
+<a name="line784"></a>/**
+<a name="line785"></a> * Returns true if the control has a parent that is itself disabled, false
+<a name="line786"></a> * otherwise.
+<a name="line787"></a> * @return {boolean} Whether the component is hosted in a disabled container.
+<a name="line788"></a> * @private
+<a name="line789"></a> */
+<a name="line790"></a>goog.ui.Control.prototype.isParentDisabled_ = function() {
+<a name="line791"></a>  var parent = this.getParent();
+<a name="line792"></a>  return !!parent &amp;&amp; typeof parent.isEnabled == &#39;function&#39; &amp;&amp;
+<a name="line793"></a>      !parent.isEnabled();
+<a name="line794"></a>};
+<a name="line795"></a>
+<a name="line796"></a>
+<a name="line797"></a>/**
+<a name="line798"></a> * Enables or disables the component.  Does nothing if this state transition
+<a name="line799"></a> * is disallowed.  If the component is both visible and focusable, updates its
+<a name="line800"></a> * focused state and tab index as needed.  If the component is being disabled,
+<a name="line801"></a> * ensures that it is also deactivated and un-highlighted first.  Note that the
+<a name="line802"></a> * component&#39;s enabled/disabled state is &quot;locked&quot; as long as it is hosted in a
+<a name="line803"></a> * {@link goog.ui.Container} that is itself disabled; this is to prevent clients
+<a name="line804"></a> * from accidentally re-enabling a control that is in a disabled container.
+<a name="line805"></a> * @param {boolean} enable Whether to enable or disable the component.
+<a name="line806"></a> * @see #isTransitionAllowed
+<a name="line807"></a> */
+<a name="line808"></a>goog.ui.Control.prototype.setEnabled = function(enable) {
+<a name="line809"></a>  if (!this.isParentDisabled_() &amp;&amp;
+<a name="line810"></a>      this.isTransitionAllowed(goog.ui.Component.State.DISABLED, !enable)) {
+<a name="line811"></a>    if (!enable) {
+<a name="line812"></a>      this.setActive(false);
+<a name="line813"></a>      this.setHighlighted(false);
+<a name="line814"></a>    }
+<a name="line815"></a>    if (this.isVisible()) {
+<a name="line816"></a>      this.renderer_.setFocusable(this, enable);
+<a name="line817"></a>    }
+<a name="line818"></a>    this.setState(goog.ui.Component.State.DISABLED, !enable);
+<a name="line819"></a>  }
+<a name="line820"></a>};
+<a name="line821"></a>
+<a name="line822"></a>
+<a name="line823"></a>/**
+<a name="line824"></a> * Returns true if the component is currently highlighted, false otherwise.
+<a name="line825"></a> * @return {boolean} Whether the component is highlighted.
+<a name="line826"></a> */
+<a name="line827"></a>goog.ui.Control.prototype.isHighlighted = function() {
+<a name="line828"></a>  return this.hasState(goog.ui.Component.State.HOVER);
+<a name="line829"></a>};
+<a name="line830"></a>
+<a name="line831"></a>
+<a name="line832"></a>/**
+<a name="line833"></a> * Highlights or unhighlights the component.  Does nothing if this state
+<a name="line834"></a> * transition is disallowed.
+<a name="line835"></a> * @param {boolean} highlight Whether to highlight or unhighlight the component.
+<a name="line836"></a> * @see #isTransitionAllowed
+<a name="line837"></a> */
+<a name="line838"></a>goog.ui.Control.prototype.setHighlighted = function(highlight) {
+<a name="line839"></a>  if (this.isTransitionAllowed(goog.ui.Component.State.HOVER, highlight)) {
+<a name="line840"></a>    this.setState(goog.ui.Component.State.HOVER, highlight);
+<a name="line841"></a>  }
+<a name="line842"></a>};
+<a name="line843"></a>
+<a name="line844"></a>
+<a name="line845"></a>/**
+<a name="line846"></a> * Returns true if the component is active (pressed), false otherwise.
+<a name="line847"></a> * @return {boolean} Whether the component is active.
+<a name="line848"></a> */
+<a name="line849"></a>goog.ui.Control.prototype.isActive = function() {
+<a name="line850"></a>  return this.hasState(goog.ui.Component.State.ACTIVE);
+<a name="line851"></a>};
+<a name="line852"></a>
+<a name="line853"></a>
+<a name="line854"></a>/**
+<a name="line855"></a> * Activates or deactivates the component.  Does nothing if this state
+<a name="line856"></a> * transition is disallowed.
+<a name="line857"></a> * @param {boolean} active Whether to activate or deactivate the component.
+<a name="line858"></a> * @see #isTransitionAllowed
+<a name="line859"></a> */
+<a name="line860"></a>goog.ui.Control.prototype.setActive = function(active) {
+<a name="line861"></a>  if (this.isTransitionAllowed(goog.ui.Component.State.ACTIVE, active)) {
+<a name="line862"></a>    this.setState(goog.ui.Component.State.ACTIVE, active);
+<a name="line863"></a>  }
+<a name="line864"></a>};
+<a name="line865"></a>
+<a name="line866"></a>
+<a name="line867"></a>/**
+<a name="line868"></a> * Returns true if the component is selected, false otherwise.
+<a name="line869"></a> * @return {boolean} Whether the component is selected.
+<a name="line870"></a> */
+<a name="line871"></a>goog.ui.Control.prototype.isSelected = function() {
+<a name="line872"></a>  return this.hasState(goog.ui.Component.State.SELECTED);
+<a name="line873"></a>};
+<a name="line874"></a>
+<a name="line875"></a>
+<a name="line876"></a>/**
+<a name="line877"></a> * Selects or unselects the component.  Does nothing if this state transition
+<a name="line878"></a> * is disallowed.
+<a name="line879"></a> * @param {boolean} select Whether to select or unselect the component.
+<a name="line880"></a> * @see #isTransitionAllowed
+<a name="line881"></a> */
+<a name="line882"></a>goog.ui.Control.prototype.setSelected = function(select) {
+<a name="line883"></a>  if (this.isTransitionAllowed(goog.ui.Component.State.SELECTED, select)) {
+<a name="line884"></a>    this.setState(goog.ui.Component.State.SELECTED, select);
+<a name="line885"></a>  }
+<a name="line886"></a>};
+<a name="line887"></a>
+<a name="line888"></a>
+<a name="line889"></a>/**
+<a name="line890"></a> * Returns true if the component is checked, false otherwise.
+<a name="line891"></a> * @return {boolean} Whether the component is checked.
+<a name="line892"></a> */
+<a name="line893"></a>goog.ui.Control.prototype.isChecked = function() {
+<a name="line894"></a>  return this.hasState(goog.ui.Component.State.CHECKED);
+<a name="line895"></a>};
+<a name="line896"></a>
+<a name="line897"></a>
+<a name="line898"></a>/**
+<a name="line899"></a> * Checks or unchecks the component.  Does nothing if this state transition
+<a name="line900"></a> * is disallowed.
+<a name="line901"></a> * @param {boolean} check Whether to check or uncheck the component.
+<a name="line902"></a> * @see #isTransitionAllowed
+<a name="line903"></a> */
+<a name="line904"></a>goog.ui.Control.prototype.setChecked = function(check) {
+<a name="line905"></a>  if (this.isTransitionAllowed(goog.ui.Component.State.CHECKED, check)) {
+<a name="line906"></a>    this.setState(goog.ui.Component.State.CHECKED, check);
+<a name="line907"></a>  }
+<a name="line908"></a>};
+<a name="line909"></a>
+<a name="line910"></a>
+<a name="line911"></a>/**
+<a name="line912"></a> * Returns true if the component is styled to indicate that it has keyboard
+<a name="line913"></a> * focus, false otherwise.  Note that {@code isFocused()} returning true
+<a name="line914"></a> * doesn&#39;t guarantee that the component&#39;s key event target has keyborad focus,
+<a name="line915"></a> * only that it is styled as such.
+<a name="line916"></a> * @return {boolean} Whether the component is styled to indicate as having
+<a name="line917"></a> *     keyboard focus.
+<a name="line918"></a> */
+<a name="line919"></a>goog.ui.Control.prototype.isFocused = function() {
+<a name="line920"></a>  return this.hasState(goog.ui.Component.State.FOCUSED);
+<a name="line921"></a>};
+<a name="line922"></a>
+<a name="line923"></a>
+<a name="line924"></a>/**
+<a name="line925"></a> * Applies or removes styling indicating that the component has keyboard focus.
+<a name="line926"></a> * Note that unlike the other &quot;set&quot; methods, this method is called as a result
+<a name="line927"></a> * of the component&#39;s element having received or lost keyboard focus, not the
+<a name="line928"></a> * other way around, so calling {@code setFocused(true)} doesn&#39;t guarantee that
+<a name="line929"></a> * the component&#39;s key event target has keyboard focus, only that it is styled
+<a name="line930"></a> * as such.
+<a name="line931"></a> * @param {boolean} focused Whether to apply or remove styling to indicate that
+<a name="line932"></a> *     the component&#39;s element has keyboard focus.
+<a name="line933"></a> */
+<a name="line934"></a>goog.ui.Control.prototype.setFocused = function(focused) {
+<a name="line935"></a>  if (this.isTransitionAllowed(goog.ui.Component.State.FOCUSED, focused)) {
+<a name="line936"></a>    this.setState(goog.ui.Component.State.FOCUSED, focused);
+<a name="line937"></a>  }
+<a name="line938"></a>};
+<a name="line939"></a>
+<a name="line940"></a>
+<a name="line941"></a>/**
+<a name="line942"></a> * Returns true if the component is open (expanded), false otherwise.
+<a name="line943"></a> * @return {boolean} Whether the component is open.
+<a name="line944"></a> */
+<a name="line945"></a>goog.ui.Control.prototype.isOpen = function() {
+<a name="line946"></a>  return this.hasState(goog.ui.Component.State.OPENED);
+<a name="line947"></a>};
+<a name="line948"></a>
+<a name="line949"></a>
+<a name="line950"></a>/**
+<a name="line951"></a> * Opens (expands) or closes (collapses) the component.  Does nothing if this
+<a name="line952"></a> * state transition is disallowed.
+<a name="line953"></a> * @param {boolean} open Whether to open or close the component.
+<a name="line954"></a> * @see #isTransitionAllowed
+<a name="line955"></a> */
+<a name="line956"></a>goog.ui.Control.prototype.setOpen = function(open) {
+<a name="line957"></a>  if (this.isTransitionAllowed(goog.ui.Component.State.OPENED, open)) {
+<a name="line958"></a>    this.setState(goog.ui.Component.State.OPENED, open);
+<a name="line959"></a>  }
+<a name="line960"></a>};
+<a name="line961"></a>
+<a name="line962"></a>
+<a name="line963"></a>/**
+<a name="line964"></a> * Returns the component&#39;s state as a bit mask of {@link
+<a name="line965"></a> * goog.ui.Component.State}s.
+<a name="line966"></a> * @return {number} Bit mask representing component state.
+<a name="line967"></a> */
+<a name="line968"></a>goog.ui.Control.prototype.getState = function() {
+<a name="line969"></a>  return this.state_;
+<a name="line970"></a>};
+<a name="line971"></a>
+<a name="line972"></a>
+<a name="line973"></a>/**
+<a name="line974"></a> * Returns true if the component is in the specified state, false otherwise.
+<a name="line975"></a> * @param {goog.ui.Component.State} state State to check.
+<a name="line976"></a> * @return {boolean} Whether the component is in the given state.
+<a name="line977"></a> */
+<a name="line978"></a>goog.ui.Control.prototype.hasState = function(state) {
+<a name="line979"></a>  return !!(this.state_ &amp; state);
+<a name="line980"></a>};
+<a name="line981"></a>
+<a name="line982"></a>
+<a name="line983"></a>/**
+<a name="line984"></a> * Sets or clears the given state on the component, and updates its styling
+<a name="line985"></a> * accordingly.  Does nothing if the component is already in the correct state
+<a name="line986"></a> * or if it doesn&#39;t support the specified state.  Doesn&#39;t dispatch any state
+<a name="line987"></a> * transition events; use advisedly.
+<a name="line988"></a> * @param {goog.ui.Component.State} state State to set or clear.
+<a name="line989"></a> * @param {boolean} enable Whether to set or clear the state (if supported).
+<a name="line990"></a> */
+<a name="line991"></a>goog.ui.Control.prototype.setState = function(state, enable) {
+<a name="line992"></a>  if (this.isSupportedState(state) &amp;&amp; enable != this.hasState(state)) {
+<a name="line993"></a>    // Delegate actual styling to the renderer, since it is DOM-specific.
+<a name="line994"></a>    this.renderer_.setState(this, state, enable);
+<a name="line995"></a>    this.state_ = enable ? this.state_ | state : this.state_ &amp; ~state;
+<a name="line996"></a>  }
+<a name="line997"></a>};
+<a name="line998"></a>
+<a name="line999"></a>
+<a name="line1000"></a>/**
+<a name="line1001"></a> * Sets the component&#39;s state to the state represented by a bit mask of
+<a name="line1002"></a> * {@link goog.ui.Component.State}s.  Unlike {@link #setState}, doesn&#39;t
+<a name="line1003"></a> * update the component&#39;s styling, and doesn&#39;t reject unsupported states.
+<a name="line1004"></a> * Called by renderers during element decoration.  Considered protected;
+<a name="line1005"></a> * should only be used within this package and by subclasses.
+<a name="line1006"></a> * @param {number} state Bit mask representing component state.
+<a name="line1007"></a> * @protected
+<a name="line1008"></a> */
+<a name="line1009"></a>goog.ui.Control.prototype.setStateInternal = function(state) {
+<a name="line1010"></a>  this.state_ = state;
+<a name="line1011"></a>};
+<a name="line1012"></a>
+<a name="line1013"></a>
+<a name="line1014"></a>/**
+<a name="line1015"></a> * Returns true if the component supports the specified state, false otherwise.
+<a name="line1016"></a> * @param {goog.ui.Component.State} state State to check.
+<a name="line1017"></a> * @return {boolean} Whether the component supports the given state.
+<a name="line1018"></a> */
+<a name="line1019"></a>goog.ui.Control.prototype.isSupportedState = function(state) {
+<a name="line1020"></a>  return !!(this.supportedStates_ &amp; state);
+<a name="line1021"></a>};
+<a name="line1022"></a>
+<a name="line1023"></a>
+<a name="line1024"></a>/**
+<a name="line1025"></a> * Enables or disables support for the given state. Disabling support
+<a name="line1026"></a> * for a state while the component is in that state is an error.
+<a name="line1027"></a> * @param {goog.ui.Component.State} state State to support or de-support.
+<a name="line1028"></a> * @param {boolean} support Whether the component should support the state.
+<a name="line1029"></a> * @throws {Error} If disabling support for a state the control is currently in.
+<a name="line1030"></a> */
+<a name="line1031"></a>goog.ui.Control.prototype.setSupportedState = function(state, support) {
+<a name="line1032"></a>  if (this.isInDocument() &amp;&amp; this.hasState(state) &amp;&amp; !support) {
+<a name="line1033"></a>    // Since we hook up event handlers in enterDocument(), this is an error.
+<a name="line1034"></a>    throw Error(goog.ui.Component.Error.ALREADY_RENDERED);
+<a name="line1035"></a>  }
+<a name="line1036"></a>
+<a name="line1037"></a>  if (!support &amp;&amp; this.hasState(state)) {
+<a name="line1038"></a>    // We are removing support for a state that the component is currently in.
+<a name="line1039"></a>    this.setState(state, false);
+<a name="line1040"></a>  }
+<a name="line1041"></a>
+<a name="line1042"></a>  this.supportedStates_ = support ?
+<a name="line1043"></a>      this.supportedStates_ | state : this.supportedStates_ &amp; ~state;
+<a name="line1044"></a>};
+<a name="line1045"></a>
+<a name="line1046"></a>
+<a name="line1047"></a>/**
+<a name="line1048"></a> * Returns true if the component provides default event handling for the state,
+<a name="line1049"></a> * false otherwise.
+<a name="line1050"></a> * @param {goog.ui.Component.State} state State to check.
+<a name="line1051"></a> * @return {boolean} Whether the component provides default event handling for
+<a name="line1052"></a> *     the state.
+<a name="line1053"></a> */
+<a name="line1054"></a>goog.ui.Control.prototype.isAutoState = function(state) {
+<a name="line1055"></a>  return !!(this.autoStates_ &amp; state) &amp;&amp; this.isSupportedState(state);
+<a name="line1056"></a>};
+<a name="line1057"></a>
+<a name="line1058"></a>
+<a name="line1059"></a>/**
+<a name="line1060"></a> * Enables or disables automatic event handling for the given state(s).
+<a name="line1061"></a> * @param {number} states Bit mask of {@link goog.ui.Component.State}s for which
+<a name="line1062"></a> *     default event handling is to be enabled or disabled.
+<a name="line1063"></a> * @param {boolean} enable Whether the component should provide default event
+<a name="line1064"></a> *     handling for the state(s).
+<a name="line1065"></a> */
+<a name="line1066"></a>goog.ui.Control.prototype.setAutoStates = function(states, enable) {
+<a name="line1067"></a>  this.autoStates_ = enable ?
+<a name="line1068"></a>      this.autoStates_ | states : this.autoStates_ &amp; ~states;
+<a name="line1069"></a>};
+<a name="line1070"></a>
+<a name="line1071"></a>
+<a name="line1072"></a>/**
+<a name="line1073"></a> * Returns true if the component is set to dispatch transition events for the
+<a name="line1074"></a> * given state, false otherwise.
+<a name="line1075"></a> * @param {goog.ui.Component.State} state State to check.
+<a name="line1076"></a> * @return {boolean} Whether the component dispatches transition events for
+<a name="line1077"></a> *     the state.
+<a name="line1078"></a> */
+<a name="line1079"></a>goog.ui.Control.prototype.isDispatchTransitionEvents = function(state) {
+<a name="line1080"></a>  return !!(this.statesWithTransitionEvents_ &amp; state) &amp;&amp;
+<a name="line1081"></a>      this.isSupportedState(state);
+<a name="line1082"></a>};
+<a name="line1083"></a>
+<a name="line1084"></a>
+<a name="line1085"></a>/**
+<a name="line1086"></a> * Enables or disables transition events for the given state(s).  Controls
+<a name="line1087"></a> * handle state transitions internally by default, and only dispatch state
+<a name="line1088"></a> * transition events if explicitly requested to do so by calling this method.
+<a name="line1089"></a> * @param {number} states Bit mask of {@link goog.ui.Component.State}s for
+<a name="line1090"></a> *     which transition events should be enabled or disabled.
+<a name="line1091"></a> * @param {boolean} enable Whether transition events should be enabled.
+<a name="line1092"></a> */
+<a name="line1093"></a>goog.ui.Control.prototype.setDispatchTransitionEvents = function(states,
+<a name="line1094"></a>    enable) {
+<a name="line1095"></a>  this.statesWithTransitionEvents_ = enable ?
+<a name="line1096"></a>      this.statesWithTransitionEvents_ | states :
+<a name="line1097"></a>      this.statesWithTransitionEvents_ &amp; ~states;
+<a name="line1098"></a>};
+<a name="line1099"></a>
+<a name="line1100"></a>
+<a name="line1101"></a>/**
+<a name="line1102"></a> * Returns true if the transition into or out of the given state is allowed to
+<a name="line1103"></a> * proceed, false otherwise.  A state transition is allowed under the following
+<a name="line1104"></a> * conditions:
+<a name="line1105"></a> * &lt;ul&gt;
+<a name="line1106"></a> *   &lt;li&gt;the component supports the state,
+<a name="line1107"></a> *   &lt;li&gt;the component isn&#39;t already in the target state,
+<a name="line1108"></a> *   &lt;li&gt;either the component is configured not to dispatch events for this
+<a name="line1109"></a> *       state transition, or a transition event was dispatched and wasn&#39;t
+<a name="line1110"></a> *       canceled by any event listener, and
+<a name="line1111"></a> *   &lt;li&gt;the component hasn&#39;t been disposed of
+<a name="line1112"></a> * &lt;/ul&gt;
+<a name="line1113"></a> * Considered protected; should only be used within this package and by
+<a name="line1114"></a> * subclasses.
+<a name="line1115"></a> * @param {goog.ui.Component.State} state State to/from which the control is
+<a name="line1116"></a> *     transitioning.
+<a name="line1117"></a> * @param {boolean} enable Whether the control is entering or leaving the state.
+<a name="line1118"></a> * @return {boolean} Whether the state transition is allowed to proceed.
+<a name="line1119"></a> * @protected
+<a name="line1120"></a> */
+<a name="line1121"></a>goog.ui.Control.prototype.isTransitionAllowed = function(state, enable) {
+<a name="line1122"></a>  return this.isSupportedState(state) &amp;&amp;
+<a name="line1123"></a>      this.hasState(state) != enable &amp;&amp;
+<a name="line1124"></a>      (!(this.statesWithTransitionEvents_ &amp; state) || this.dispatchEvent(
+<a name="line1125"></a>          goog.ui.Component.getStateTransitionEvent(state, enable))) &amp;&amp;
+<a name="line1126"></a>      !this.isDisposed();
+<a name="line1127"></a>};
+<a name="line1128"></a>
+<a name="line1129"></a>
+<a name="line1130"></a>// Default event handlers, to be overridden in subclasses.
+<a name="line1131"></a>
+<a name="line1132"></a>
+<a name="line1133"></a>/**
+<a name="line1134"></a> * Handles mouseover events.  Dispatches an ENTER event; if the event isn&#39;t
+<a name="line1135"></a> * canceled, the component is enabled, and it supports auto-highlighting,
+<a name="line1136"></a> * highlights the component.  Considered protected; should only be used
+<a name="line1137"></a> * within this package and by subclasses.
+<a name="line1138"></a> * @param {goog.events.BrowserEvent} e Mouse event to handle.
+<a name="line1139"></a> */
+<a name="line1140"></a>goog.ui.Control.prototype.handleMouseOver = function(e) {
+<a name="line1141"></a>  // Ignore mouse moves between descendants.
+<a name="line1142"></a>  if (!goog.ui.Control.isMouseEventWithinElement_(e, this.getElement()) &amp;&amp;
+<a name="line1143"></a>      this.dispatchEvent(goog.ui.Component.EventType.ENTER) &amp;&amp;
+<a name="line1144"></a>      this.isEnabled() &amp;&amp;
+<a name="line1145"></a>      this.isAutoState(goog.ui.Component.State.HOVER)) {
+<a name="line1146"></a>    this.setHighlighted(true);
+<a name="line1147"></a>  }
+<a name="line1148"></a>};
+<a name="line1149"></a>
+<a name="line1150"></a>
+<a name="line1151"></a>/**
+<a name="line1152"></a> * Handles mouseout events.  Dispatches a LEAVE event; if the event isn&#39;t
+<a name="line1153"></a> * canceled, and the component supports auto-highlighting, deactivates and
+<a name="line1154"></a> * un-highlights the component.  Considered protected; should only be used
+<a name="line1155"></a> * within this package and by subclasses.
+<a name="line1156"></a> * @param {goog.events.BrowserEvent} e Mouse event to handle.
+<a name="line1157"></a> */
+<a name="line1158"></a>goog.ui.Control.prototype.handleMouseOut = function(e) {
+<a name="line1159"></a>  if (!goog.ui.Control.isMouseEventWithinElement_(e, this.getElement()) &amp;&amp;
+<a name="line1160"></a>      this.dispatchEvent(goog.ui.Component.EventType.LEAVE)) {
+<a name="line1161"></a>    if (this.isAutoState(goog.ui.Component.State.ACTIVE)) {
+<a name="line1162"></a>      // Deactivate on mouseout; otherwise we lose track of the mouse button.
+<a name="line1163"></a>      this.setActive(false);
+<a name="line1164"></a>    }
+<a name="line1165"></a>    if (this.isAutoState(goog.ui.Component.State.HOVER)) {
+<a name="line1166"></a>      this.setHighlighted(false);
+<a name="line1167"></a>    }
+<a name="line1168"></a>  }
+<a name="line1169"></a>};
+<a name="line1170"></a>
+<a name="line1171"></a>
+<a name="line1172"></a>/**
+<a name="line1173"></a> * Checks if a mouse event (mouseover or mouseout) occured below an element.
+<a name="line1174"></a> * @param {goog.events.BrowserEvent} e Mouse event (should be mouseover or
+<a name="line1175"></a> *     mouseout).
+<a name="line1176"></a> * @param {Element} elem The ancestor element.
+<a name="line1177"></a> * @return {boolean} Whether the event has a relatedTarget (the element the
+<a name="line1178"></a> *     mouse is coming from) and it&#39;s a descendent of elem.
+<a name="line1179"></a> * @private
+<a name="line1180"></a> */
+<a name="line1181"></a>goog.ui.Control.isMouseEventWithinElement_ = function(e, elem) {
+<a name="line1182"></a>  // If relatedTarget is null, it means there was no previous element (e.g.
+<a name="line1183"></a>  // the mouse moved out of the window).  Assume this means that the mouse
+<a name="line1184"></a>  // event was not within the element.
+<a name="line1185"></a>  return !!e.relatedTarget &amp;&amp; goog.dom.contains(elem, e.relatedTarget);
+<a name="line1186"></a>};
+<a name="line1187"></a>
+<a name="line1188"></a>
+<a name="line1189"></a>/**
+<a name="line1190"></a> * Handles mousedown events.  If the component is enabled, highlights and
+<a name="line1191"></a> * activates it.  If the component isn&#39;t configured for keyboard access,
+<a name="line1192"></a> * prevents it from receiving keyboard focus.  Considered protected; should
+<a name="line1193"></a> * only be used within this package andy by subclasses.
+<a name="line1194"></a> * @param {goog.events.Event} e Mouse event to handle.
+<a name="line1195"></a> */
+<a name="line1196"></a>goog.ui.Control.prototype.handleMouseDown = function(e) {
+<a name="line1197"></a>  if (this.isEnabled()) {
+<a name="line1198"></a>    // Highlight enabled control on mousedown, regardless of the mouse button.
+<a name="line1199"></a>    if (this.isAutoState(goog.ui.Component.State.HOVER)) {
+<a name="line1200"></a>      this.setHighlighted(true);
+<a name="line1201"></a>    }
+<a name="line1202"></a>
+<a name="line1203"></a>    // For the left button only, activate the control, and focus its key event
+<a name="line1204"></a>    // target (if supported).
+<a name="line1205"></a>    if (e.isMouseActionButton()) {
+<a name="line1206"></a>      if (this.isAutoState(goog.ui.Component.State.ACTIVE)) {
+<a name="line1207"></a>        this.setActive(true);
+<a name="line1208"></a>      }
+<a name="line1209"></a>      if (this.renderer_.isFocusable(this)) {
+<a name="line1210"></a>        this.getKeyEventTarget().focus();
+<a name="line1211"></a>      }
+<a name="line1212"></a>    }
+<a name="line1213"></a>  }
+<a name="line1214"></a>
+<a name="line1215"></a>  // Cancel the default action unless the control allows text selection.
+<a name="line1216"></a>  if (!this.isAllowTextSelection() &amp;&amp; e.isMouseActionButton()) {
+<a name="line1217"></a>    e.preventDefault();
+<a name="line1218"></a>  }
+<a name="line1219"></a>};
+<a name="line1220"></a>
+<a name="line1221"></a>
+<a name="line1222"></a>/**
+<a name="line1223"></a> * Handles mouseup events.  If the component is enabled, highlights it.  If
+<a name="line1224"></a> * the component has previously been activated, performs its associated action
+<a name="line1225"></a> * by calling {@link performActionInternal}, then deactivates it.  Considered
+<a name="line1226"></a> * protected; should only be used within this package and by subclasses.
+<a name="line1227"></a> * @param {goog.events.Event} e Mouse event to handle.
+<a name="line1228"></a> */
+<a name="line1229"></a>goog.ui.Control.prototype.handleMouseUp = function(e) {
+<a name="line1230"></a>  if (this.isEnabled()) {
+<a name="line1231"></a>    if (this.isAutoState(goog.ui.Component.State.HOVER)) {
+<a name="line1232"></a>      this.setHighlighted(true);
+<a name="line1233"></a>    }
+<a name="line1234"></a>    if (this.isActive() &amp;&amp;
+<a name="line1235"></a>        this.performActionInternal(e) &amp;&amp;
+<a name="line1236"></a>        this.isAutoState(goog.ui.Component.State.ACTIVE)) {
+<a name="line1237"></a>      this.setActive(false);
+<a name="line1238"></a>    }
+<a name="line1239"></a>  }
+<a name="line1240"></a>};
+<a name="line1241"></a>
+<a name="line1242"></a>
+<a name="line1243"></a>/**
+<a name="line1244"></a> * Handles dblclick events.  Should only be registered if the user agent is
+<a name="line1245"></a> * IE.  If the component is enabled, performs its associated action by calling
+<a name="line1246"></a> * {@link performActionInternal}.  This is used to allow more performant
+<a name="line1247"></a> * buttons in IE.  In IE, no mousedown event is fired when that mousedown will
+<a name="line1248"></a> * trigger a dblclick event.  Because of this, a user clicking quickly will
+<a name="line1249"></a> * only cause ACTION events to fire on every other click.  This is a workaround
+<a name="line1250"></a> * to generate ACTION events for every click.  Unfortunately, this workaround
+<a name="line1251"></a> * won&#39;t ever trigger the ACTIVE state.  This is roughly the same behaviour as
+<a name="line1252"></a> * if this were a &#39;button&#39; element with a listener on mouseup.  Considered
+<a name="line1253"></a> * protected; should only be used within this package and by subclasses.
+<a name="line1254"></a> * @param {goog.events.Event} e Mouse event to handle.
+<a name="line1255"></a> */
+<a name="line1256"></a>goog.ui.Control.prototype.handleDblClick = function(e) {
+<a name="line1257"></a>  if (this.isEnabled()) {
+<a name="line1258"></a>    this.performActionInternal(e);
+<a name="line1259"></a>  }
+<a name="line1260"></a>};
+<a name="line1261"></a>
+<a name="line1262"></a>
+<a name="line1263"></a>/**
+<a name="line1264"></a> * Performs the appropriate action when the control is activated by the user.
+<a name="line1265"></a> * The default implementation first updates the checked and selected state of
+<a name="line1266"></a> * controls that support them, then dispatches an ACTION event.  Considered
+<a name="line1267"></a> * protected; should only be used within this package and by subclasses.
+<a name="line1268"></a> * @param {goog.events.Event} e Event that triggered the action.
+<a name="line1269"></a> * @return {boolean} Whether the action is allowed to proceed.
+<a name="line1270"></a> * @protected
+<a name="line1271"></a> */
+<a name="line1272"></a>goog.ui.Control.prototype.performActionInternal = function(e) {
+<a name="line1273"></a>  if (this.isAutoState(goog.ui.Component.State.CHECKED)) {
+<a name="line1274"></a>    this.setChecked(!this.isChecked());
+<a name="line1275"></a>  }
+<a name="line1276"></a>  if (this.isAutoState(goog.ui.Component.State.SELECTED)) {
+<a name="line1277"></a>    this.setSelected(true);
+<a name="line1278"></a>  }
+<a name="line1279"></a>  if (this.isAutoState(goog.ui.Component.State.OPENED)) {
+<a name="line1280"></a>    this.setOpen(!this.isOpen());
+<a name="line1281"></a>  }
+<a name="line1282"></a>
+<a name="line1283"></a>  var actionEvent = new goog.events.Event(goog.ui.Component.EventType.ACTION,
+<a name="line1284"></a>      this);
+<a name="line1285"></a>  if (e) {
+<a name="line1286"></a>    var properties = [
+<a name="line1287"></a>      &#39;altKey&#39;, &#39;ctrlKey&#39;, &#39;metaKey&#39;, &#39;shiftKey&#39;, &#39;platformModifierKey&#39;
+<a name="line1288"></a>    ];
+<a name="line1289"></a>    for (var property, i = 0; property = properties[i]; i++) {
+<a name="line1290"></a>      actionEvent[property] = e[property];
+<a name="line1291"></a>    }
+<a name="line1292"></a>  }
+<a name="line1293"></a>  return this.dispatchEvent(actionEvent);
+<a name="line1294"></a>};
+<a name="line1295"></a>
+<a name="line1296"></a>
+<a name="line1297"></a>/**
+<a name="line1298"></a> * Handles focus events on the component&#39;s key event target element.  If the
+<a name="line1299"></a> * component is focusable, updates its state and styling to indicate that it
+<a name="line1300"></a> * now has keyboard focus.  Considered protected; should only be used within
+<a name="line1301"></a> * this package and by subclasses.  &lt;b&gt;Warning:&lt;/b&gt; IE dispatches focus and
+<a name="line1302"></a> * blur events asynchronously!
+<a name="line1303"></a> * @param {goog.events.Event} e Focus event to handle.
+<a name="line1304"></a> */
+<a name="line1305"></a>goog.ui.Control.prototype.handleFocus = function(e) {
+<a name="line1306"></a>  if (this.isAutoState(goog.ui.Component.State.FOCUSED)) {
+<a name="line1307"></a>    this.setFocused(true);
+<a name="line1308"></a>  }
+<a name="line1309"></a>};
+<a name="line1310"></a>
+<a name="line1311"></a>
+<a name="line1312"></a>/**
+<a name="line1313"></a> * Handles blur events on the component&#39;s key event target element.  Always
+<a name="line1314"></a> * deactivates the component.  In addition, if the component is focusable,
+<a name="line1315"></a> * updates its state and styling to indicate that it no longer has keyboard
+<a name="line1316"></a> * focus.  Considered protected; should only be used within this package and
+<a name="line1317"></a> * by subclasses.  &lt;b&gt;Warning:&lt;/b&gt; IE dispatches focus and blur events
+<a name="line1318"></a> * asynchronously!
+<a name="line1319"></a> * @param {goog.events.Event} e Blur event to handle.
+<a name="line1320"></a> */
+<a name="line1321"></a>goog.ui.Control.prototype.handleBlur = function(e) {
+<a name="line1322"></a>  if (this.isAutoState(goog.ui.Component.State.ACTIVE)) {
+<a name="line1323"></a>    this.setActive(false);
+<a name="line1324"></a>  }
+<a name="line1325"></a>  if (this.isAutoState(goog.ui.Component.State.FOCUSED)) {
+<a name="line1326"></a>    this.setFocused(false);
+<a name="line1327"></a>  }
+<a name="line1328"></a>};
+<a name="line1329"></a>
+<a name="line1330"></a>
+<a name="line1331"></a>/**
+<a name="line1332"></a> * Attempts to handle a keyboard event, if the component is enabled and visible,
+<a name="line1333"></a> * by calling {@link handleKeyEventInternal}.  Considered protected; should only
+<a name="line1334"></a> * be used within this package and by subclasses.
+<a name="line1335"></a> * @param {goog.events.KeyEvent} e Key event to handle.
+<a name="line1336"></a> * @return {boolean} Whether the key event was handled.
+<a name="line1337"></a> */
+<a name="line1338"></a>goog.ui.Control.prototype.handleKeyEvent = function(e) {
+<a name="line1339"></a>  if (this.isVisible() &amp;&amp; this.isEnabled() &amp;&amp;
+<a name="line1340"></a>      this.handleKeyEventInternal(e)) {
+<a name="line1341"></a>    e.preventDefault();
+<a name="line1342"></a>    e.stopPropagation();
+<a name="line1343"></a>    return true;
+<a name="line1344"></a>  }
+<a name="line1345"></a>  return false;
+<a name="line1346"></a>};
+<a name="line1347"></a>
+<a name="line1348"></a>
+<a name="line1349"></a>/**
+<a name="line1350"></a> * Attempts to handle a keyboard event; returns true if the event was handled,
+<a name="line1351"></a> * false otherwise.  Considered protected; should only be used within this
+<a name="line1352"></a> * package and by subclasses.
+<a name="line1353"></a> * @param {goog.events.KeyEvent} e Key event to handle.
+<a name="line1354"></a> * @return {boolean} Whether the key event was handled.
+<a name="line1355"></a> * @protected
+<a name="line1356"></a> */
+<a name="line1357"></a>goog.ui.Control.prototype.handleKeyEventInternal = function(e) {
+<a name="line1358"></a>  return e.keyCode == goog.events.KeyCodes.ENTER &amp;&amp;
+<a name="line1359"></a>      this.performActionInternal(e);
+<a name="line1360"></a>};
+<a name="line1361"></a>
+<a name="line1362"></a>
+<a name="line1363"></a>// Register the default renderer for goog.ui.Controls.
+<a name="line1364"></a>goog.ui.registry.setDefaultRenderer(goog.ui.Control, goog.ui.ControlRenderer);
+<a name="line1365"></a>
+<a name="line1366"></a>
+<a name="line1367"></a>// Register a decorator factory function for goog.ui.Controls.
+<a name="line1368"></a>goog.ui.registry.setDecoratorByClassName(goog.ui.ControlRenderer.CSS_CLASS,
+<a name="line1369"></a>    function() {
+<a name="line1370"></a>      return new goog.ui.Control(null);
+<a name="line1371"></a>    });
+</pre>
+
+
+</body>
+</html>

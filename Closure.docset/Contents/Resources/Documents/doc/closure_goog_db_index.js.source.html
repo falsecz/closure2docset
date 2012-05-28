@@ -1,0 +1,263 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>index.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_db_index.js.html">index.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Wrapper for an IndexedDB index.
+<a name="line17"></a> *
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.db.Index&#39;);
+<a name="line22"></a>
+<a name="line23"></a>goog.require(&#39;goog.async.Deferred&#39;);
+<a name="line24"></a>goog.require(&#39;goog.db.Error&#39;);
+<a name="line25"></a>goog.require(&#39;goog.debug&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Creates an IDBIndex wrapper object. Indexes are associated with object
+<a name="line31"></a> * stores and provide methods for looking up objects based on their non-key
+<a name="line32"></a> * properties. Should not be created directly, access through the object store
+<a name="line33"></a> * it belongs to.
+<a name="line34"></a> * @see goog.db.ObjectStore#getIndex
+<a name="line35"></a> *
+<a name="line36"></a> * @param {!IDBIndex} index Underlying IDBIndex object.
+<a name="line37"></a> * @constructor
+<a name="line38"></a> */
+<a name="line39"></a>goog.db.Index = function(index) {
+<a name="line40"></a>  /**
+<a name="line41"></a>   * Underlying IndexedDB index object.
+<a name="line42"></a>   *
+<a name="line43"></a>   * @type {!IDBIndex}
+<a name="line44"></a>   * @private
+<a name="line45"></a>   */
+<a name="line46"></a>  this.index_ = index;
+<a name="line47"></a>};
+<a name="line48"></a>
+<a name="line49"></a>
+<a name="line50"></a>/**
+<a name="line51"></a> * @return {string} Name of the index.
+<a name="line52"></a> */
+<a name="line53"></a>goog.db.Index.prototype.getName = function() {
+<a name="line54"></a>  return this.index_.name;
+<a name="line55"></a>};
+<a name="line56"></a>
+<a name="line57"></a>
+<a name="line58"></a>/**
+<a name="line59"></a> * @return {string} Key path of the index.
+<a name="line60"></a> */
+<a name="line61"></a>goog.db.Index.prototype.getKeyPath = function() {
+<a name="line62"></a>  return this.index_.keyPath;
+<a name="line63"></a>};
+<a name="line64"></a>
+<a name="line65"></a>
+<a name="line66"></a>/**
+<a name="line67"></a> * @return {boolean} True if the index enforces that there is only one object
+<a name="line68"></a> *     for each unique value it indexes on.
+<a name="line69"></a> */
+<a name="line70"></a>goog.db.Index.prototype.isUnique = function() {
+<a name="line71"></a>  return this.index_.unique;
+<a name="line72"></a>};
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a> * Helper function for get and getKey.
+<a name="line77"></a> *
+<a name="line78"></a> * @param {string} fn Function name to call on the index to get the request.
+<a name="line79"></a> * @param {string} msg Message to give to the error.
+<a name="line80"></a> * @param {!Object} value Value to look up in the index.
+<a name="line81"></a> * @return {!goog.async.Deferred} The resulting deferred object.
+<a name="line82"></a> * @private
+<a name="line83"></a> */
+<a name="line84"></a>goog.db.Index.prototype.get_ = function(fn, msg, value) {
+<a name="line85"></a>  var d = new goog.async.Deferred();
+<a name="line86"></a>  var request;
+<a name="line87"></a>  try {
+<a name="line88"></a>    request = this.index_[fn](value);
+<a name="line89"></a>  } catch (err) {
+<a name="line90"></a>    msg += &#39; with value &#39; + goog.debug.deepExpose(value);
+<a name="line91"></a>    d.errback(new goog.db.Error(err.code, msg));
+<a name="line92"></a>    return d;
+<a name="line93"></a>  }
+<a name="line94"></a>  request.onsuccess = function(ev) {
+<a name="line95"></a>    d.callback(ev.target.result);
+<a name="line96"></a>  };
+<a name="line97"></a>  request.onerror = function(ev) {
+<a name="line98"></a>    msg += &#39; with value &#39; + goog.debug.deepExpose(value);
+<a name="line99"></a>    d.errback(new goog.db.Error(
+<a name="line100"></a>        (/** @type {IDBRequest} */ (ev.target)).errorCode,
+<a name="line101"></a>        msg));
+<a name="line102"></a>  };
+<a name="line103"></a>  return d;
+<a name="line104"></a>};
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Fetches a single object from the object store. Even if there are multiple
+<a name="line109"></a> * objects that match the given value, this method will get only one of them.
+<a name="line110"></a> *
+<a name="line111"></a> * @param {!Object} value Value to look up in the index.
+<a name="line112"></a> * @return {!goog.async.Deferred} The deferred object that matches the value.
+<a name="line113"></a> */
+<a name="line114"></a>goog.db.Index.prototype.get = function(value) {
+<a name="line115"></a>  return this.get_(&#39;get&#39;, &#39;getting from index &#39; + this.getName(), value);
+<a name="line116"></a>};
+<a name="line117"></a>
+<a name="line118"></a>
+<a name="line119"></a>/**
+<a name="line120"></a> * Looks up a single object from the object store and gives back the key that
+<a name="line121"></a> * it&#39;s listed under in the object store. Even if there are multiple objects
+<a name="line122"></a> * that match the given value, this method will only get one of their keys.
+<a name="line123"></a> *
+<a name="line124"></a> * @param {!Object} value Value to look up in the index.
+<a name="line125"></a> * @return {!goog.async.Deferred} The deferred key for the object that matches
+<a name="line126"></a> *     the value.
+<a name="line127"></a> */
+<a name="line128"></a>goog.db.Index.prototype.getKey = function(value) {
+<a name="line129"></a>  return this.get_(&#39;getKey&#39;, &#39;getting key from index &#39; + this.getName(), value);
+<a name="line130"></a>};
+<a name="line131"></a>
+<a name="line132"></a>
+<a name="line133"></a>/**
+<a name="line134"></a> * Helper function for getAll and getAllKeys.
+<a name="line135"></a> *
+<a name="line136"></a> * @param {string} fn Function name to call on the index to get the request.
+<a name="line137"></a> * @param {string} msg Message to give to the error.
+<a name="line138"></a> * @param {!Object=} opt_value Value to look up in the index.
+<a name="line139"></a> * @return {!goog.async.Deferred} The resulting deferred array of objects.
+<a name="line140"></a> * @private
+<a name="line141"></a> */
+<a name="line142"></a>goog.db.Index.prototype.getAll_ = function(fn, msg, opt_value) {
+<a name="line143"></a>  // This is the most common use of IDBKeyRange. If more specific uses of
+<a name="line144"></a>  // cursors are needed then a full wrapper should be created.
+<a name="line145"></a>  var IDBKeyRange = goog.global.IDBKeyRange || goog.global.webkitIDBKeyRange;
+<a name="line146"></a>  var d = new goog.async.Deferred();
+<a name="line147"></a>  var request;
+<a name="line148"></a>  try {
+<a name="line149"></a>    if (opt_value) {
+<a name="line150"></a>      request = this.index_[fn](IDBKeyRange.bound(opt_value, opt_value));
+<a name="line151"></a>    } else {
+<a name="line152"></a>      request = this.index_[fn]();
+<a name="line153"></a>    }
+<a name="line154"></a>  } catch (err) {
+<a name="line155"></a>    if (opt_value) {
+<a name="line156"></a>      msg += &#39; for value &#39; + goog.debug.deepExpose(opt_value);
+<a name="line157"></a>    }
+<a name="line158"></a>    d.errback(new goog.db.Error(err.code, msg));
+<a name="line159"></a>    return d;
+<a name="line160"></a>  }
+<a name="line161"></a>  var result = [];
+<a name="line162"></a>  request.onsuccess = function(ev) {
+<a name="line163"></a>    var cursor = ev.target.result;
+<a name="line164"></a>    if (cursor) {
+<a name="line165"></a>      result.push(cursor.value);
+<a name="line166"></a>      cursor[&#39;continue&#39;]();
+<a name="line167"></a>    } else {
+<a name="line168"></a>      d.callback(result);
+<a name="line169"></a>    }
+<a name="line170"></a>  };
+<a name="line171"></a>  request.onerror = function(ev) {
+<a name="line172"></a>    if (opt_value) {
+<a name="line173"></a>      msg += &#39; for value &#39; + goog.debug.deepExpose(opt_value);
+<a name="line174"></a>    }
+<a name="line175"></a>    d.errback(new goog.db.Error(
+<a name="line176"></a>        (/** @type {IDBRequest} */ (ev.target)).errorCode,
+<a name="line177"></a>        msg));
+<a name="line178"></a>  };
+<a name="line179"></a>  return d;
+<a name="line180"></a>};
+<a name="line181"></a>
+<a name="line182"></a>
+<a name="line183"></a>/**
+<a name="line184"></a> * Gets all indexed objects. If the value is provided, gets all indexed objects
+<a name="line185"></a> * that match the value instead.
+<a name="line186"></a> *
+<a name="line187"></a> * @param {!Object=} opt_value Value to look up in the index.
+<a name="line188"></a> * @return {!goog.async.Deferred} A deferred array of objects that match the
+<a name="line189"></a> *     value.
+<a name="line190"></a> */
+<a name="line191"></a>goog.db.Index.prototype.getAll = function(opt_value) {
+<a name="line192"></a>  return this.getAll_(
+<a name="line193"></a>      &#39;openCursor&#39;,
+<a name="line194"></a>      &#39;getting all from index &#39; + this.getName(),
+<a name="line195"></a>      opt_value);
+<a name="line196"></a>};
+<a name="line197"></a>
+<a name="line198"></a>
+<a name="line199"></a>/**
+<a name="line200"></a> * Gets the keys to look up all the indexed objects. If the value is provided,
+<a name="line201"></a> * gets all keys for objects that match the value instead.
+<a name="line202"></a> *
+<a name="line203"></a> * @param {!Object=} opt_value Value to look up in the index.
+<a name="line204"></a> * @return {!goog.async.Deferred} A deferred array of keys for objects that
+<a name="line205"></a> *     match the value.
+<a name="line206"></a> */
+<a name="line207"></a>goog.db.Index.prototype.getAllKeys = function(opt_value) {
+<a name="line208"></a>  return this.getAll_(
+<a name="line209"></a>      &#39;openKeyCursor&#39;,
+<a name="line210"></a>      &#39;getting all keys from index &#39; + this.getName(),
+<a name="line211"></a>      opt_value);
+<a name="line212"></a>};
+</pre>
+
+
+</body>
+</html>

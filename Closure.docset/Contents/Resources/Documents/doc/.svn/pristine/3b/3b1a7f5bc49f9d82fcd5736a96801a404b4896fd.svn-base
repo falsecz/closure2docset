@@ -1,0 +1,592 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>browsertestchannel.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_net_browsertestchannel.js.html">browsertestchannel.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Definition of the BrowserTestChannel class.  A
+<a name="line17"></a> * BrowserTestChannel is used during the first part of channel negotiation
+<a name="line18"></a> * with the server to create the channel. It helps us determine whether we&#39;re
+<a name="line19"></a> * behind a buffering proxy. It also runs the logic to see if the channel
+<a name="line20"></a> * has been blocked by a network administrator. This class is part of the
+<a name="line21"></a> * BrowserChannel implementation and is not for use by normal application code.
+<a name="line22"></a> *
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>
+<a name="line26"></a>goog.provide(&#39;goog.net.BrowserTestChannel&#39;);
+<a name="line27"></a>
+<a name="line28"></a>goog.require(&#39;goog.json&#39;);
+<a name="line29"></a>goog.require(&#39;goog.net.ChannelRequest&#39;);
+<a name="line30"></a>goog.require(&#39;goog.net.ChannelRequest.Error&#39;);
+<a name="line31"></a>goog.require(&#39;goog.net.tmpnetwork&#39;);
+<a name="line32"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>/**
+<a name="line37"></a> * Encapsulates the logic for a single BrowserTestChannel.
+<a name="line38"></a> *
+<a name="line39"></a> * @constructor
+<a name="line40"></a> * @param {goog.net.BrowserChannel} channel  The BrowserChannel that owns this
+<a name="line41"></a> *     test channel.
+<a name="line42"></a> * @param {goog.net.ChannelDebug} channelDebug A ChannelDebug to use for
+<a name="line43"></a> *     logging.
+<a name="line44"></a> */
+<a name="line45"></a>goog.net.BrowserTestChannel = function(channel, channelDebug) {
+<a name="line46"></a>  /**
+<a name="line47"></a>   * The BrowserChannel that owns this test channel
+<a name="line48"></a>   * @type {goog.net.BrowserChannel}
+<a name="line49"></a>   * @private
+<a name="line50"></a>   */
+<a name="line51"></a>  this.channel_ = channel;
+<a name="line52"></a>
+<a name="line53"></a>  /**
+<a name="line54"></a>   * The channel debug to use for logging
+<a name="line55"></a>   * @type {goog.net.ChannelDebug}
+<a name="line56"></a>   * @private
+<a name="line57"></a>   */
+<a name="line58"></a>  this.channelDebug_ = channelDebug;
+<a name="line59"></a>};
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Extra HTTP headers to add to all the requests sent to the server.
+<a name="line64"></a> * @type {Object}
+<a name="line65"></a> * @private
+<a name="line66"></a> */
+<a name="line67"></a>goog.net.BrowserTestChannel.prototype.extraHeaders_ = null;
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/**
+<a name="line71"></a> * The test request.
+<a name="line72"></a> * @type {goog.net.ChannelRequest}
+<a name="line73"></a> * @private
+<a name="line74"></a> */
+<a name="line75"></a>goog.net.BrowserTestChannel.prototype.request_ = null;
+<a name="line76"></a>
+<a name="line77"></a>
+<a name="line78"></a>/**
+<a name="line79"></a> * Whether we have received the first result as an intermediate result. This
+<a name="line80"></a> * helps us determine whether we&#39;re behind a buffering proxy.
+<a name="line81"></a> * @type {boolean}
+<a name="line82"></a> * @private
+<a name="line83"></a> */
+<a name="line84"></a>goog.net.BrowserTestChannel.prototype.receivedIntermediateResult_ = false;
+<a name="line85"></a>
+<a name="line86"></a>
+<a name="line87"></a>/**
+<a name="line88"></a> * The time when the test request was started. We use timing in IE as
+<a name="line89"></a> * a heuristic for whether we&#39;re behind a buffering proxy.
+<a name="line90"></a> * @type {?number}
+<a name="line91"></a> * @private
+<a name="line92"></a> */
+<a name="line93"></a>goog.net.BrowserTestChannel.prototype.startTime_ = null;
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * The time for of the first result part. We use timing in IE as a
+<a name="line98"></a> * heuristic for whether we&#39;re behind a buffering proxy.
+<a name="line99"></a> * @type {?number}
+<a name="line100"></a> * @private
+<a name="line101"></a> */
+<a name="line102"></a>goog.net.BrowserTestChannel.prototype.firstTime_ = null;
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * The time for of the last result part. We use timing in IE as a
+<a name="line107"></a> * heuristic for whether we&#39;re behind a buffering proxy.
+<a name="line108"></a> * @type {?number}
+<a name="line109"></a> * @private
+<a name="line110"></a> */
+<a name="line111"></a>goog.net.BrowserTestChannel.prototype.lastTime_ = null;
+<a name="line112"></a>
+<a name="line113"></a>
+<a name="line114"></a>/**
+<a name="line115"></a> * The relative path for test requests.
+<a name="line116"></a> * @type {?string}
+<a name="line117"></a> * @private
+<a name="line118"></a> */
+<a name="line119"></a>goog.net.BrowserTestChannel.prototype.path_ = null;
+<a name="line120"></a>
+<a name="line121"></a>
+<a name="line122"></a>/**
+<a name="line123"></a> * The state of the state machine for this object.
+<a name="line124"></a> *
+<a name="line125"></a> * @type {?number}
+<a name="line126"></a> * @private
+<a name="line127"></a> */
+<a name="line128"></a>goog.net.BrowserTestChannel.prototype.state_ = null;
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>/**
+<a name="line132"></a> * The last status code received.
+<a name="line133"></a> * @type {number}
+<a name="line134"></a> * @private
+<a name="line135"></a> */
+<a name="line136"></a>goog.net.BrowserTestChannel.prototype.lastStatusCode_ = -1;
+<a name="line137"></a>
+<a name="line138"></a>
+<a name="line139"></a>/**
+<a name="line140"></a> * A subdomain prefix for using a subdomain in IE for the backchannel
+<a name="line141"></a> * requests.
+<a name="line142"></a> * @type {?string}
+<a name="line143"></a> * @private
+<a name="line144"></a> */
+<a name="line145"></a>goog.net.BrowserTestChannel.prototype.hostPrefix_ = null;
+<a name="line146"></a>
+<a name="line147"></a>
+<a name="line148"></a>/**
+<a name="line149"></a> * A subdomain prefix for testing whether the channel was disabled by
+<a name="line150"></a> * a network administrator;
+<a name="line151"></a> * @type {?string}
+<a name="line152"></a> * @private
+<a name="line153"></a> */
+<a name="line154"></a>goog.net.BrowserTestChannel.prototype.blockedPrefix_ = null;
+<a name="line155"></a>
+<a name="line156"></a>
+<a name="line157"></a>/**
+<a name="line158"></a> * Enum type for the browser test channel state machine
+<a name="line159"></a> * @enum {number}
+<a name="line160"></a> * @private
+<a name="line161"></a> */
+<a name="line162"></a>goog.net.BrowserTestChannel.State_ = {
+<a name="line163"></a>  /**
+<a name="line164"></a>   * The state for the BrowserTestChannel state machine where we making the
+<a name="line165"></a>   * initial call to get the server configured parameters.
+<a name="line166"></a>   */
+<a name="line167"></a>  INIT: 0,
+<a name="line168"></a>
+<a name="line169"></a>  /**
+<a name="line170"></a>   * The state for the BrowserTestChannel state machine where we&#39;re checking to
+<a name="line171"></a>   * see if the channel has been blocked.
+<a name="line172"></a>   */
+<a name="line173"></a>  CHECKING_BLOCKED: 1,
+<a name="line174"></a>
+<a name="line175"></a>  /**
+<a name="line176"></a>   * The  state for the BrowserTestChannel state machine where we&#39;re checking to
+<a name="line177"></a>   * se if we&#39;re behind a buffering proxy.
+<a name="line178"></a>   */
+<a name="line179"></a>  CONNECTION_TESTING: 2
+<a name="line180"></a>};
+<a name="line181"></a>
+<a name="line182"></a>
+<a name="line183"></a>/**
+<a name="line184"></a> * Time in MS for waiting for the request to see if the channel is blocked.
+<a name="line185"></a> * If the response takes longer than this many ms, we assume the request has
+<a name="line186"></a> * failed.
+<a name="line187"></a> * @type {number}
+<a name="line188"></a> * @private
+<a name="line189"></a> */
+<a name="line190"></a>goog.net.BrowserTestChannel.BLOCKED_TIMEOUT_ = 5000;
+<a name="line191"></a>
+<a name="line192"></a>
+<a name="line193"></a>/**
+<a name="line194"></a> * Number of attempts to try to see if the check to see if we&#39;re blocked
+<a name="line195"></a> * succeeds. Sometimes the request can fail because of flaky network conditions
+<a name="line196"></a> * and checking multiple times reduces false positives.
+<a name="line197"></a> * @type {number}
+<a name="line198"></a> * @private
+<a name="line199"></a> */
+<a name="line200"></a>goog.net.BrowserTestChannel.BLOCKED_RETRIES_ = 3;
+<a name="line201"></a>
+<a name="line202"></a>
+<a name="line203"></a>/**
+<a name="line204"></a> * Time in ms between retries of the blocked request
+<a name="line205"></a> * @type {number}
+<a name="line206"></a> * @private
+<a name="line207"></a> */
+<a name="line208"></a>goog.net.BrowserTestChannel.BLOCKED_PAUSE_BETWEEN_RETRIES_ = 2000;
+<a name="line209"></a>
+<a name="line210"></a>
+<a name="line211"></a>/**
+<a name="line212"></a> * Time between chunks in the test connection that indicates that we
+<a name="line213"></a> * are not behind a buffering proxy. This value should be less than or
+<a name="line214"></a> * equals to the time between chunks sent from the server.
+<a name="line215"></a> * @type {number}
+<a name="line216"></a> * @private
+<a name="line217"></a> */
+<a name="line218"></a>goog.net.BrowserTestChannel.MIN_TIME_EXPECTED_BETWEEN_DATA_ = 500;
+<a name="line219"></a>
+<a name="line220"></a>
+<a name="line221"></a>/**
+<a name="line222"></a> * Sets extra HTTP headers to add to all the requests sent to the server.
+<a name="line223"></a> *
+<a name="line224"></a> * @param {Object} extraHeaders The HTTP headers.
+<a name="line225"></a> */
+<a name="line226"></a>goog.net.BrowserTestChannel.prototype.setExtraHeaders = function(extraHeaders) {
+<a name="line227"></a>  this.extraHeaders_ = extraHeaders;
+<a name="line228"></a>};
+<a name="line229"></a>
+<a name="line230"></a>
+<a name="line231"></a>/**
+<a name="line232"></a> * Starts the test channel. This initiates connections to the server.
+<a name="line233"></a> *
+<a name="line234"></a> * @param {string} path The relative uri for the test connection.
+<a name="line235"></a> */
+<a name="line236"></a>goog.net.BrowserTestChannel.prototype.connect = function(path) {
+<a name="line237"></a>  this.path_ = path;
+<a name="line238"></a>  var sendDataUri = this.channel_.getForwardChannelUri(this.path_);
+<a name="line239"></a>
+<a name="line240"></a>  goog.net.BrowserChannel.notifyStatEvent(
+<a name="line241"></a>      goog.net.BrowserChannel.Stat.TEST_STAGE_ONE_START);
+<a name="line242"></a>
+<a name="line243"></a>  // the first request returns server specific parameters
+<a name="line244"></a>  sendDataUri.setParameterValues(&#39;MODE&#39;, &#39;init&#39;);
+<a name="line245"></a>  this.request_ = goog.net.BrowserChannel.createChannelRequest(
+<a name="line246"></a>      this, this.channelDebug_);
+<a name="line247"></a>  this.request_.setExtraHeaders(this.extraHeaders_);
+<a name="line248"></a>  this.request_.xmlHttpGet(sendDataUri, false /* decodeChunks */,
+<a name="line249"></a>      null /* hostPrefix */, true /* opt_noClose */);
+<a name="line250"></a>  this.state_ = goog.net.BrowserTestChannel.State_.INIT;
+<a name="line251"></a>  this.startTime_ = goog.now();
+<a name="line252"></a>};
+<a name="line253"></a>
+<a name="line254"></a>
+<a name="line255"></a>/**
+<a name="line256"></a> * Checks to see whether the channel is blocked. This is for implementing the
+<a name="line257"></a> * feature that allows network administrators to block Gmail Chat. The
+<a name="line258"></a> * strategy to determine if we&#39;re blocked is to try to load an image off a
+<a name="line259"></a> * special subdomain that network administrators will block access to if they
+<a name="line260"></a> * are trying to block chat. For Gmail Chat, the subdomain is
+<a name="line261"></a> * chatenabled.mail.google.com.
+<a name="line262"></a> * @private
+<a name="line263"></a> */
+<a name="line264"></a>goog.net.BrowserTestChannel.prototype.checkBlocked_ = function() {
+<a name="line265"></a>  var uri = this.channel_.createDataUri(this.blockedPrefix_,
+<a name="line266"></a>      &#39;/mail/images/cleardot.gif&#39;);
+<a name="line267"></a>  uri.makeUnique();
+<a name="line268"></a>  goog.net.tmpnetwork.testLoadImageWithRetries(uri.toString(),
+<a name="line269"></a>      goog.net.BrowserTestChannel.BLOCKED_TIMEOUT_,
+<a name="line270"></a>      goog.bind(this.checkBlockedCallback_, this),
+<a name="line271"></a>      goog.net.BrowserTestChannel.BLOCKED_RETRIES_,
+<a name="line272"></a>      goog.net.BrowserTestChannel.BLOCKED_PAUSE_BETWEEN_RETRIES_);
+<a name="line273"></a>};
+<a name="line274"></a>
+<a name="line275"></a>
+<a name="line276"></a>/**
+<a name="line277"></a> * Callback for testLoadImageWithRetries to check if browser channel is
+<a name="line278"></a> * blocked.
+<a name="line279"></a> * @param {boolean} succeeded Whether the request succeeded.
+<a name="line280"></a> * @private
+<a name="line281"></a> */
+<a name="line282"></a>goog.net.BrowserTestChannel.prototype.checkBlockedCallback_ = function(
+<a name="line283"></a>    succeeded) {
+<a name="line284"></a>  if (succeeded) {
+<a name="line285"></a>    this.state_ = goog.net.BrowserTestChannel.State_.CONNECTION_TESTING;
+<a name="line286"></a>    this.connectStage2_();
+<a name="line287"></a>  } else {
+<a name="line288"></a>    goog.net.BrowserChannel.notifyStatEvent(
+<a name="line289"></a>        goog.net.BrowserChannel.Stat.CHANNEL_BLOCKED);
+<a name="line290"></a>    this.channel_.testConnectionBlocked(this);
+<a name="line291"></a>  }
+<a name="line292"></a>};
+<a name="line293"></a>
+<a name="line294"></a>
+<a name="line295"></a>/**
+<a name="line296"></a> * Begins the second stage of the test channel where we test to see if we&#39;re
+<a name="line297"></a> * behind a buffering proxy. The server sends back a multi-chunked response
+<a name="line298"></a> * with the first chunk containing the content &#39;1&#39; and then two seconds later
+<a name="line299"></a> * sending the second chunk containing the content &#39;2&#39;. Depending on how we
+<a name="line300"></a> * receive the content, we can tell if we&#39;re behind a buffering proxy.
+<a name="line301"></a> * @private
+<a name="line302"></a> */
+<a name="line303"></a>goog.net.BrowserTestChannel.prototype.connectStage2_ = function() {
+<a name="line304"></a>  this.channelDebug_.debug(&#39;TestConnection: starting stage 2&#39;);
+<a name="line305"></a>  this.request_ = goog.net.BrowserChannel.createChannelRequest(
+<a name="line306"></a>      this, this.channelDebug_);
+<a name="line307"></a>  this.request_.setExtraHeaders(this.extraHeaders_);
+<a name="line308"></a>  var recvDataUri = this.channel_.getBackChannelUri(this.hostPrefix_,
+<a name="line309"></a>      /** @type {string} */ (this.path_));
+<a name="line310"></a>
+<a name="line311"></a>  goog.net.BrowserChannel.notifyStatEvent(
+<a name="line312"></a>      goog.net.BrowserChannel.Stat.TEST_STAGE_TWO_START);
+<a name="line313"></a>  if (!goog.net.ChannelRequest.supportsXhrStreaming()) {
+<a name="line314"></a>    recvDataUri.setParameterValues(&#39;TYPE&#39;, &#39;html&#39;);
+<a name="line315"></a>    this.request_.tridentGet(recvDataUri, Boolean(this.hostPrefix_));
+<a name="line316"></a>  } else {
+<a name="line317"></a>    recvDataUri.setParameterValues(&#39;TYPE&#39;, &#39;xmlhttp&#39;);
+<a name="line318"></a>    this.request_.xmlHttpGet(recvDataUri, false /** decodeChunks */,
+<a name="line319"></a>        this.hostPrefix_, false /** opt_noClose */);
+<a name="line320"></a>  }
+<a name="line321"></a>};
+<a name="line322"></a>
+<a name="line323"></a>
+<a name="line324"></a>/**
+<a name="line325"></a> * Factory method for XhrIo objects.
+<a name="line326"></a> * @param {?string} hostPrefix The host prefix, if we need an XhrIo object
+<a name="line327"></a> *     capable of calling a secondary domain.
+<a name="line328"></a> * @return {!goog.net.XhrIo} New XhrIo object.
+<a name="line329"></a> */
+<a name="line330"></a>goog.net.BrowserTestChannel.prototype.createXhrIo = function(hostPrefix) {
+<a name="line331"></a>  return this.channel_.createXhrIo(hostPrefix);
+<a name="line332"></a>};
+<a name="line333"></a>
+<a name="line334"></a>
+<a name="line335"></a>/**
+<a name="line336"></a> * Aborts the test channel.
+<a name="line337"></a> */
+<a name="line338"></a>goog.net.BrowserTestChannel.prototype.abort = function() {
+<a name="line339"></a>  if (this.request_) {
+<a name="line340"></a>    this.request_.cancel();
+<a name="line341"></a>    this.request_ = null;
+<a name="line342"></a>  }
+<a name="line343"></a>  this.lastStatusCode_ = -1;
+<a name="line344"></a>};
+<a name="line345"></a>
+<a name="line346"></a>
+<a name="line347"></a>/**
+<a name="line348"></a> * Returns whether the test channel is closed. The ChannelRequest object expects
+<a name="line349"></a> * this method to be implemented on its handler.
+<a name="line350"></a> *
+<a name="line351"></a> * @return {boolean} Whether the channel is closed.
+<a name="line352"></a> */
+<a name="line353"></a>goog.net.BrowserTestChannel.prototype.isClosed = function() {
+<a name="line354"></a>  return false;
+<a name="line355"></a>};
+<a name="line356"></a>
+<a name="line357"></a>
+<a name="line358"></a>/**
+<a name="line359"></a> * Callback from ChannelRequest for when new data is received
+<a name="line360"></a> *
+<a name="line361"></a> * @param {goog.net.ChannelRequest} req  The request object.
+<a name="line362"></a> * @param {string} responseText The text of the response.
+<a name="line363"></a> */
+<a name="line364"></a>goog.net.BrowserTestChannel.prototype.onRequestData =
+<a name="line365"></a>    function(req, responseText) {
+<a name="line366"></a>  this.lastStatusCode_ = req.getLastStatusCode();
+<a name="line367"></a>  if (this.state_ == goog.net.BrowserTestChannel.State_.INIT) {
+<a name="line368"></a>    this.channelDebug_.debug(&#39;TestConnection: Got data for stage 1&#39;);
+<a name="line369"></a>    if (!responseText) {
+<a name="line370"></a>      this.channelDebug_.debug(&#39;TestConnection: Null responseText&#39;);
+<a name="line371"></a>      // The server should always send text; something is wrong here
+<a name="line372"></a>      this.channel_.testConnectionFailure(this,
+<a name="line373"></a>          goog.net.ChannelRequest.Error.BAD_DATA);
+<a name="line374"></a>      return;
+<a name="line375"></a>    }
+<a name="line376"></a>    /** @preserveTry */
+<a name="line377"></a>    try {
+<a name="line378"></a>      var respArray = goog.json.unsafeParse(responseText);
+<a name="line379"></a>    } catch (e) {
+<a name="line380"></a>      this.channelDebug_.dumpException(e);
+<a name="line381"></a>      this.channel_.testConnectionFailure(this,
+<a name="line382"></a>          goog.net.ChannelRequest.Error.BAD_DATA);
+<a name="line383"></a>      return;
+<a name="line384"></a>    }
+<a name="line385"></a>    this.hostPrefix_ = this.channel_.correctHostPrefix(respArray[0]);
+<a name="line386"></a>    this.blockedPrefix_ = respArray[1];
+<a name="line387"></a>  } else if (this.state_ ==
+<a name="line388"></a>             goog.net.BrowserTestChannel.State_.CONNECTION_TESTING) {
+<a name="line389"></a>    if (this.receivedIntermediateResult_) {
+<a name="line390"></a>      goog.net.BrowserChannel.notifyStatEvent(
+<a name="line391"></a>          goog.net.BrowserChannel.Stat.TEST_STAGE_TWO_DATA_TWO);
+<a name="line392"></a>      this.lastTime_ = goog.now();
+<a name="line393"></a>    } else {
+<a name="line394"></a>      // &#39;11111&#39; is used instead of &#39;1&#39; to prevent a small amount of buffering
+<a name="line395"></a>      // by Safari.
+<a name="line396"></a>      if (responseText == &#39;11111&#39;) {
+<a name="line397"></a>        goog.net.BrowserChannel.notifyStatEvent(
+<a name="line398"></a>            goog.net.BrowserChannel.Stat.TEST_STAGE_TWO_DATA_ONE);
+<a name="line399"></a>        this.receivedIntermediateResult_ = true;
+<a name="line400"></a>        this.firstTime_ = goog.now();
+<a name="line401"></a>        if (this.checkForEarlyNonBuffered_()) {
+<a name="line402"></a>          // If early chunk detection is on, and we passed the tests,
+<a name="line403"></a>          // assume HTTP_OK, cancel the test and turn on noproxy mode.
+<a name="line404"></a>          this.lastStatusCode_ = 200;
+<a name="line405"></a>          this.request_.cancel();
+<a name="line406"></a>          this.channelDebug_.debug(
+<a name="line407"></a>              &#39;Test connection succeeded; using streaming connection&#39;);
+<a name="line408"></a>          goog.net.BrowserChannel.notifyStatEvent(
+<a name="line409"></a>              goog.net.BrowserChannel.Stat.NOPROXY);
+<a name="line410"></a>          this.channel_.testConnectionFinished(this, true);
+<a name="line411"></a>        }
+<a name="line412"></a>      } else {
+<a name="line413"></a>        goog.net.BrowserChannel.notifyStatEvent(
+<a name="line414"></a>            goog.net.BrowserChannel.Stat.TEST_STAGE_TWO_DATA_BOTH);
+<a name="line415"></a>        this.firstTime_ = this.lastTime_ = goog.now();
+<a name="line416"></a>        this.receivedIntermediateResult_ = false;
+<a name="line417"></a>      }
+<a name="line418"></a>    }
+<a name="line419"></a>  }
+<a name="line420"></a>};
+<a name="line421"></a>
+<a name="line422"></a>
+<a name="line423"></a>/**
+<a name="line424"></a> * Callback from ChannelRequest that indicates a request has completed.
+<a name="line425"></a> *
+<a name="line426"></a> * @param {goog.net.ChannelRequest} req  The request object.
+<a name="line427"></a> */
+<a name="line428"></a>goog.net.BrowserTestChannel.prototype.onRequestComplete =
+<a name="line429"></a>    function(req) {
+<a name="line430"></a>  this.lastStatusCode_ = this.request_.getLastStatusCode();
+<a name="line431"></a>  if (!this.request_.getSuccess()) {
+<a name="line432"></a>    this.channelDebug_.debug(
+<a name="line433"></a>        &#39;TestConnection: request failed, in state &#39; + this.state_);
+<a name="line434"></a>    if (this.state_ == goog.net.BrowserTestChannel.State_.INIT) {
+<a name="line435"></a>      goog.net.BrowserChannel.notifyStatEvent(
+<a name="line436"></a>          goog.net.BrowserChannel.Stat.TEST_STAGE_ONE_FAILED);
+<a name="line437"></a>    } else if (this.state_ ==
+<a name="line438"></a>               goog.net.BrowserTestChannel.State_.CONNECTION_TESTING) {
+<a name="line439"></a>      goog.net.BrowserChannel.notifyStatEvent(
+<a name="line440"></a>          goog.net.BrowserChannel.Stat.TEST_STAGE_TWO_FAILED);
+<a name="line441"></a>    }
+<a name="line442"></a>    this.channel_.testConnectionFailure(this,
+<a name="line443"></a>        /** @type {goog.net.ChannelRequest.Error} */
+<a name="line444"></a>        (this.request_.getLastError()));
+<a name="line445"></a>    return;
+<a name="line446"></a>  }
+<a name="line447"></a>
+<a name="line448"></a>  if (this.state_ == goog.net.BrowserTestChannel.State_.INIT) {
+<a name="line449"></a>    this.channelDebug_.debug(
+<a name="line450"></a>        &#39;TestConnection: request complete for initial check&#39;);
+<a name="line451"></a>    if (this.blockedPrefix_) {
+<a name="line452"></a>      this.state_ = goog.net.BrowserTestChannel.State_.CHECKING_BLOCKED;
+<a name="line453"></a>      this.checkBlocked_();
+<a name="line454"></a>    } else {
+<a name="line455"></a>      this.state_ = goog.net.BrowserTestChannel.State_.CONNECTION_TESTING;
+<a name="line456"></a>      this.connectStage2_();
+<a name="line457"></a>    }
+<a name="line458"></a>  } else if (this.state_ ==
+<a name="line459"></a>             goog.net.BrowserTestChannel.State_.CONNECTION_TESTING) {
+<a name="line460"></a>    this.channelDebug_.debug(&#39;TestConnection: request complete for stage 2&#39;);
+<a name="line461"></a>    var goodConn = false;
+<a name="line462"></a>
+<a name="line463"></a>    if (!goog.net.ChannelRequest.supportsXhrStreaming()) {
+<a name="line464"></a>      // we always get Trident responses in separate calls to
+<a name="line465"></a>      // onRequestData, so we have to check the time they came
+<a name="line466"></a>      var ms = this.lastTime_ - this.firstTime_;
+<a name="line467"></a>      if (ms &lt; 200) {
+<a name="line468"></a>        // TODO: need to empirically verify that this number is OK
+<a name="line469"></a>        // for slow computers
+<a name="line470"></a>        goodConn = false;
+<a name="line471"></a>      } else {
+<a name="line472"></a>        goodConn = true;
+<a name="line473"></a>      }
+<a name="line474"></a>    } else {
+<a name="line475"></a>      goodConn = this.receivedIntermediateResult_;
+<a name="line476"></a>    }
+<a name="line477"></a>
+<a name="line478"></a>    if (goodConn) {
+<a name="line479"></a>      this.channelDebug_.debug(
+<a name="line480"></a>          &#39;Test connection succeeded; using streaming connection&#39;);
+<a name="line481"></a>      goog.net.BrowserChannel.notifyStatEvent(
+<a name="line482"></a>          goog.net.BrowserChannel.Stat.NOPROXY);
+<a name="line483"></a>      this.channel_.testConnectionFinished(this, true);
+<a name="line484"></a>    } else {
+<a name="line485"></a>      this.channelDebug_.debug(
+<a name="line486"></a>          &#39;Test connection failed; not using streaming&#39;);
+<a name="line487"></a>      goog.net.BrowserChannel.notifyStatEvent(
+<a name="line488"></a>          goog.net.BrowserChannel.Stat.PROXY);
+<a name="line489"></a>      this.channel_.testConnectionFinished(this, false);
+<a name="line490"></a>    }
+<a name="line491"></a>  }
+<a name="line492"></a>};
+<a name="line493"></a>
+<a name="line494"></a>
+<a name="line495"></a>/**
+<a name="line496"></a> * Returns the last status code received for a request.
+<a name="line497"></a> * @return {number} The last status code received for a request.
+<a name="line498"></a> */
+<a name="line499"></a>goog.net.BrowserTestChannel.prototype.getLastStatusCode = function() {
+<a name="line500"></a>  return this.lastStatusCode_;
+<a name="line501"></a>};
+<a name="line502"></a>
+<a name="line503"></a>
+<a name="line504"></a>/**
+<a name="line505"></a> * @return {boolean} Whether we should be using secondary domains when the
+<a name="line506"></a> *     server instructs us to do so.
+<a name="line507"></a> */
+<a name="line508"></a>goog.net.BrowserTestChannel.prototype.shouldUseSecondaryDomains = function() {
+<a name="line509"></a>  return this.channel_.shouldUseSecondaryDomains();
+<a name="line510"></a>};
+<a name="line511"></a>
+<a name="line512"></a>
+<a name="line513"></a>/**
+<a name="line514"></a> * Gets whether this channel is currently active. This is used to determine the
+<a name="line515"></a> * length of time to wait before retrying.
+<a name="line516"></a> *
+<a name="line517"></a> * @param {goog.net.BrowserChannel} browserChannel The browser channel.
+<a name="line518"></a> * @return {boolean} Whether the channel is currently active.
+<a name="line519"></a> */
+<a name="line520"></a>goog.net.BrowserTestChannel.prototype.isActive =
+<a name="line521"></a>    function(browserChannel) {
+<a name="line522"></a>  return this.channel_.isActive();
+<a name="line523"></a>};
+<a name="line524"></a>
+<a name="line525"></a>
+<a name="line526"></a>/**
+<a name="line527"></a> * @return {boolean} True if test stage 2 detected a non-buffered
+<a name="line528"></a> *     channel early and early no buffering detection is enabled.
+<a name="line529"></a> * @private
+<a name="line530"></a> */
+<a name="line531"></a>goog.net.BrowserTestChannel.prototype.checkForEarlyNonBuffered_ =
+<a name="line532"></a>    function() {
+<a name="line533"></a>  var ms = this.firstTime_ - this.startTime_;
+<a name="line534"></a>
+<a name="line535"></a>  // we always get Trident responses in separate calls to
+<a name="line536"></a>  // onRequestData, so we have to check the time that the first came in
+<a name="line537"></a>  // and verify that the data arrived before the second portion could
+<a name="line538"></a>  // have been sent. For all other browser&#39;s we skip the timing test.
+<a name="line539"></a>  return goog.net.ChannelRequest.supportsXhrStreaming() ||
+<a name="line540"></a>      ms &lt; goog.net.BrowserTestChannel.MIN_TIME_EXPECTED_BETWEEN_DATA_;
+<a name="line541"></a>};
+</pre>
+
+
+</body>
+</html>

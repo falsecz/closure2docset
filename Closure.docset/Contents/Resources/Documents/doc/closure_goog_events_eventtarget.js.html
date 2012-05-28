@@ -1,0 +1,227 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>eventtarget.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">eventtarget.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Implementation of EventTarget as defined by W3C DOM 2/3.
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="../trunk/closure/goog/demos/eventtarget.html">Demo</a></li>
+            <li><a href="closure_goog_events_eventtarget.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/events/eventtarget.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">events/eventtarget.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_events_EventTarget.html">
+          goog.events.EventTarget</a><br/>
+        <div class="class-details">Inherit from this class to give your object the ability to dispatch events.
+Note that this class provides event <em>sending</em> behaviour, not event
+receiving behaviour: your object will be able to broadcast events, and other
+objects will be able to listen for those events using goog.events.listen().
+
+<p>The name "EventTarget" reflects the fact that this class implements the
+<a href="http://www.w3.org/TR/DOM-Level-2-Events/events.html">
+EventTarget interface</a> as defined by W3C DOM 2/3, with a few differences:
+<ul>
+<li>Event objects do not have to implement the Event interface. An object
+is treated as an event object if it has a 'type' property.
+<li>You can use a plain string instead of an event object; an event-like
+object will be created with the 'type' set to the string value.
+</li></li></ul>
+
+<p>Unless propagation is stopped, an event dispatched by an EventTarget
+will bubble to the parent returned by <code>getParentEventTarget</code>.
+To set the parent, call <code>setParentEventTarget</code> or override
+<code>getParentEventTarget</code> in a subclass.  Subclasses that don't
+support changing the parent should override the setter to throw an error.
+
+<p>Example usage:
+<pre class="lang-js prettyprint">
+var source = new goog.events.EventTarget();
+function handleEvent(event) {
+alert(&amp;#39;Type: &amp;#39; + e.type + &amp;#39;\nTarget: &amp;#39; + e.target);
+}
+goog.events.listen(source, &amp;#39;foo&amp;#39;, handleEvent);
+...
+source.dispatchEvent({type: &amp;#39;foo&amp;#39;}); // will call handleEvent
+// or source.dispatchEvent(&amp;#39;foo&amp;#39;);
+...
+goog.events.unlisten(source, &amp;#39;foo&amp;#39;, handleEvent);
+
+// You can also use the Listener interface:
+var listener = {
+handleEvent: function(event) {
+...
+}
+};
+goog.events.listen(source, &amp;#39;bar&amp;#39;, listener);
+</pre></p></p></p></div>
+ </div>
+      
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.call"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.events.EventTarget.</span><span class="entryName">call<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line79">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory events</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="events/eventtarget.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

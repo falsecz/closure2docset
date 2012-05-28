@@ -1,0 +1,321 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>base64.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_crypt_base64.js.html">base64.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Base64 en/decoding. Not much to say here except that we
+<a name="line17"></a> * work with decoded values in arrays of bytes. By &quot;byte&quot; I mean a number
+<a name="line18"></a> * in [0, 255].
+<a name="line19"></a> *
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.crypt.base64&#39;);
+<a name="line23"></a>goog.require(&#39;goog.crypt&#39;);
+<a name="line24"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line25"></a>
+<a name="line26"></a>// Static lookup maps, lazily populated by init_()
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Maps bytes to characters.
+<a name="line31"></a> * @type {Object}
+<a name="line32"></a> * @private
+<a name="line33"></a> */
+<a name="line34"></a>goog.crypt.base64.byteToCharMap_ = null;
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>/**
+<a name="line38"></a> * Maps characters to bytes.
+<a name="line39"></a> * @type {Object}
+<a name="line40"></a> * @private
+<a name="line41"></a> */
+<a name="line42"></a>goog.crypt.base64.charToByteMap_ = null;
+<a name="line43"></a>
+<a name="line44"></a>
+<a name="line45"></a>/**
+<a name="line46"></a> * Maps bytes to websafe characters.
+<a name="line47"></a> * @type {Object}
+<a name="line48"></a> * @private
+<a name="line49"></a> */
+<a name="line50"></a>goog.crypt.base64.byteToCharMapWebSafe_ = null;
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>/**
+<a name="line54"></a> * Maps websafe characters to bytes.
+<a name="line55"></a> * @type {Object}
+<a name="line56"></a> * @private
+<a name="line57"></a> */
+<a name="line58"></a>goog.crypt.base64.charToByteMapWebSafe_ = null;
+<a name="line59"></a>
+<a name="line60"></a>
+<a name="line61"></a>/**
+<a name="line62"></a> * Our default alphabet, shared between
+<a name="line63"></a> * ENCODED_VALS and ENCODED_VALS_WEBSAFE
+<a name="line64"></a> * @type {string}
+<a name="line65"></a> */
+<a name="line66"></a>goog.crypt.base64.ENCODED_VALS_BASE =
+<a name="line67"></a>    &#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#39; +
+<a name="line68"></a>    &#39;abcdefghijklmnopqrstuvwxyz&#39; +
+<a name="line69"></a>    &#39;0123456789&#39;;
+<a name="line70"></a>
+<a name="line71"></a>
+<a name="line72"></a>/**
+<a name="line73"></a> * Our default alphabet. Value 64 (=) is special; it means &quot;nothing.&quot;
+<a name="line74"></a> * @type {string}
+<a name="line75"></a> */
+<a name="line76"></a>goog.crypt.base64.ENCODED_VALS =
+<a name="line77"></a>    goog.crypt.base64.ENCODED_VALS_BASE + &#39;+/=&#39;;
+<a name="line78"></a>
+<a name="line79"></a>
+<a name="line80"></a>/**
+<a name="line81"></a> * Our websafe alphabet.
+<a name="line82"></a> * @type {string}
+<a name="line83"></a> */
+<a name="line84"></a>goog.crypt.base64.ENCODED_VALS_WEBSAFE =
+<a name="line85"></a>    goog.crypt.base64.ENCODED_VALS_BASE + &#39;-_.&#39;;
+<a name="line86"></a>
+<a name="line87"></a>
+<a name="line88"></a>/**
+<a name="line89"></a> * Whether this browser supports the atob and btoa functions. This extension
+<a name="line90"></a> * started at Mozilla but is now implemented by many browsers. We use the
+<a name="line91"></a> * ASSUME_* variables to avoid pulling in the full useragent detection library
+<a name="line92"></a> * but still allowing the standard per-browser compilations.
+<a name="line93"></a> *
+<a name="line94"></a> * @type {boolean}
+<a name="line95"></a> */
+<a name="line96"></a>goog.crypt.base64.HAS_NATIVE_SUPPORT = goog.userAgent.GECKO ||
+<a name="line97"></a>                                       goog.userAgent.WEBKIT ||
+<a name="line98"></a>                                       goog.userAgent.OPERA ||
+<a name="line99"></a>                                       typeof(goog.global.atob) == &#39;function&#39;;
+<a name="line100"></a>
+<a name="line101"></a>
+<a name="line102"></a>/**
+<a name="line103"></a> * Base64-encode an array of bytes.
+<a name="line104"></a> *
+<a name="line105"></a> * @param {Array.&lt;number&gt;} input An array of bytes (numbers with value in
+<a name="line106"></a> *     [0, 255]) to encode.
+<a name="line107"></a> * @param {boolean=} opt_webSafe Boolean indicating we should use the
+<a name="line108"></a> *     alternative alphabet.
+<a name="line109"></a> * @return {string} The base64 encoded string.
+<a name="line110"></a> */
+<a name="line111"></a>goog.crypt.base64.encodeByteArray = function(input, opt_webSafe) {
+<a name="line112"></a>  if (!goog.isArrayLike(input)) {
+<a name="line113"></a>    throw Error(&#39;encodeByteArray takes an array as a parameter&#39;);
+<a name="line114"></a>  }
+<a name="line115"></a>
+<a name="line116"></a>  goog.crypt.base64.init_();
+<a name="line117"></a>
+<a name="line118"></a>  var byteToCharMap = opt_webSafe ?
+<a name="line119"></a>                      goog.crypt.base64.byteToCharMapWebSafe_ :
+<a name="line120"></a>                      goog.crypt.base64.byteToCharMap_;
+<a name="line121"></a>
+<a name="line122"></a>  var output = [];
+<a name="line123"></a>
+<a name="line124"></a>  for (var i = 0; i &lt; input.length; i += 3) {
+<a name="line125"></a>    var byte1 = input[i];
+<a name="line126"></a>    var haveByte2 = i + 1 &lt; input.length;
+<a name="line127"></a>    var byte2 = haveByte2 ? input[i + 1] : 0;
+<a name="line128"></a>    var haveByte3 = i + 2 &lt; input.length;
+<a name="line129"></a>    var byte3 = haveByte3 ? input[i + 2] : 0;
+<a name="line130"></a>
+<a name="line131"></a>    var outByte1 = byte1 &gt;&gt; 2;
+<a name="line132"></a>    var outByte2 = ((byte1 &amp; 0x03) &lt;&lt; 4) | (byte2 &gt;&gt; 4);
+<a name="line133"></a>    var outByte3 = ((byte2 &amp; 0x0F) &lt;&lt; 2) | (byte3 &gt;&gt; 6);
+<a name="line134"></a>    var outByte4 = byte3 &amp; 0x3F;
+<a name="line135"></a>
+<a name="line136"></a>    if (!haveByte3) {
+<a name="line137"></a>      outByte4 = 64;
+<a name="line138"></a>
+<a name="line139"></a>      if (!haveByte2) {
+<a name="line140"></a>        outByte3 = 64;
+<a name="line141"></a>      }
+<a name="line142"></a>    }
+<a name="line143"></a>
+<a name="line144"></a>    output.push(byteToCharMap[outByte1],
+<a name="line145"></a>                byteToCharMap[outByte2],
+<a name="line146"></a>                byteToCharMap[outByte3],
+<a name="line147"></a>                byteToCharMap[outByte4]);
+<a name="line148"></a>  }
+<a name="line149"></a>
+<a name="line150"></a>  return output.join(&#39;&#39;);
+<a name="line151"></a>};
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * Base64-encode a string.
+<a name="line156"></a> *
+<a name="line157"></a> * @param {string} input A string to encode.
+<a name="line158"></a> * @param {boolean=} opt_webSafe If true, we should use the
+<a name="line159"></a> *     alternative alphabet.
+<a name="line160"></a> * @return {string} The base64 encoded string.
+<a name="line161"></a> */
+<a name="line162"></a>goog.crypt.base64.encodeString = function(input, opt_webSafe) {
+<a name="line163"></a>  // Shortcut for Mozilla browsers that implement
+<a name="line164"></a>  // a native base64 encoder in the form of &quot;btoa/atob&quot;
+<a name="line165"></a>  if (goog.crypt.base64.HAS_NATIVE_SUPPORT &amp;&amp; !opt_webSafe) {
+<a name="line166"></a>    return goog.global.btoa(input);
+<a name="line167"></a>  }
+<a name="line168"></a>  return goog.crypt.base64.encodeByteArray(
+<a name="line169"></a>      goog.crypt.stringToByteArray(input), opt_webSafe);
+<a name="line170"></a>};
+<a name="line171"></a>
+<a name="line172"></a>
+<a name="line173"></a>/**
+<a name="line174"></a> * Base64-decode a string.
+<a name="line175"></a> *
+<a name="line176"></a> * @param {string} input to decode.
+<a name="line177"></a> * @param {boolean=} opt_webSafe True if we should use the
+<a name="line178"></a> *     alternative alphabet.
+<a name="line179"></a> * @return {string} string representing the decoded value.
+<a name="line180"></a> */
+<a name="line181"></a>goog.crypt.base64.decodeString = function(input, opt_webSafe) {
+<a name="line182"></a>  // Shortcut for Mozilla browsers that implement
+<a name="line183"></a>  // a native base64 encoder in the form of &quot;btoa/atob&quot;
+<a name="line184"></a>  if (goog.crypt.base64.HAS_NATIVE_SUPPORT &amp;&amp; !opt_webSafe) {
+<a name="line185"></a>    return goog.global.atob(input);
+<a name="line186"></a>  }
+<a name="line187"></a>  return goog.crypt.byteArrayToString(
+<a name="line188"></a>      goog.crypt.base64.decodeStringToByteArray(input, opt_webSafe));
+<a name="line189"></a>};
+<a name="line190"></a>
+<a name="line191"></a>
+<a name="line192"></a>/**
+<a name="line193"></a> * Base64-decode a string.
+<a name="line194"></a> *
+<a name="line195"></a> * @param {string} input to decode (length not required to be a multiple of 4).
+<a name="line196"></a> * @param {boolean=} opt_webSafe True if we should use the
+<a name="line197"></a> *     alternative alphabet.
+<a name="line198"></a> * @return {Array} bytes representing the decoded value.
+<a name="line199"></a> */
+<a name="line200"></a>goog.crypt.base64.decodeStringToByteArray = function(input, opt_webSafe) {
+<a name="line201"></a>  goog.crypt.base64.init_();
+<a name="line202"></a>
+<a name="line203"></a>  var charToByteMap = opt_webSafe ?
+<a name="line204"></a>                      goog.crypt.base64.charToByteMapWebSafe_ :
+<a name="line205"></a>                      goog.crypt.base64.charToByteMap_;
+<a name="line206"></a>
+<a name="line207"></a>  var output = [];
+<a name="line208"></a>
+<a name="line209"></a>  for (var i = 0; i &lt; input.length; ) {
+<a name="line210"></a>    var byte1 = charToByteMap[input.charAt(i++)];
+<a name="line211"></a>
+<a name="line212"></a>    var haveByte2 = i &lt; input.length;
+<a name="line213"></a>    var byte2 = haveByte2 ? charToByteMap[input.charAt(i)] : 0;
+<a name="line214"></a>    ++i;
+<a name="line215"></a>
+<a name="line216"></a>    var haveByte3 = i &lt; input.length;
+<a name="line217"></a>    var byte3 = haveByte3 ? charToByteMap[input.charAt(i)] : 0;
+<a name="line218"></a>    ++i;
+<a name="line219"></a>
+<a name="line220"></a>    var haveByte4 = i &lt; input.length;
+<a name="line221"></a>    var byte4 = haveByte4 ? charToByteMap[input.charAt(i)] : 0;
+<a name="line222"></a>    ++i;
+<a name="line223"></a>
+<a name="line224"></a>    if (byte1 == null || byte2 == null ||
+<a name="line225"></a>        byte3 == null || byte4 == null) {
+<a name="line226"></a>      throw Error();
+<a name="line227"></a>    }
+<a name="line228"></a>
+<a name="line229"></a>    var outByte1 = (byte1 &lt;&lt; 2) | (byte2 &gt;&gt; 4);
+<a name="line230"></a>    output.push(outByte1);
+<a name="line231"></a>
+<a name="line232"></a>    if (byte3 != 64) {
+<a name="line233"></a>      var outByte2 = ((byte2 &lt;&lt; 4) &amp; 0xF0) | (byte3 &gt;&gt; 2);
+<a name="line234"></a>      output.push(outByte2);
+<a name="line235"></a>
+<a name="line236"></a>      if (byte4 != 64) {
+<a name="line237"></a>        var outByte3 = ((byte3 &lt;&lt; 6) &amp; 0xC0) | byte4;
+<a name="line238"></a>        output.push(outByte3);
+<a name="line239"></a>      }
+<a name="line240"></a>    }
+<a name="line241"></a>  }
+<a name="line242"></a>
+<a name="line243"></a>  return output;
+<a name="line244"></a>};
+<a name="line245"></a>
+<a name="line246"></a>
+<a name="line247"></a>/**
+<a name="line248"></a> * Lazy static initialization function. Called before
+<a name="line249"></a> * accessing any of the static map variables.
+<a name="line250"></a> * @private
+<a name="line251"></a> */
+<a name="line252"></a>goog.crypt.base64.init_ = function() {
+<a name="line253"></a>  if (!goog.crypt.base64.byteToCharMap_) {
+<a name="line254"></a>    goog.crypt.base64.byteToCharMap_ = {};
+<a name="line255"></a>    goog.crypt.base64.charToByteMap_ = {};
+<a name="line256"></a>    goog.crypt.base64.byteToCharMapWebSafe_ = {};
+<a name="line257"></a>    goog.crypt.base64.charToByteMapWebSafe_ = {};
+<a name="line258"></a>
+<a name="line259"></a>    // We want quick mappings back and forth, so we precompute two maps.
+<a name="line260"></a>    for (var i = 0; i &lt; goog.crypt.base64.ENCODED_VALS.length; i++) {
+<a name="line261"></a>      goog.crypt.base64.byteToCharMap_[i] =
+<a name="line262"></a>          goog.crypt.base64.ENCODED_VALS.charAt(i);
+<a name="line263"></a>      goog.crypt.base64.charToByteMap_[goog.crypt.base64.byteToCharMap_[i]] = i;
+<a name="line264"></a>      goog.crypt.base64.byteToCharMapWebSafe_[i] =
+<a name="line265"></a>          goog.crypt.base64.ENCODED_VALS_WEBSAFE.charAt(i);
+<a name="line266"></a>      goog.crypt.base64.charToByteMapWebSafe_[
+<a name="line267"></a>          goog.crypt.base64.byteToCharMapWebSafe_[i]] = i;
+<a name="line268"></a>    }
+<a name="line269"></a>  }
+<a name="line270"></a>};
+</pre>
+
+
+</body>
+</html>

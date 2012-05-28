@@ -1,0 +1,331 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>clipboardbutton.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_third_party_closure_goog_silverlight_clipboardbutton.js.html">clipboardbutton.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A button that can access the native clipboard. Calls
+<a name="line17"></a> * out to silverlight when it&#39;s possible to do so.
+<a name="line18"></a> *
+<a name="line19"></a> * If the current browser does not support native clipboard access,
+<a name="line20"></a> * throw an error.
+<a name="line21"></a> *
+<a name="line22"></a> * @author nicksantos@google.com (Nick Santos)
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.silverlight.ClipboardButton&#39;);
+<a name="line26"></a>goog.provide(&#39;goog.silverlight.ClipboardButtonType&#39;);
+<a name="line27"></a>goog.provide(&#39;goog.silverlight.ClipboardEvent&#39;);
+<a name="line28"></a>goog.provide(&#39;goog.silverlight.CopyButton&#39;);
+<a name="line29"></a>goog.provide(&#39;goog.silverlight.PasteButton&#39;);
+<a name="line30"></a>goog.provide(&#39;goog.silverlight.PasteButtonEvent&#39;);
+<a name="line31"></a>
+<a name="line32"></a>goog.require(&#39;goog.asserts&#39;);
+<a name="line33"></a>goog.require(&#39;goog.events.Event&#39;);
+<a name="line34"></a>goog.require(&#39;goog.math.Size&#39;);
+<a name="line35"></a>goog.require(&#39;goog.silverlight&#39;);
+<a name="line36"></a>goog.require(&#39;goog.ui.Component&#39;);
+<a name="line37"></a>
+<a name="line38"></a>
+<a name="line39"></a>/**
+<a name="line40"></a> * A button that can access the native clipboard, via Silverlight.
+<a name="line41"></a> *
+<a name="line42"></a> * If this is not a browser that supports native clipboard access,
+<a name="line43"></a> * throw an error.
+<a name="line44"></a> *
+<a name="line45"></a> * Clients should not instantiate this directly. Instead, use CopyButton
+<a name="line46"></a> * or PasteButton.
+<a name="line47"></a> *
+<a name="line48"></a> * @param {goog.silverlight.ClipboardButtonType} type Copy or Paste.
+<a name="line49"></a> * @param {Function} callback The callback function for copy or paste.
+<a name="line50"></a> * @param {goog.Uri} slResource The URI of ClosureClipboardButton.xap (The
+<a name="line51"></a> *     silverlight resource included in this package.)
+<a name="line52"></a> * @param {string} caption Text caption to display as the button&#39;s caption.
+<a name="line53"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
+<a name="line54"></a> *     document interaction.
+<a name="line55"></a> * @constructor
+<a name="line56"></a> * @extends {goog.ui.Component}
+<a name="line57"></a> */
+<a name="line58"></a>goog.silverlight.ClipboardButton =
+<a name="line59"></a>    function(type, callback, slResource, caption, opt_domHelper) {
+<a name="line60"></a>  // In an ideal world, we&#39;d use some sort of transparent overlay over
+<a name="line61"></a>  // an HTML-based button. Silverlight doesn&#39;t appear to allow this.
+<a name="line62"></a>  // Silverlight only allows copy and paste in response to a
+<a name="line63"></a>  // silverlight-managed click on a silverlight-rendered button,
+<a name="line64"></a>  // and this button cannot be transparent.
+<a name="line65"></a>  goog.asserts.assert(
+<a name="line66"></a>      goog.silverlight.ClipboardButton.hasClipboardAccess(),
+<a name="line67"></a>      &#39;no clipboard access&#39;);
+<a name="line68"></a>
+<a name="line69"></a>  goog.base(this, opt_domHelper);
+<a name="line70"></a>
+<a name="line71"></a>  /**
+<a name="line72"></a>   * The ID of the handler to pass to silverlight.
+<a name="line73"></a>   * @type {string}
+<a name="line74"></a>   * @private
+<a name="line75"></a>   */
+<a name="line76"></a>  this.callbackId_ = goog.asserts.assertString(
+<a name="line77"></a>      goog.silverlight.getHandlerName(callback));
+<a name="line78"></a>
+<a name="line79"></a>  /**
+<a name="line80"></a>   * The button caption.
+<a name="line81"></a>   * @type {string}
+<a name="line82"></a>   * @private
+<a name="line83"></a>   */
+<a name="line84"></a>  this.caption_ = caption;
+<a name="line85"></a>
+<a name="line86"></a>  /**
+<a name="line87"></a>   * The compiled silverlight bundle.
+<a name="line88"></a>   * @type {goog.Uri}
+<a name="line89"></a>   * @private
+<a name="line90"></a>   */
+<a name="line91"></a>  this.slResource_ = slResource;
+<a name="line92"></a>
+<a name="line93"></a>  /**
+<a name="line94"></a>   * @type {goog.silverlight.ClipboardButtonType}
+<a name="line95"></a>   * @private
+<a name="line96"></a>   */
+<a name="line97"></a>  this.type_ = type;
+<a name="line98"></a>
+<a name="line99"></a>  /**
+<a name="line100"></a>   * @type {goog.math.Size}
+<a name="line101"></a>   * @private
+<a name="line102"></a>   */
+<a name="line103"></a>  this.size_ = goog.silverlight.ClipboardButton.DEFAULT_SIZE_;
+<a name="line104"></a>};
+<a name="line105"></a>goog.inherits(goog.silverlight.ClipboardButton, goog.ui.Component);
+<a name="line106"></a>
+<a name="line107"></a>
+<a name="line108"></a>/**
+<a name="line109"></a> * The default size of the button.
+<a name="line110"></a> * @type {goog.math.Size}
+<a name="line111"></a> * @private
+<a name="line112"></a> */
+<a name="line113"></a>goog.silverlight.ClipboardButton.DEFAULT_SIZE_ = new goog.math.Size(100, 30);
+<a name="line114"></a>
+<a name="line115"></a>
+<a name="line116"></a>/**
+<a name="line117"></a> * Silverlight components need absolute sizing. Should be set before the
+<a name="line118"></a> * component is rendered.
+<a name="line119"></a> * @param {goog.math.Size} size The size of the component.
+<a name="line120"></a> */
+<a name="line121"></a>goog.silverlight.ClipboardButton.prototype.setSize = function(size) {
+<a name="line122"></a>  this.size_ = size;
+<a name="line123"></a>};
+<a name="line124"></a>
+<a name="line125"></a>
+<a name="line126"></a>/**
+<a name="line127"></a> * Creates the button&#39;s DOM.
+<a name="line128"></a> * @override
+<a name="line129"></a> */
+<a name="line130"></a>goog.silverlight.ClipboardButton.prototype.createDom = function() {
+<a name="line131"></a>  var dom = this.getDomHelper();
+<a name="line132"></a>  var element = dom.createDom(&#39;div&#39;, goog.getCssName(&#39;goog-inline-block&#39;));
+<a name="line133"></a>  this.setElementInternal(element);
+<a name="line134"></a>
+<a name="line135"></a>  var source = this.slResource_.toString();
+<a name="line136"></a>  goog.silverlight.createObject(
+<a name="line137"></a>      source, element, null,
+<a name="line138"></a>      {version: &#39;4.0&#39;,
+<a name="line139"></a>       width: this.size_.width, height: this.size_.height}, null,
+<a name="line140"></a>      [&#39;buttonType=&#39; + this.type_,
+<a name="line141"></a>       &#39;callbackName=&#39; + this.callbackId_,
+<a name="line142"></a>       &#39;Content=&#39; + this.caption_].join(&#39;,&#39;));
+<a name="line143"></a>};
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/** @return {boolean} If clipboard access is supported. */
+<a name="line147"></a>goog.silverlight.ClipboardButton.hasClipboardAccess = function() {
+<a name="line148"></a>  // TODO(nicksantos): Use IE execCommand if available.
+<a name="line149"></a>  return goog.silverlight.isInstalled(&#39;4.0&#39;);
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>/** @inheritDoc */
+<a name="line154"></a>goog.silverlight.ClipboardButton.prototype.disposeInternal = function() {
+<a name="line155"></a>  goog.silverlight.disposeHandlerName(this.callbackId_);
+<a name="line156"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line157"></a>};
+<a name="line158"></a>
+<a name="line159"></a>
+<a name="line160"></a>/**
+<a name="line161"></a> * Whether the button should trigger a copy or a paste.
+<a name="line162"></a> * @enum
+<a name="line163"></a> * @private
+<a name="line164"></a> */
+<a name="line165"></a>goog.silverlight.ClipboardButtonType = {
+<a name="line166"></a>  COPY: 1,
+<a name="line167"></a>  PASTE: 2
+<a name="line168"></a>};
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/**
+<a name="line172"></a> * A clipboard button event. By design, replicates IE&#39;s clipboard API.
+<a name="line173"></a> * @param {string} type The event type.
+<a name="line174"></a> * @param {string=} opt_data The data pasted, if this is a paste event.
+<a name="line175"></a> * @constructor
+<a name="line176"></a> * @extends {goog.events.Event}
+<a name="line177"></a> */
+<a name="line178"></a>goog.silverlight.ClipboardEvent = function(type, opt_data) {
+<a name="line179"></a>  goog.base(this, type);
+<a name="line180"></a>
+<a name="line181"></a>  /**
+<a name="line182"></a>   * @type {?string}
+<a name="line183"></a>   * @private
+<a name="line184"></a>   */
+<a name="line185"></a>  this.data_ = opt_data || null;
+<a name="line186"></a>};
+<a name="line187"></a>goog.inherits(goog.silverlight.ClipboardEvent, goog.events.Event);
+<a name="line188"></a>
+<a name="line189"></a>
+<a name="line190"></a>/** @return {?string} Data pasted from the clipboard. */
+<a name="line191"></a>goog.silverlight.ClipboardEvent.prototype.getData = function() {
+<a name="line192"></a>  return this.data_;
+<a name="line193"></a>};
+<a name="line194"></a>
+<a name="line195"></a>
+<a name="line196"></a>/** @param {string} data Data to put on the clipboard. */
+<a name="line197"></a>goog.silverlight.ClipboardEvent.prototype.setData = function(data) {
+<a name="line198"></a>  this.data_ = data;
+<a name="line199"></a>};
+<a name="line200"></a>
+<a name="line201"></a>
+<a name="line202"></a>/** @enum {string} */
+<a name="line203"></a>goog.silverlight.ClipboardEventType = {
+<a name="line204"></a>  COPY: &#39;copy&#39;,
+<a name="line205"></a>  PASTE: &#39;paste&#39;
+<a name="line206"></a>};
+<a name="line207"></a>
+<a name="line208"></a>
+<a name="line209"></a>/**
+<a name="line210"></a> * A button that can retrieve contents from the native clipboard.
+<a name="line211"></a> *
+<a name="line212"></a> * @param {goog.Uri} slResource The URI of ClosureClipboardButton.xap (the
+<a name="line213"></a> *     silverlight resource included in this package.
+<a name="line214"></a> * @param {string=} opt_caption Text caption to display as the button&#39;s caption.
+<a name="line215"></a> *     Defaults to &#39;Paste&#39;.
+<a name="line216"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
+<a name="line217"></a> *     document interaction.
+<a name="line218"></a> * @constructor
+<a name="line219"></a> * @extends {goog.silverlight.ClipboardButton}
+<a name="line220"></a> */
+<a name="line221"></a>goog.silverlight.PasteButton =
+<a name="line222"></a>    function(slResource, opt_caption, opt_domHelper) {
+<a name="line223"></a>  /** @desc Label for the paste button */
+<a name="line224"></a>  var MSG_DEFAULT_PASTE_BUTTON_CAPTION = goog.getMsg(&#39;Paste&#39;);
+<a name="line225"></a>  var caption = opt_caption || MSG_DEFAULT_PASTE_BUTTON_CAPTION;
+<a name="line226"></a>
+<a name="line227"></a>  goog.base(this,
+<a name="line228"></a>            goog.silverlight.ClipboardButtonType.PASTE,
+<a name="line229"></a>            goog.bind(this.handlePaste_, this),
+<a name="line230"></a>            slResource,
+<a name="line231"></a>            caption,
+<a name="line232"></a>            opt_domHelper);
+<a name="line233"></a>};
+<a name="line234"></a>goog.inherits(goog.silverlight.PasteButton, goog.silverlight.ClipboardButton);
+<a name="line235"></a>
+<a name="line236"></a>
+<a name="line237"></a>/** @param {string} content The native content that was pasted. */
+<a name="line238"></a>goog.silverlight.PasteButton.prototype.handlePaste_ = function(content) {
+<a name="line239"></a>  this.dispatchEvent(
+<a name="line240"></a>      new goog.silverlight.ClipboardEvent(
+<a name="line241"></a>          goog.silverlight.ClipboardEventType.PASTE,
+<a name="line242"></a>          content));
+<a name="line243"></a>};
+<a name="line244"></a>
+<a name="line245"></a>
+<a name="line246"></a>/**
+<a name="line247"></a> * A button that can copy contents.
+<a name="line248"></a> *
+<a name="line249"></a> * @param {goog.Uri} slResource The URI of ClosureClipboardButton.xap (the
+<a name="line250"></a> *     silverlight resource included in this package.
+<a name="line251"></a> * @param {string=} opt_caption Text caption to display as the button&#39;s caption.
+<a name="line252"></a> *     Defaults to &#39;Copy&#39;.
+<a name="line253"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
+<a name="line254"></a> *     document interaction.
+<a name="line255"></a> * @constructor
+<a name="line256"></a> * @extends {goog.silverlight.ClipboardButton}
+<a name="line257"></a> */
+<a name="line258"></a>goog.silverlight.CopyButton =
+<a name="line259"></a>    function(slResource, opt_caption, opt_domHelper) {
+<a name="line260"></a>  /** @desc Label for the copy button */
+<a name="line261"></a>  var MSG_DEFAULT_COPY_BUTTON_CAPTION = goog.getMsg(&#39;Copy&#39;);
+<a name="line262"></a>  var caption = opt_caption || MSG_DEFAULT_COPY_BUTTON_CAPTION;
+<a name="line263"></a>
+<a name="line264"></a>  goog.base(this,
+<a name="line265"></a>            goog.silverlight.ClipboardButtonType.COPY,
+<a name="line266"></a>            goog.bind(this.handleCopy_, this),
+<a name="line267"></a>            slResource,
+<a name="line268"></a>            caption,
+<a name="line269"></a>            opt_domHelper);
+<a name="line270"></a>};
+<a name="line271"></a>goog.inherits(goog.silverlight.CopyButton, goog.silverlight.ClipboardButton);
+<a name="line272"></a>
+<a name="line273"></a>
+<a name="line274"></a>/** @return {string} The content to be copied to the clipboard. */
+<a name="line275"></a>goog.silverlight.CopyButton.prototype.handleCopy_ = function() {
+<a name="line276"></a>  var event = new goog.silverlight.ClipboardEvent(
+<a name="line277"></a>      goog.silverlight.ClipboardEventType.COPY);
+<a name="line278"></a>  this.dispatchEvent(event);
+<a name="line279"></a>  return event.getData() || &#39;&#39;;
+<a name="line280"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>mockclock.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_mockclock.js.html">mockclock.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Mock Clock implementation for working with setTimeout,
+<a name="line17"></a> * setInterval, clearTimeout and clearInterval within unit tests.
+<a name="line18"></a> *
+<a name="line19"></a> * Derived from jsUnitMockTimeout.js, contributed to JsUnit by
+<a name="line20"></a> * Pivotal Computer Systems, www.pivotalsf.com
+<a name="line21"></a> *
+<a name="line22"></a> */
+<a name="line23"></a>
+<a name="line24"></a>goog.provide(&#39;goog.testing.MockClock&#39;);
+<a name="line25"></a>
+<a name="line26"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line27"></a>goog.require(&#39;goog.testing.PropertyReplacer&#39;);
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>
+<a name="line31"></a>/**
+<a name="line32"></a> * Class for unit testing code that uses setTimeout and clearTimeout.
+<a name="line33"></a> *
+<a name="line34"></a> * NOTE: If you are using MockClock to test code that makes use of
+<a name="line35"></a> *       goog.fx.Animation, then you must either:
+<a name="line36"></a> *
+<a name="line37"></a> * 1. Install and dispose of the MockClock in setUpPage() and tearDownPage()
+<a name="line38"></a> *    respectively (rather than setUp()/tearDown()).
+<a name="line39"></a> *
+<a name="line40"></a> * or
+<a name="line41"></a> *
+<a name="line42"></a> * 2. Ensure that every test clears the animation queue by calling
+<a name="line43"></a> *    mockClock.tick(x) at the end of each test function (where `x` is large
+<a name="line44"></a> *    enough to complete all animations).
+<a name="line45"></a> *
+<a name="line46"></a> * Otherwise, if any animation is left pending at the time that
+<a name="line47"></a> * MockClock.dispose() is called, that will permanently prevent any future
+<a name="line48"></a> * animations from playing on the page.
+<a name="line49"></a> *
+<a name="line50"></a> * @param {boolean=} opt_autoInstall Install the MockClock at construction time.
+<a name="line51"></a> * @constructor
+<a name="line52"></a> * @extends {goog.Disposable}
+<a name="line53"></a> */
+<a name="line54"></a>goog.testing.MockClock = function(opt_autoInstall) {
+<a name="line55"></a>  goog.Disposable.call(this);
+<a name="line56"></a>
+<a name="line57"></a>  /**
+<a name="line58"></a>   * Reverse-order queue of timers to fire.
+<a name="line59"></a>   *
+<a name="line60"></a>   * The last item of the queue is popped off.  Insertion happens from the
+<a name="line61"></a>   * right.  For example, the expiration times for each element of the queue
+<a name="line62"></a>   * might be in the order 300, 200, 200.
+<a name="line63"></a>   *
+<a name="line64"></a>   * @type {Array.&lt;Object&gt;}
+<a name="line65"></a>   * @private
+<a name="line66"></a>   */
+<a name="line67"></a>  this.queue_ = [];
+<a name="line68"></a>
+<a name="line69"></a>  /**
+<a name="line70"></a>   * Set of timeouts that should be treated as cancelled.
+<a name="line71"></a>   *
+<a name="line72"></a>   * Rather than removing cancelled timers directly from the queue, this set
+<a name="line73"></a>   * simply marks them as deleted so that they can be ignored when their
+<a name="line74"></a>   * turn comes up.  The keys are the timeout keys that are cancelled, each
+<a name="line75"></a>   * mapping to true.
+<a name="line76"></a>   *
+<a name="line77"></a>   * @type {Object}
+<a name="line78"></a>   * @private
+<a name="line79"></a>   */
+<a name="line80"></a>  this.deletedKeys_ = {};
+<a name="line81"></a>
+<a name="line82"></a>  if (opt_autoInstall) {
+<a name="line83"></a>    this.install();
+<a name="line84"></a>  }
+<a name="line85"></a>};
+<a name="line86"></a>goog.inherits(goog.testing.MockClock, goog.Disposable);
+<a name="line87"></a>
+<a name="line88"></a>
+<a name="line89"></a>/**
+<a name="line90"></a> * Count of the number of timeouts made.
+<a name="line91"></a> * @type {number}
+<a name="line92"></a> * @private
+<a name="line93"></a> */
+<a name="line94"></a>goog.testing.MockClock.prototype.timeoutsMade_ = 0;
+<a name="line95"></a>
+<a name="line96"></a>
+<a name="line97"></a>/**
+<a name="line98"></a> * PropertyReplacer instance which overwrites and resets setTimeout,
+<a name="line99"></a> * setInterval, etc. or null if the MockClock is not installed.
+<a name="line100"></a> * @type {goog.testing.PropertyReplacer}
+<a name="line101"></a> * @private
+<a name="line102"></a> */
+<a name="line103"></a>goog.testing.MockClock.prototype.replacer_ = null;
+<a name="line104"></a>
+<a name="line105"></a>
+<a name="line106"></a>/**
+<a name="line107"></a> * Map of deleted keys.  These keys represents keys that were deleted in a
+<a name="line108"></a> * clearInterval, timeoutid -&gt; object.
+<a name="line109"></a> * @type {Object}
+<a name="line110"></a> * @private
+<a name="line111"></a> */
+<a name="line112"></a>goog.testing.MockClock.prototype.deletedKeys_ = null;
+<a name="line113"></a>
+<a name="line114"></a>
+<a name="line115"></a>/**
+<a name="line116"></a> * The current simulated time in milliseconds.
+<a name="line117"></a> * @type {number}
+<a name="line118"></a> * @private
+<a name="line119"></a> */
+<a name="line120"></a>goog.testing.MockClock.prototype.nowMillis_ = 0;
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>/**
+<a name="line124"></a> * Additional delay between the time a timeout was set to fire, and the time
+<a name="line125"></a> * it actually fires.  Useful for testing workarounds for this Firefox 2 bug:
+<a name="line126"></a> * https://bugzilla.mozilla.org/show_bug.cgi?id=291386
+<a name="line127"></a> * May be negative.
+<a name="line128"></a> * @type {number}
+<a name="line129"></a> * @private
+<a name="line130"></a> */
+<a name="line131"></a>goog.testing.MockClock.prototype.timeoutDelay_ = 0;
+<a name="line132"></a>
+<a name="line133"></a>
+<a name="line134"></a>/**
+<a name="line135"></a> * Installs the MockClock by overriding the window object&#39;s implementation of
+<a name="line136"></a> * setTimeout, setInterval, clearTimeout and clearInterval.
+<a name="line137"></a> */
+<a name="line138"></a>goog.testing.MockClock.prototype.install = function() {
+<a name="line139"></a>  if (!this.replacer_) {
+<a name="line140"></a>    var r = this.replacer_ = new goog.testing.PropertyReplacer();
+<a name="line141"></a>    r.set(window, &#39;setTimeout&#39;, goog.bind(this.setTimeout_, this));
+<a name="line142"></a>    r.set(window, &#39;setInterval&#39;, goog.bind(this.setInterval_, this));
+<a name="line143"></a>    r.set(window, &#39;clearTimeout&#39;, goog.bind(this.clearTimeout_, this));
+<a name="line144"></a>    r.set(window, &#39;clearInterval&#39;, goog.bind(this.clearInterval_, this));
+<a name="line145"></a>
+<a name="line146"></a>    // PropertyReplacer#set can&#39;t be called with renameable functions.
+<a name="line147"></a>    this.oldGoogNow_ = goog.now;
+<a name="line148"></a>    goog.now = goog.bind(this.getCurrentTime, this);
+<a name="line149"></a>  }
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>/**
+<a name="line154"></a> * Removes the MockClock&#39;s hooks into the window functions and revert to their
+<a name="line155"></a> * original values.
+<a name="line156"></a> */
+<a name="line157"></a>goog.testing.MockClock.prototype.uninstall = function() {
+<a name="line158"></a>  if (this.replacer_) {
+<a name="line159"></a>    this.replacer_.reset();
+<a name="line160"></a>    this.replacer_ = null;
+<a name="line161"></a>    goog.now = this.oldGoogNow_;
+<a name="line162"></a>  }
+<a name="line163"></a>};
+<a name="line164"></a>
+<a name="line165"></a>
+<a name="line166"></a>/** @override */
+<a name="line167"></a>goog.testing.MockClock.prototype.disposeInternal = function() {
+<a name="line168"></a>  this.uninstall();
+<a name="line169"></a>  this.queue_ = null;
+<a name="line170"></a>  this.deletedKeys_ = null;
+<a name="line171"></a>  goog.testing.MockClock.superClass_.disposeInternal.call(this);
+<a name="line172"></a>};
+<a name="line173"></a>
+<a name="line174"></a>
+<a name="line175"></a>/**
+<a name="line176"></a> * Resets the MockClock, removing all timeouts that are scheduled and resets
+<a name="line177"></a> * the fake timer count.
+<a name="line178"></a> */
+<a name="line179"></a>goog.testing.MockClock.prototype.reset = function() {
+<a name="line180"></a>  this.queue_ = [];
+<a name="line181"></a>  this.deletedKeys_ = {};
+<a name="line182"></a>  this.nowMillis_ = 0;
+<a name="line183"></a>  this.timeoutsMade_ = 0;
+<a name="line184"></a>  this.timeoutDelay_ = 0;
+<a name="line185"></a>};
+<a name="line186"></a>
+<a name="line187"></a>
+<a name="line188"></a>/**
+<a name="line189"></a> * Sets the amount of time between when a timeout is scheduled to fire and when
+<a name="line190"></a> * it actually fires.
+<a name="line191"></a> * @param {number} delay The delay in milliseconds.  May be negative.
+<a name="line192"></a> */
+<a name="line193"></a>goog.testing.MockClock.prototype.setTimeoutDelay = function(delay) {
+<a name="line194"></a>  this.timeoutDelay_ = delay;
+<a name="line195"></a>};
+<a name="line196"></a>
+<a name="line197"></a>
+<a name="line198"></a>/**
+<a name="line199"></a> * @return {number} delay The amount of time between when a timeout is
+<a name="line200"></a> *     scheduled to fire and when it actually fires, in milliseconds.  May
+<a name="line201"></a> *     be negative.
+<a name="line202"></a> */
+<a name="line203"></a>goog.testing.MockClock.prototype.getTimeoutDelay = function() {
+<a name="line204"></a>  return this.timeoutDelay_;
+<a name="line205"></a>};
+<a name="line206"></a>
+<a name="line207"></a>
+<a name="line208"></a>/**
+<a name="line209"></a> * Increments the MockClock&#39;s time by a given number of milliseconds, running
+<a name="line210"></a> * any functions that are now overdue.
+<a name="line211"></a> * @param {number=} opt_millis Number of milliseconds to increment the counter.
+<a name="line212"></a> *     If not specified, clock ticks 1 millisecond.
+<a name="line213"></a> * @return {number} Current mock time in milliseconds.
+<a name="line214"></a> */
+<a name="line215"></a>goog.testing.MockClock.prototype.tick = function(opt_millis) {
+<a name="line216"></a>  if (typeof opt_millis != &#39;number&#39;) {
+<a name="line217"></a>    opt_millis = 1;
+<a name="line218"></a>  }
+<a name="line219"></a>  var endTime = this.nowMillis_ + opt_millis;
+<a name="line220"></a>  this.runFunctionsWithinRange_(endTime);
+<a name="line221"></a>  this.nowMillis_ = endTime;
+<a name="line222"></a>  return endTime;
+<a name="line223"></a>};
+<a name="line224"></a>
+<a name="line225"></a>
+<a name="line226"></a>/**
+<a name="line227"></a> * @return {number} The number of timeouts that have been scheduled.
+<a name="line228"></a> */
+<a name="line229"></a>goog.testing.MockClock.prototype.getTimeoutsMade = function() {
+<a name="line230"></a>  return this.timeoutsMade_;
+<a name="line231"></a>};
+<a name="line232"></a>
+<a name="line233"></a>
+<a name="line234"></a>/**
+<a name="line235"></a> * @return {number} The MockClock&#39;s current time in milliseconds.
+<a name="line236"></a> */
+<a name="line237"></a>goog.testing.MockClock.prototype.getCurrentTime = function() {
+<a name="line238"></a>  return this.nowMillis_;
+<a name="line239"></a>};
+<a name="line240"></a>
+<a name="line241"></a>
+<a name="line242"></a>/**
+<a name="line243"></a> * @param {number} timeoutKey The timeout key.
+<a name="line244"></a> * @return {boolean} Whether the timer has been set and not cleared,
+<a name="line245"></a> *     independent of the timeout&#39;s expiration.  In other words, the timeout
+<a name="line246"></a> *     could have passed or could be scheduled for the future.  Either way,
+<a name="line247"></a> *     this function returns true or false depending only on whether the
+<a name="line248"></a> *     provided timeoutKey represents a timeout that has been set and not
+<a name="line249"></a> *     cleared.
+<a name="line250"></a> */
+<a name="line251"></a>goog.testing.MockClock.prototype.isTimeoutSet = function(timeoutKey) {
+<a name="line252"></a>  return timeoutKey &lt;= this.timeoutsMade_ &amp;&amp; !this.deletedKeys_[timeoutKey];
+<a name="line253"></a>};
+<a name="line254"></a>
+<a name="line255"></a>
+<a name="line256"></a>/**
+<a name="line257"></a> * Runs any function that is scheduled before a certain time.  Timeouts can
+<a name="line258"></a> * be made to fire early or late if timeoutDelay_ is non-0.
+<a name="line259"></a> * @param {number} endTime The latest time in the range, in milliseconds.
+<a name="line260"></a> * @private
+<a name="line261"></a> */
+<a name="line262"></a>goog.testing.MockClock.prototype.runFunctionsWithinRange_ = function(
+<a name="line263"></a>    endTime) {
+<a name="line264"></a>  var adjustedEndTime = endTime - this.timeoutDelay_;
+<a name="line265"></a>
+<a name="line266"></a>  // Repeatedly pop off the last item since the queue is always sorted.
+<a name="line267"></a>  while (this.queue_.length &amp;&amp;
+<a name="line268"></a>      this.queue_[this.queue_.length - 1].runAtMillis &lt;= adjustedEndTime) {
+<a name="line269"></a>    var timeout = this.queue_.pop();
+<a name="line270"></a>
+<a name="line271"></a>    if (!(timeout.timeoutKey in this.deletedKeys_)) {
+<a name="line272"></a>      // Only move time forwards.
+<a name="line273"></a>      this.nowMillis_ = Math.max(this.nowMillis_,
+<a name="line274"></a>          timeout.runAtMillis + this.timeoutDelay_);
+<a name="line275"></a>      // Call timeout in global scope and pass the timeout key as the argument.
+<a name="line276"></a>      timeout.funcToCall.call(goog.global, timeout.timeoutKey);
+<a name="line277"></a>      // In case the interval was cleared in the funcToCall
+<a name="line278"></a>      if (timeout.recurring) {
+<a name="line279"></a>        this.scheduleFunction_(
+<a name="line280"></a>            timeout.timeoutKey, timeout.funcToCall, timeout.millis, true);
+<a name="line281"></a>      }
+<a name="line282"></a>    }
+<a name="line283"></a>  }
+<a name="line284"></a>};
+<a name="line285"></a>
+<a name="line286"></a>
+<a name="line287"></a>/**
+<a name="line288"></a> * Schedules a function to be run at a certain time.
+<a name="line289"></a> * @param {number} timeoutKey The timeout key.
+<a name="line290"></a> * @param {Function} funcToCall The function to call.
+<a name="line291"></a> * @param {number} millis The number of milliseconds to call it in.
+<a name="line292"></a> * @param {boolean} recurring Whether to function call should recur.
+<a name="line293"></a> * @private
+<a name="line294"></a> */
+<a name="line295"></a>goog.testing.MockClock.prototype.scheduleFunction_ = function(
+<a name="line296"></a>    timeoutKey, funcToCall, millis, recurring) {
+<a name="line297"></a>  var timeout = {
+<a name="line298"></a>    runAtMillis: this.nowMillis_ + millis,
+<a name="line299"></a>    funcToCall: funcToCall,
+<a name="line300"></a>    recurring: recurring,
+<a name="line301"></a>    timeoutKey: timeoutKey,
+<a name="line302"></a>    millis: millis
+<a name="line303"></a>  };
+<a name="line304"></a>
+<a name="line305"></a>  goog.testing.MockClock.insert_(timeout, this.queue_);
+<a name="line306"></a>};
+<a name="line307"></a>
+<a name="line308"></a>
+<a name="line309"></a>/**
+<a name="line310"></a> * Inserts a timer descriptor into a descending-order queue.
+<a name="line311"></a> *
+<a name="line312"></a> * Later-inserted duplicates appear at lower indices.  For example, the
+<a name="line313"></a> * asterisk in (5,4,*,3,2,1) would be the insertion point for 3.
+<a name="line314"></a> *
+<a name="line315"></a> * @param {Object} timeout The timeout to insert, with numerical runAtMillis
+<a name="line316"></a> *     property.
+<a name="line317"></a> * @param {Array.&lt;Object&gt;} queue The queue to insert into, with each element
+<a name="line318"></a> *     having a numerical runAtMillis property.
+<a name="line319"></a> * @private
+<a name="line320"></a> */
+<a name="line321"></a>goog.testing.MockClock.insert_ = function(timeout, queue) {
+<a name="line322"></a>  // Although insertion of N items is quadratic, requiring goog.structs.Heap
+<a name="line323"></a>  // from a unit test will make tests more prone to breakage.  Since unit
+<a name="line324"></a>  // tests are normally small, scalability is not a primary issue.
+<a name="line325"></a>
+<a name="line326"></a>  // Find an insertion point.  Since the queue is in reverse order (so we
+<a name="line327"></a>  // can pop rather than unshift), and later timers with the same time stamp
+<a name="line328"></a>  // should be executed later, we look for the element strictly greater than
+<a name="line329"></a>  // the one we are inserting.
+<a name="line330"></a>
+<a name="line331"></a>  for (var i = queue.length; i != 0; i--) {
+<a name="line332"></a>    if (queue[i - 1].runAtMillis &gt; timeout.runAtMillis) {
+<a name="line333"></a>      break;
+<a name="line334"></a>    }
+<a name="line335"></a>    queue[i] = queue[i - 1];
+<a name="line336"></a>  }
+<a name="line337"></a>
+<a name="line338"></a>  queue[i] = timeout;
+<a name="line339"></a>};
+<a name="line340"></a>
+<a name="line341"></a>
+<a name="line342"></a>/**
+<a name="line343"></a> * Maximum 32-bit signed integer.
+<a name="line344"></a> *
+<a name="line345"></a> * Timeouts over this time return immediately in many browsers, due to integer
+<a name="line346"></a> * overflow.  Such known browsers include Firefox, Chrome, and Safari, but not
+<a name="line347"></a> * IE.
+<a name="line348"></a> *
+<a name="line349"></a> * @type {number}
+<a name="line350"></a> * @private
+<a name="line351"></a> */
+<a name="line352"></a>goog.testing.MockClock.MAX_INT_ = 2147483647;
+<a name="line353"></a>
+<a name="line354"></a>
+<a name="line355"></a>/**
+<a name="line356"></a> * Schedules a function to be called after {@code millis} milliseconds.
+<a name="line357"></a> * Mock implementation for window.setTimeout
+<a name="line358"></a> * @param {Function} funcToCall The function to call.
+<a name="line359"></a> * @param {number} millis The number of milliseconds to call it after.
+<a name="line360"></a> * @return {number} The number of timeouts created.
+<a name="line361"></a> * @private
+<a name="line362"></a> */
+<a name="line363"></a>goog.testing.MockClock.prototype.setTimeout_ = function(funcToCall, millis) {
+<a name="line364"></a>  if (millis &gt; goog.testing.MockClock.MAX_INT_) {
+<a name="line365"></a>    throw Error(
+<a name="line366"></a>        &#39;Bad timeout value: &#39; + millis + &#39;.  Timeouts over MAX_INT &#39; +
+<a name="line367"></a>        &#39;(24.8 days) cause timeouts to be fired &#39; +
+<a name="line368"></a>        &#39;immediately in most browsers, except for IE.&#39;);
+<a name="line369"></a>  }
+<a name="line370"></a>  this.timeoutsMade_ = this.timeoutsMade_ + 1;
+<a name="line371"></a>  this.scheduleFunction_(this.timeoutsMade_, funcToCall, millis, false);
+<a name="line372"></a>  return this.timeoutsMade_;
+<a name="line373"></a>};
+<a name="line374"></a>
+<a name="line375"></a>
+<a name="line376"></a>/**
+<a name="line377"></a> * Schedules a function to be called every {@code millis} milliseconds.
+<a name="line378"></a> * Mock implementation for window.setInterval
+<a name="line379"></a> * @param {Function} funcToCall The function to call.
+<a name="line380"></a> * @param {number} millis The number of milliseconds between calls.
+<a name="line381"></a> * @return {number} The number of timeouts created.
+<a name="line382"></a> * @private
+<a name="line383"></a> */
+<a name="line384"></a>goog.testing.MockClock.prototype.setInterval_ = function(funcToCall, millis) {
+<a name="line385"></a>  this.timeoutsMade_ = this.timeoutsMade_ + 1;
+<a name="line386"></a>  this.scheduleFunction_(this.timeoutsMade_, funcToCall, millis, true);
+<a name="line387"></a>  return this.timeoutsMade_;
+<a name="line388"></a>};
+<a name="line389"></a>
+<a name="line390"></a>
+<a name="line391"></a>/**
+<a name="line392"></a> * Clears a timeout.
+<a name="line393"></a> * Mock implementation for window.clearTimeout
+<a name="line394"></a> * @param {number} timeoutKey The timeout key to clear.
+<a name="line395"></a> * @private
+<a name="line396"></a> */
+<a name="line397"></a>goog.testing.MockClock.prototype.clearTimeout_ = function(timeoutKey) {
+<a name="line398"></a>  this.deletedKeys_[timeoutKey] = true;
+<a name="line399"></a>};
+<a name="line400"></a>
+<a name="line401"></a>
+<a name="line402"></a>/**
+<a name="line403"></a> * Clears an interval.
+<a name="line404"></a> * Mock implementation for window.clearInterval
+<a name="line405"></a> * @param {number} timeoutKey The interval key to clear.
+<a name="line406"></a> * @private
+<a name="line407"></a> */
+<a name="line408"></a>goog.testing.MockClock.prototype.clearInterval_ = function(timeoutKey) {
+<a name="line409"></a>  this.deletedKeys_[timeoutKey] = true;
+<a name="line410"></a>};
+</pre>
+
+
+</body>
+</html>

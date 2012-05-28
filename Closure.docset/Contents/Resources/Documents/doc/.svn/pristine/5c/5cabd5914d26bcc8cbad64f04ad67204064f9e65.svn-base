@@ -1,0 +1,289 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>fs.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_fs_fs.js.html">fs.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Wrappers for the HTML5 File API. These wrappers closely mirror
+<a name="line17"></a> * the underlying APIs, but use Closure-style events and Deferred return values.
+<a name="line18"></a> * Their existence also makes it possible to mock the FileSystem API for testing
+<a name="line19"></a> * in browsers that don&#39;t support it natively.
+<a name="line20"></a> *
+<a name="line21"></a> * When adding public functions to anything under this namespace, be sure to add
+<a name="line22"></a> * its mock counterpart to goog.testing.fs.
+<a name="line23"></a> *
+<a name="line24"></a> */
+<a name="line25"></a>
+<a name="line26"></a>goog.provide(&#39;goog.fs&#39;);
+<a name="line27"></a>
+<a name="line28"></a>goog.require(&#39;goog.async.Deferred&#39;);
+<a name="line29"></a>goog.require(&#39;goog.events&#39;);
+<a name="line30"></a>goog.require(&#39;goog.fs.Error&#39;);
+<a name="line31"></a>goog.require(&#39;goog.fs.FileReader&#39;);
+<a name="line32"></a>goog.require(&#39;goog.fs.FileSystem&#39;);
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>/**
+<a name="line36"></a> * Get a wrapped FileSystem object.
+<a name="line37"></a> *
+<a name="line38"></a> * @param {goog.fs.FileSystemType_} type The type of the filesystem to get.
+<a name="line39"></a> * @param {number} size The size requested for the filesystem, in bytes.
+<a name="line40"></a> * @return {!goog.async.Deferred} The deferred {@link goog.fs.FileSystem}. If an
+<a name="line41"></a> *     error occurs, the errback is called with a {@link goog.fs.Error}.
+<a name="line42"></a> * @private
+<a name="line43"></a> */
+<a name="line44"></a>goog.fs.get_ = function(type, size) {
+<a name="line45"></a>  var requestFileSystem = goog.global.requestFileSystem ||
+<a name="line46"></a>      goog.global.webkitRequestFileSystem;
+<a name="line47"></a>
+<a name="line48"></a>  if (!goog.isFunction(requestFileSystem)) {
+<a name="line49"></a>    return goog.async.Deferred.fail(new Error(&#39;File API unsupported&#39;));
+<a name="line50"></a>  }
+<a name="line51"></a>
+<a name="line52"></a>  var d = new goog.async.Deferred();
+<a name="line53"></a>  requestFileSystem(type, size, function(fs) {
+<a name="line54"></a>    d.callback(new goog.fs.FileSystem(fs));
+<a name="line55"></a>  }, function(err) {
+<a name="line56"></a>    d.errback(new goog.fs.Error(err.code, &#39;requesting filesystem&#39;));
+<a name="line57"></a>  });
+<a name="line58"></a>  return d;
+<a name="line59"></a>};
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * The two types of filesystem.
+<a name="line64"></a> *
+<a name="line65"></a> * @enum {number}
+<a name="line66"></a> * @private
+<a name="line67"></a> */
+<a name="line68"></a>goog.fs.FileSystemType_ = {
+<a name="line69"></a>  /**
+<a name="line70"></a>   * A temporary filesystem may be deleted by the user agent at its discretion.
+<a name="line71"></a>   */
+<a name="line72"></a>  TEMPORARY: 0,
+<a name="line73"></a>  /**
+<a name="line74"></a>   * A persistent filesystem will never be deleted without the user&#39;s or
+<a name="line75"></a>   * application&#39;s authorization.
+<a name="line76"></a>   */
+<a name="line77"></a>  PERSISTENT: 1
+<a name="line78"></a>};
+<a name="line79"></a>
+<a name="line80"></a>
+<a name="line81"></a>/**
+<a name="line82"></a> * Returns a temporary FileSystem object. A temporary filesystem may be deleted
+<a name="line83"></a> * by the user agent at its discretion.
+<a name="line84"></a> *
+<a name="line85"></a> * @param {number} size The size requested for the filesystem, in bytes.
+<a name="line86"></a> * @return {!goog.async.Deferred} The deferred {@link goog.fs.FileSystem}. If an
+<a name="line87"></a> *     error occurs, the errback is called with a {@link goog.fs.Error}.
+<a name="line88"></a> */
+<a name="line89"></a>goog.fs.getTemporary = function(size) {
+<a name="line90"></a>  return goog.fs.get_(goog.fs.FileSystemType_.TEMPORARY, size);
+<a name="line91"></a>};
+<a name="line92"></a>
+<a name="line93"></a>
+<a name="line94"></a>/**
+<a name="line95"></a> * Returns a persistent FileSystem object. A persistent filesystem will never be
+<a name="line96"></a> * deleted without the user&#39;s or application&#39;s authorization.
+<a name="line97"></a> *
+<a name="line98"></a> * @param {number} size The size requested for the filesystem, in bytes.
+<a name="line99"></a> * @return {!goog.async.Deferred} The deferred {@link goog.fs.FileSystem}. If an
+<a name="line100"></a> *     error occurs, the errback is called with a {@link goog.fs.Error}.
+<a name="line101"></a> */
+<a name="line102"></a>goog.fs.getPersistent = function(size) {
+<a name="line103"></a>  return goog.fs.get_(goog.fs.FileSystemType_.PERSISTENT, size);
+<a name="line104"></a>};
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Creates a blob URL for a blob object.
+<a name="line109"></a> *
+<a name="line110"></a> * @param {!Blob} blob The object for which to create the URL.
+<a name="line111"></a> * @return {string} The URL for the object.
+<a name="line112"></a> */
+<a name="line113"></a>goog.fs.createObjectUrl = function(blob) {
+<a name="line114"></a>  return goog.fs.getUrlObject_().createObjectURL(blob);
+<a name="line115"></a>};
+<a name="line116"></a>
+<a name="line117"></a>
+<a name="line118"></a>/**
+<a name="line119"></a> * Revokes a URL created by {@link goog.fs.createObjectUrl}.
+<a name="line120"></a> *
+<a name="line121"></a> * @param {string} url The URL to revoke.
+<a name="line122"></a> */
+<a name="line123"></a>goog.fs.revokeObjectUrl = function(url) {
+<a name="line124"></a>  goog.fs.getUrlObject_().revokeObjectURL(url);
+<a name="line125"></a>};
+<a name="line126"></a>
+<a name="line127"></a>
+<a name="line128"></a>/**
+<a name="line129"></a> * @typedef {!{createObjectURL: (function(!Blob): string),
+<a name="line130"></a> *             revokeObjectURL: function(string): void}}
+<a name="line131"></a> */
+<a name="line132"></a>goog.fs.UrlObject_;
+<a name="line133"></a>
+<a name="line134"></a>
+<a name="line135"></a>/**
+<a name="line136"></a> * Get the object that has the createObjectURL and revokeObjectURL functions for
+<a name="line137"></a> * this browser.
+<a name="line138"></a> *
+<a name="line139"></a> * @return {goog.fs.UrlObject_} The object for this browser.
+<a name="line140"></a> * @private
+<a name="line141"></a> */
+<a name="line142"></a>goog.fs.getUrlObject_ = function() {
+<a name="line143"></a>  // This is what the spec says to do
+<a name="line144"></a>  // http://dev.w3.org/2006/webapi/FileAPI/#dfn-createObjectURL
+<a name="line145"></a>  if (goog.isDef(goog.global.URL) &amp;&amp;
+<a name="line146"></a>      goog.isDef(goog.global.URL.createObjectURL)) {
+<a name="line147"></a>    return /** @type {goog.fs.UrlObject_} */ (goog.global.URL);
+<a name="line148"></a>  // This is what Chrome does (as of 10.0.648.6 dev)
+<a name="line149"></a>  } else if (goog.isDef(goog.global.webkitURL) &amp;&amp;
+<a name="line150"></a>             goog.isDef(goog.global.webkitURL.createObjectURL)) {
+<a name="line151"></a>    return /** @type {goog.fs.UrlObject_} */ (goog.global.webkitURL);
+<a name="line152"></a>  // This is what the spec used to say to do
+<a name="line153"></a>  } else if (goog.isDef(goog.global.createObjectURL)) {
+<a name="line154"></a>    return /** @type {goog.fs.UrlObject_} */ (goog.global);
+<a name="line155"></a>  } else {
+<a name="line156"></a>    throw Error(&#39;This browser doesn\&#39;t seem to support blob URLs&#39;);
+<a name="line157"></a>  }
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/**
+<a name="line162"></a> * Concatenates one or more values together and converts them to a Blob.
+<a name="line163"></a> *
+<a name="line164"></a> * @param {...(string|!Blob|!ArrayBuffer)} var_args The values that will make up
+<a name="line165"></a> *     the resulting blob.
+<a name="line166"></a> * @return {!Blob} The blob.
+<a name="line167"></a> */
+<a name="line168"></a>goog.fs.getBlob = function(var_args) {
+<a name="line169"></a>  var BlobBuilder = goog.global.BlobBuilder || goog.global.WebKitBlobBuilder;
+<a name="line170"></a>  var bb = new BlobBuilder();
+<a name="line171"></a>  for (var i = 0; i &lt; arguments.length; i++) {
+<a name="line172"></a>    bb.append(arguments[i]);
+<a name="line173"></a>  }
+<a name="line174"></a>  return bb.getBlob();
+<a name="line175"></a>};
+<a name="line176"></a>
+<a name="line177"></a>
+<a name="line178"></a>/**
+<a name="line179"></a> * Converts a Blob or a File into a string. This should only be used when the
+<a name="line180"></a> * blob is known to be small.
+<a name="line181"></a> *
+<a name="line182"></a> * @param {!Blob} blob The blob to convert.
+<a name="line183"></a> * @param {string=} opt_encoding The name of the encoding to use.
+<a name="line184"></a> * @return {!goog.async.Deferred} The deferred string. If an error occurrs, the
+<a name="line185"></a> *     errback is called with a {@link goog.fs.Error}.
+<a name="line186"></a> * @deprecated Use {@link goog.fs.FileReader.readAsText} instead.
+<a name="line187"></a> */
+<a name="line188"></a>goog.fs.blobToString = function(blob, opt_encoding) {
+<a name="line189"></a>  return goog.fs.FileReader.readAsText(blob, opt_encoding);
+<a name="line190"></a>};
+<a name="line191"></a>
+<a name="line192"></a>
+<a name="line193"></a>/**
+<a name="line194"></a> * Slices the blob. The returned blob contains data from the start byte
+<a name="line195"></a> * (inclusive) till the end byte (exclusive). Negative indices can be used
+<a name="line196"></a> * to count bytes from the end of the blob (-1 == blob.size - 1). Indices
+<a name="line197"></a> * are always clamped to blob range. If end is omitted, all the data till
+<a name="line198"></a> * the end of the blob is taken.
+<a name="line199"></a> *
+<a name="line200"></a> * @param {!Blob} blob The blob to be sliced.
+<a name="line201"></a> * @param {number} start Index of the starting byte.
+<a name="line202"></a> * @param {number=} opt_end Index of the ending byte.
+<a name="line203"></a> * @return {Blob} The blob slice or null if not supported.
+<a name="line204"></a> */
+<a name="line205"></a>goog.fs.sliceBlob = function(blob, start, opt_end) {
+<a name="line206"></a>  if (!goog.isDef(opt_end)) {
+<a name="line207"></a>    opt_end = blob.size;
+<a name="line208"></a>  }
+<a name="line209"></a>  if (blob.webkitSlice) {
+<a name="line210"></a>    // Natively accepts negative indices, clamping to the blob range and
+<a name="line211"></a>    // range end is optional. See http://trac.webkit.org/changeset/83873
+<a name="line212"></a>    return blob.webkitSlice(start, opt_end);
+<a name="line213"></a>  } else if (blob.mozSlice) {
+<a name="line214"></a>    // Natively accepts negative indices, clamping to the blob range and
+<a name="line215"></a>    // range end is optional. See https://developer.mozilla.org/en/DOM/Blob
+<a name="line216"></a>    // and http://hg.mozilla.org/mozilla-central/rev/dae833f4d934
+<a name="line217"></a>    return blob.mozSlice(start, opt_end);
+<a name="line218"></a>  } else if (blob.slice) {
+<a name="line219"></a>    // This is the original specification. Negative indices are not accepted,
+<a name="line220"></a>    // only range end is clamped and range end specification is obligatory.
+<a name="line221"></a>    // See http://www.w3.org/TR/2009/WD-FileAPI-20091117/, this will be
+<a name="line222"></a>    // replaced by http://dev.w3.org/2006/webapi/FileAPI/ in the future.
+<a name="line223"></a>    if (start &lt; 0) {
+<a name="line224"></a>      start += blob.size;
+<a name="line225"></a>    }
+<a name="line226"></a>    if (start &lt; 0) {
+<a name="line227"></a>      start = 0;
+<a name="line228"></a>    }
+<a name="line229"></a>    if (opt_end &lt; 0) {
+<a name="line230"></a>      opt_end += blob.size;
+<a name="line231"></a>    }
+<a name="line232"></a>    if (opt_end &lt; start) {
+<a name="line233"></a>      opt_end = start;
+<a name="line234"></a>    }
+<a name="line235"></a>    return blob.slice(start, opt_end - start);
+<a name="line236"></a>  }
+<a name="line237"></a>  return null;
+<a name="line238"></a>};
+</pre>
+
+
+</body>
+</html>

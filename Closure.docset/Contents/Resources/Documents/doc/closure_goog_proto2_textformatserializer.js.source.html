@@ -1,0 +1,1016 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>textformatserializer.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_proto2_textformatserializer.js.html">textformatserializer.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Protocol Buffer 2 Serializer which serializes messages
+<a name="line17"></a> *  into a user-friendly text format. Note that this code can run a bit
+<a name="line18"></a> *  slowly (especially for parsing) and should therefore not be used for
+<a name="line19"></a> *  time or space-critical applications.
+<a name="line20"></a> *
+<a name="line21"></a> * @see http://goo.gl/QDmDr
+<a name="line22"></a> */
+<a name="line23"></a>
+<a name="line24"></a>goog.provide(&#39;goog.proto2.TextFormatSerializer&#39;);
+<a name="line25"></a>goog.provide(&#39;goog.proto2.TextFormatSerializer.Parser&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.json&#39;);
+<a name="line28"></a>goog.require(&#39;goog.proto2.Serializer&#39;);
+<a name="line29"></a>goog.require(&#39;goog.proto2.Util&#39;);
+<a name="line30"></a>goog.require(&#39;goog.string&#39;);
+<a name="line31"></a>
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>/**
+<a name="line35"></a> * TextFormatSerializer, a serializer which turns Messages into the human
+<a name="line36"></a> * readable text format.
+<a name="line37"></a> * @param {boolean=} opt_ignoreMissingFields If true, then fields that cannot be
+<a name="line38"></a> *     found on the proto when parsing the text format will be ignored.
+<a name="line39"></a> * @constructor
+<a name="line40"></a> * @extends {goog.proto2.Serializer}
+<a name="line41"></a> */
+<a name="line42"></a>goog.proto2.TextFormatSerializer = function(opt_ignoreMissingFields) {
+<a name="line43"></a>  /**
+<a name="line44"></a>   * Whether to ignore fields not defined on the proto when parsing the text
+<a name="line45"></a>   * format.
+<a name="line46"></a>   * @type {boolean}
+<a name="line47"></a>   * @private
+<a name="line48"></a>   */
+<a name="line49"></a>  this.ignoreMissingFields_ = !!opt_ignoreMissingFields;
+<a name="line50"></a>};
+<a name="line51"></a>goog.inherits(goog.proto2.TextFormatSerializer, goog.proto2.Serializer);
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>/**
+<a name="line55"></a> * Deserializes a message from text format and places the data in the message.
+<a name="line56"></a> * @param {goog.proto2.Message} message The message in which to
+<a name="line57"></a> *     place the information.
+<a name="line58"></a> * @param {string} data The text format data.
+<a name="line59"></a> * @return {?string} The parse error or null on success.
+<a name="line60"></a> */
+<a name="line61"></a>goog.proto2.TextFormatSerializer.prototype.deserializeTo =
+<a name="line62"></a>    function(message, data) {
+<a name="line63"></a>  var descriptor = message.getDescriptor();
+<a name="line64"></a>  var textData = data.toString();
+<a name="line65"></a>  var parser = new goog.proto2.TextFormatSerializer.Parser();
+<a name="line66"></a>  if (!parser.parse(message, textData, this.ignoreMissingFields_)) {
+<a name="line67"></a>    return parser.getError();
+<a name="line68"></a>  }
+<a name="line69"></a>
+<a name="line70"></a>  return null;
+<a name="line71"></a>};
+<a name="line72"></a>
+<a name="line73"></a>
+<a name="line74"></a>/**
+<a name="line75"></a> * Serializes a message to a string.
+<a name="line76"></a> * @param {goog.proto2.Message} message The message to be serialized.
+<a name="line77"></a> * @return {string} The serialized form of the message.
+<a name="line78"></a> */
+<a name="line79"></a>goog.proto2.TextFormatSerializer.prototype.serialize = function(message) {
+<a name="line80"></a>  var printer = new goog.proto2.TextFormatSerializer.Printer_();
+<a name="line81"></a>  this.serializeMessage_(message, printer);
+<a name="line82"></a>  return printer.toString();
+<a name="line83"></a>};
+<a name="line84"></a>
+<a name="line85"></a>
+<a name="line86"></a>/**
+<a name="line87"></a> * Serializes the message and prints the text form into the given printer.
+<a name="line88"></a> * @param {goog.proto2.Message} message The message to serialize.
+<a name="line89"></a> * @param {goog.proto2.TextFormatSerializer.Printer_} printer The printer to
+<a name="line90"></a> *    which the text format will be printed.
+<a name="line91"></a> * @private
+<a name="line92"></a> */
+<a name="line93"></a>goog.proto2.TextFormatSerializer.prototype.serializeMessage_ =
+<a name="line94"></a>    function(message, printer) {
+<a name="line95"></a>  var descriptor = message.getDescriptor();
+<a name="line96"></a>  var fields = descriptor.getFields();
+<a name="line97"></a>
+<a name="line98"></a>  // Add the defined fields, recursively.
+<a name="line99"></a>  goog.array.forEach(fields, function(field) {
+<a name="line100"></a>    this.printField_(message, field, printer);
+<a name="line101"></a>  }, this);
+<a name="line102"></a>
+<a name="line103"></a>  // Add the unknown fields, if any.
+<a name="line104"></a>  message.forEachUnknown(function(tag, value) {
+<a name="line105"></a>    if (!value) { return; }
+<a name="line106"></a>
+<a name="line107"></a>    printer.append(tag);
+<a name="line108"></a>    if (goog.typeOf(value) == &#39;object&#39;) {
+<a name="line109"></a>      printer.append(&#39; {&#39;);
+<a name="line110"></a>      printer.appendLine();
+<a name="line111"></a>      printer.indent();
+<a name="line112"></a>    } else {
+<a name="line113"></a>      printer.append(&#39;: &#39;);
+<a name="line114"></a>    }
+<a name="line115"></a>
+<a name="line116"></a>    switch (goog.typeOf(value)) {
+<a name="line117"></a>      case &#39;string&#39;:
+<a name="line118"></a>        value = goog.string.quote(value);
+<a name="line119"></a>        printer.append(value);
+<a name="line120"></a>        break;
+<a name="line121"></a>
+<a name="line122"></a>      case &#39;object&#39;:
+<a name="line123"></a>        this.serializeMessage_(value, printer);
+<a name="line124"></a>        break;
+<a name="line125"></a>
+<a name="line126"></a>      default:
+<a name="line127"></a>        printer.append(value.toString());
+<a name="line128"></a>        break;
+<a name="line129"></a>    }
+<a name="line130"></a>
+<a name="line131"></a>    if (goog.typeOf(value) == &#39;object&#39;) {
+<a name="line132"></a>      printer.dedent();
+<a name="line133"></a>      printer.append(&#39;}&#39;);
+<a name="line134"></a>    } else {
+<a name="line135"></a>      printer.appendLine();
+<a name="line136"></a>    }
+<a name="line137"></a>  }, this);
+<a name="line138"></a>};
+<a name="line139"></a>
+<a name="line140"></a>
+<a name="line141"></a>/**
+<a name="line142"></a> * Prints the serialized value for the given field to the printer.
+<a name="line143"></a> * @param {*} value The field&#39;s value.
+<a name="line144"></a> * @param {goog.proto2.FieldDescriptor} field The field whose value is being
+<a name="line145"></a> *    printed.
+<a name="line146"></a> * @param {goog.proto2.TextFormatSerializer.Printer_} printer The printer to
+<a name="line147"></a> *    which the value will be printed.
+<a name="line148"></a> * @private
+<a name="line149"></a> */
+<a name="line150"></a>goog.proto2.TextFormatSerializer.prototype.printFieldValue_ =
+<a name="line151"></a>    function(value, field, printer) {
+<a name="line152"></a>  switch (field.getFieldType()) {
+<a name="line153"></a>    case goog.proto2.FieldDescriptor.FieldType.DOUBLE:
+<a name="line154"></a>    case goog.proto2.FieldDescriptor.FieldType.FLOAT:
+<a name="line155"></a>    case goog.proto2.FieldDescriptor.FieldType.INT64:
+<a name="line156"></a>    case goog.proto2.FieldDescriptor.FieldType.UINT64:
+<a name="line157"></a>    case goog.proto2.FieldDescriptor.FieldType.INT32:
+<a name="line158"></a>    case goog.proto2.FieldDescriptor.FieldType.UINT32:
+<a name="line159"></a>    case goog.proto2.FieldDescriptor.FieldType.FIXED64:
+<a name="line160"></a>    case goog.proto2.FieldDescriptor.FieldType.FIXED32:
+<a name="line161"></a>    case goog.proto2.FieldDescriptor.FieldType.BOOL:
+<a name="line162"></a>    case goog.proto2.FieldDescriptor.FieldType.SFIXED32:
+<a name="line163"></a>    case goog.proto2.FieldDescriptor.FieldType.SFIXED64:
+<a name="line164"></a>    case goog.proto2.FieldDescriptor.FieldType.SINT32:
+<a name="line165"></a>    case goog.proto2.FieldDescriptor.FieldType.SINT64:
+<a name="line166"></a>      printer.append(value);
+<a name="line167"></a>      break;
+<a name="line168"></a>
+<a name="line169"></a>    case goog.proto2.FieldDescriptor.FieldType.BYTES:
+<a name="line170"></a>    case goog.proto2.FieldDescriptor.FieldType.STRING:
+<a name="line171"></a>      value = goog.string.quote(value.toString());
+<a name="line172"></a>      printer.append(value);
+<a name="line173"></a>      break;
+<a name="line174"></a>
+<a name="line175"></a>    case goog.proto2.FieldDescriptor.FieldType.ENUM:
+<a name="line176"></a>      // Search the enum type for a matching key.
+<a name="line177"></a>      var found = false;
+<a name="line178"></a>      goog.object.forEach(field.getNativeType(), function(eValue, key) {
+<a name="line179"></a>        if (eValue == value) {
+<a name="line180"></a>          printer.append(key);
+<a name="line181"></a>          found = true;
+<a name="line182"></a>        }
+<a name="line183"></a>      });
+<a name="line184"></a>
+<a name="line185"></a>      if (!found) {
+<a name="line186"></a>        // Otherwise, just print the numeric value.
+<a name="line187"></a>        printer.append(value.toString());
+<a name="line188"></a>      }
+<a name="line189"></a>      break;
+<a name="line190"></a>
+<a name="line191"></a>    case goog.proto2.FieldDescriptor.FieldType.GROUP:
+<a name="line192"></a>    case goog.proto2.FieldDescriptor.FieldType.MESSAGE:
+<a name="line193"></a>      this.serializeMessage_(
+<a name="line194"></a>          (/** @type {goog.proto2.Message} */value), printer);
+<a name="line195"></a>      break;
+<a name="line196"></a>  }
+<a name="line197"></a>};
+<a name="line198"></a>
+<a name="line199"></a>
+<a name="line200"></a>/**
+<a name="line201"></a> * Prints the serialized field to the printer.
+<a name="line202"></a> * @param {goog.proto2.Message} message The parent message.
+<a name="line203"></a> * @param {goog.proto2.FieldDescriptor} field The field to print.
+<a name="line204"></a> * @param {goog.proto2.TextFormatSerializer.Printer_} printer The printer to
+<a name="line205"></a> *    which the field will be printed.
+<a name="line206"></a> * @private
+<a name="line207"></a> */
+<a name="line208"></a>goog.proto2.TextFormatSerializer.prototype.printField_ =
+<a name="line209"></a>    function(message, field, printer) {
+<a name="line210"></a>  // Skip fields not present.
+<a name="line211"></a>  if (!message.has(field)) {
+<a name="line212"></a>    return;
+<a name="line213"></a>  }
+<a name="line214"></a>
+<a name="line215"></a>  var count = message.countOf(field);
+<a name="line216"></a>  for (var i = 0; i &lt; count; ++i) {
+<a name="line217"></a>    // Field name.
+<a name="line218"></a>    printer.append(field.getName());
+<a name="line219"></a>
+<a name="line220"></a>    // Field delimiter.
+<a name="line221"></a>    if (field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.MESSAGE ||
+<a name="line222"></a>        field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.GROUP) {
+<a name="line223"></a>      printer.append(&#39; {&#39;);
+<a name="line224"></a>      printer.appendLine();
+<a name="line225"></a>      printer.indent();
+<a name="line226"></a>    } else {
+<a name="line227"></a>      printer.append(&#39;: &#39;);
+<a name="line228"></a>    }
+<a name="line229"></a>
+<a name="line230"></a>    // Write the field value.
+<a name="line231"></a>    this.printFieldValue_(message.get(field, i), field, printer);
+<a name="line232"></a>
+<a name="line233"></a>    // Close the field.
+<a name="line234"></a>    if (field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.MESSAGE ||
+<a name="line235"></a>        field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.GROUP) {
+<a name="line236"></a>      printer.dedent();
+<a name="line237"></a>      printer.append(&#39;}&#39;);
+<a name="line238"></a>      printer.appendLine();
+<a name="line239"></a>    } else {
+<a name="line240"></a>      printer.appendLine();
+<a name="line241"></a>    }
+<a name="line242"></a>  }
+<a name="line243"></a>};
+<a name="line244"></a>
+<a name="line245"></a>
+<a name="line246"></a>////////////////////////////////////////////////////////////////////////////////
+<a name="line247"></a>
+<a name="line248"></a>
+<a name="line249"></a>
+<a name="line250"></a>/**
+<a name="line251"></a> * Helper class used by the text format serializer for pretty-printing text.
+<a name="line252"></a> * @constructor
+<a name="line253"></a> * @private
+<a name="line254"></a> */
+<a name="line255"></a>goog.proto2.TextFormatSerializer.Printer_ = function() {
+<a name="line256"></a>  /**
+<a name="line257"></a>   * The current indentation count.
+<a name="line258"></a>   * @type {number}
+<a name="line259"></a>   * @private
+<a name="line260"></a>   */
+<a name="line261"></a>  this.indentation_ = 0;
+<a name="line262"></a>
+<a name="line263"></a>  /**
+<a name="line264"></a>   * The buffer of string pieces.
+<a name="line265"></a>   * @type {Array.&lt;string&gt;}
+<a name="line266"></a>   * @private
+<a name="line267"></a>   */
+<a name="line268"></a>  this.buffer_ = [];
+<a name="line269"></a>
+<a name="line270"></a>  /**
+<a name="line271"></a>   * Whether indentation is required before the next append of characters.
+<a name="line272"></a>   * @type {boolean}
+<a name="line273"></a>   * @private
+<a name="line274"></a>   */
+<a name="line275"></a>  this.requiresIndentation_ = true;
+<a name="line276"></a>};
+<a name="line277"></a>
+<a name="line278"></a>
+<a name="line279"></a>/**
+<a name="line280"></a> * @return {string} The contents of the printer.
+<a name="line281"></a> */
+<a name="line282"></a>goog.proto2.TextFormatSerializer.Printer_.prototype.toString = function() {
+<a name="line283"></a>  return this.buffer_.join(&#39;&#39;);
+<a name="line284"></a>};
+<a name="line285"></a>
+<a name="line286"></a>
+<a name="line287"></a>/**
+<a name="line288"></a> * Increases the indentation in the printer.
+<a name="line289"></a> */
+<a name="line290"></a>goog.proto2.TextFormatSerializer.Printer_.prototype.indent = function() {
+<a name="line291"></a>  this.indentation_ += 2;
+<a name="line292"></a>};
+<a name="line293"></a>
+<a name="line294"></a>
+<a name="line295"></a>/**
+<a name="line296"></a> * Decreases the indentation in the printer.
+<a name="line297"></a> */
+<a name="line298"></a>goog.proto2.TextFormatSerializer.Printer_.prototype.dedent = function() {
+<a name="line299"></a>  this.indentation_ -= 2;
+<a name="line300"></a>  goog.asserts.assert(this.indentation_ &gt;= 0);
+<a name="line301"></a>};
+<a name="line302"></a>
+<a name="line303"></a>
+<a name="line304"></a>/**
+<a name="line305"></a> * Appends the given value to the printer.
+<a name="line306"></a> * @param {*} value The value to append.
+<a name="line307"></a> */
+<a name="line308"></a>goog.proto2.TextFormatSerializer.Printer_.prototype.append = function(value) {
+<a name="line309"></a>  if (this.requiresIndentation_) {
+<a name="line310"></a>    for (var i = 0; i &lt; this.indentation_; ++i) {
+<a name="line311"></a>      this.buffer_.push(&#39; &#39;);
+<a name="line312"></a>    }
+<a name="line313"></a>    this.requiresIndentation_ = false;
+<a name="line314"></a>  }
+<a name="line315"></a>
+<a name="line316"></a>  this.buffer_.push(value.toString());
+<a name="line317"></a>};
+<a name="line318"></a>
+<a name="line319"></a>
+<a name="line320"></a>/**
+<a name="line321"></a> * Appends a newline to the printer.
+<a name="line322"></a> */
+<a name="line323"></a>goog.proto2.TextFormatSerializer.Printer_.prototype.appendLine = function() {
+<a name="line324"></a>  this.buffer_.push(&#39;\n&#39;);
+<a name="line325"></a>  this.requiresIndentation_ = true;
+<a name="line326"></a>};
+<a name="line327"></a>
+<a name="line328"></a>
+<a name="line329"></a>////////////////////////////////////////////////////////////////////////////////
+<a name="line330"></a>
+<a name="line331"></a>
+<a name="line332"></a>
+<a name="line333"></a>/**
+<a name="line334"></a> * Helper class for tokenizing the text format.
+<a name="line335"></a> * @param {string} data The string data to tokenize.
+<a name="line336"></a> * @param {boolean=} opt_ignoreWhitespace If true, whitespace tokens will not
+<a name="line337"></a> *    be reported by the tokenizer.
+<a name="line338"></a> * @constructor
+<a name="line339"></a> * @private
+<a name="line340"></a> */
+<a name="line341"></a>goog.proto2.TextFormatSerializer.Tokenizer_ =
+<a name="line342"></a>    function(data, opt_ignoreWhitespace) {
+<a name="line343"></a>
+<a name="line344"></a>  /**
+<a name="line345"></a>   * Whether to skip whitespace tokens on output.
+<a name="line346"></a>   * @type {boolean}
+<a name="line347"></a>   * @private
+<a name="line348"></a>   */
+<a name="line349"></a>  this.ignoreWhitespace_ = !!opt_ignoreWhitespace;
+<a name="line350"></a>
+<a name="line351"></a>  /**
+<a name="line352"></a>   * The data being tokenized.
+<a name="line353"></a>   * @type {string}
+<a name="line354"></a>   * @private
+<a name="line355"></a>   */
+<a name="line356"></a>  this.data_ = data;
+<a name="line357"></a>
+<a name="line358"></a>  /**
+<a name="line359"></a>   * The current index in the data.
+<a name="line360"></a>   * @type {number}
+<a name="line361"></a>   * @private
+<a name="line362"></a>   */
+<a name="line363"></a>  this.index_ = 0;
+<a name="line364"></a>
+<a name="line365"></a>  /**
+<a name="line366"></a>   * The data string starting at the current index.
+<a name="line367"></a>   * @type {string}
+<a name="line368"></a>   * @private
+<a name="line369"></a>   */
+<a name="line370"></a>  this.currentData_ = data;
+<a name="line371"></a>
+<a name="line372"></a>  /**
+<a name="line373"></a>   * The current token type.
+<a name="line374"></a>   * @type {goog.proto2.TextFormatSerializer.Tokenizer_.Token}
+<a name="line375"></a>   * @private
+<a name="line376"></a>   */
+<a name="line377"></a>  this.current_ = {
+<a name="line378"></a>    type: goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes.END,
+<a name="line379"></a>    value: null
+<a name="line380"></a>  };
+<a name="line381"></a>};
+<a name="line382"></a>
+<a name="line383"></a>
+<a name="line384"></a>/**
+<a name="line385"></a> * @typedef {{type: goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes,
+<a name="line386"></a> *            value: ?string}}
+<a name="line387"></a> */
+<a name="line388"></a>goog.proto2.TextFormatSerializer.Tokenizer_.Token;
+<a name="line389"></a>
+<a name="line390"></a>
+<a name="line391"></a>/**
+<a name="line392"></a> * @return {goog.proto2.TextFormatSerializer.Tokenizer_.Token} The current
+<a name="line393"></a> *     token.
+<a name="line394"></a> */
+<a name="line395"></a>goog.proto2.TextFormatSerializer.Tokenizer_.prototype.getCurrent = function() {
+<a name="line396"></a>  return this.current_;
+<a name="line397"></a>};
+<a name="line398"></a>
+<a name="line399"></a>
+<a name="line400"></a>/**
+<a name="line401"></a> * An enumeration of all the token types.
+<a name="line402"></a> * @enum {*}
+<a name="line403"></a> */
+<a name="line404"></a>goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes = {
+<a name="line405"></a>  END: /---end---/,
+<a name="line406"></a>  IDENTIFIER: /^[a-zA-Z][a-zA-Z0-9_]*/,
+<a name="line407"></a>  NUMBER: /^(0x[0-9a-f]+)|(([-])?[0-9][0-9]*(\.?[0-9]+)?([f])?)/,
+<a name="line408"></a>  COMMENT: /^#.*/,
+<a name="line409"></a>  OPEN_BRACE: /^{/,
+<a name="line410"></a>  CLOSE_BRACE: /^}/,
+<a name="line411"></a>  OPEN_TAG: /^&lt;/,
+<a name="line412"></a>  CLOSE_TAG: /^&gt;/,
+<a name="line413"></a>  OPEN_LIST: /^\[/,
+<a name="line414"></a>  CLOSE_LIST: /^\]/,
+<a name="line415"></a>  STRING: new RegExp(&#39;^&quot;([^&quot;\\\\]|\\\\.)*&quot;&#39;),
+<a name="line416"></a>  COLON: /^:/,
+<a name="line417"></a>  COMMA: /^,/,
+<a name="line418"></a>  SEMI: /^;/,
+<a name="line419"></a>  WHITESPACE: /^\s/
+<a name="line420"></a>};
+<a name="line421"></a>
+<a name="line422"></a>
+<a name="line423"></a>/**
+<a name="line424"></a> * Advances to the next token.
+<a name="line425"></a> * @return {boolean} True if a valid token was found, false if the end was
+<a name="line426"></a> *    reached or no valid token was found.
+<a name="line427"></a> */
+<a name="line428"></a>goog.proto2.TextFormatSerializer.Tokenizer_.prototype.next = function() {
+<a name="line429"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line430"></a>
+<a name="line431"></a>  // Skip any whitespace if requested.
+<a name="line432"></a>  while (this.nextInternal_()) {
+<a name="line433"></a>    if (this.getCurrent().type != types.WHITESPACE || !this.ignoreWhitespace_) {
+<a name="line434"></a>      return true;
+<a name="line435"></a>    }
+<a name="line436"></a>  }
+<a name="line437"></a>
+<a name="line438"></a>  // If we reach this point, set the current token to END.
+<a name="line439"></a>  this.current_ = {
+<a name="line440"></a>    type: goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes.END,
+<a name="line441"></a>    value: null
+<a name="line442"></a>  };
+<a name="line443"></a>
+<a name="line444"></a>  return false;
+<a name="line445"></a>};
+<a name="line446"></a>
+<a name="line447"></a>
+<a name="line448"></a>/**
+<a name="line449"></a> * Internal method for determining the next token.
+<a name="line450"></a> * @return {boolean} True if a next token was found, false otherwise.
+<a name="line451"></a> * @private
+<a name="line452"></a> */
+<a name="line453"></a>goog.proto2.TextFormatSerializer.Tokenizer_.prototype.nextInternal_ =
+<a name="line454"></a>    function() {
+<a name="line455"></a>  if (this.index_ &gt;= this.data_.length) {
+<a name="line456"></a>    return false;
+<a name="line457"></a>  }
+<a name="line458"></a>
+<a name="line459"></a>  var data = this.currentData_;
+<a name="line460"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line461"></a>  var next = null;
+<a name="line462"></a>
+<a name="line463"></a>  // Loop through each token type and try to match the beginning of the string
+<a name="line464"></a>  // with the token&#39;s regular expression.
+<a name="line465"></a>  goog.object.forEach(types, function(type, id) {
+<a name="line466"></a>    if (next || type == types.END) {
+<a name="line467"></a>      return;
+<a name="line468"></a>    }
+<a name="line469"></a>
+<a name="line470"></a>    // Note: This regular expression check is at, minimum, O(n).
+<a name="line471"></a>    var info = type.exec(data);
+<a name="line472"></a>    if (info &amp;&amp; info.index == 0) {
+<a name="line473"></a>      next = {
+<a name="line474"></a>        type: type,
+<a name="line475"></a>        value: info[0]
+<a name="line476"></a>      };
+<a name="line477"></a>    }
+<a name="line478"></a>  });
+<a name="line479"></a>
+<a name="line480"></a>  // Advance the index by the length of the token.
+<a name="line481"></a>  if (next) {
+<a name="line482"></a>    this.current_ =
+<a name="line483"></a>        (/** @type {goog.proto2.TextFormatSerializer.Tokenizer_.Token} */next);
+<a name="line484"></a>    this.index_ += next.value.length;
+<a name="line485"></a>    this.currentData_ = this.currentData_.substring(next.value.length);
+<a name="line486"></a>  }
+<a name="line487"></a>
+<a name="line488"></a>  return !!next;
+<a name="line489"></a>};
+<a name="line490"></a>
+<a name="line491"></a>
+<a name="line492"></a>////////////////////////////////////////////////////////////////////////////////
+<a name="line493"></a>
+<a name="line494"></a>
+<a name="line495"></a>
+<a name="line496"></a>/**
+<a name="line497"></a> * Helper class for parsing the text format.
+<a name="line498"></a> * @constructor
+<a name="line499"></a> */
+<a name="line500"></a>goog.proto2.TextFormatSerializer.Parser = function() {
+<a name="line501"></a>  /**
+<a name="line502"></a>   * The error during parsing, if any.
+<a name="line503"></a>   * @type {?string}
+<a name="line504"></a>   * @private
+<a name="line505"></a>   */
+<a name="line506"></a>  this.error_ = null;
+<a name="line507"></a>
+<a name="line508"></a>  /**
+<a name="line509"></a>   * The current tokenizer.
+<a name="line510"></a>   * @type {goog.proto2.TextFormatSerializer.Tokenizer_}
+<a name="line511"></a>   * @private
+<a name="line512"></a>   */
+<a name="line513"></a>  this.tokenizer_ = null;
+<a name="line514"></a>
+<a name="line515"></a>  /**
+<a name="line516"></a>   * Whether to ignore missing fields in the proto when parsing.
+<a name="line517"></a>   * @type {boolean}
+<a name="line518"></a>   * @private
+<a name="line519"></a>   */
+<a name="line520"></a>  this.ignoreMissingFields_ = false;
+<a name="line521"></a>};
+<a name="line522"></a>
+<a name="line523"></a>
+<a name="line524"></a>/**
+<a name="line525"></a> * Parses the given data, filling the message as it goes.
+<a name="line526"></a> * @param {goog.proto2.Message} message The message to fill.
+<a name="line527"></a> * @param {string} data The text format data.
+<a name="line528"></a> * @param {boolean=} opt_ignoreMissingFields If true, fields missing in the
+<a name="line529"></a> *     proto will be ignored.
+<a name="line530"></a> * @return {boolean} True on success, false on failure. On failure, the
+<a name="line531"></a> *     getError method can be called to get the reason for failure.
+<a name="line532"></a> */
+<a name="line533"></a>goog.proto2.TextFormatSerializer.Parser.prototype.parse =
+<a name="line534"></a>    function(message, data, opt_ignoreMissingFields) {
+<a name="line535"></a>  this.error_ = null;
+<a name="line536"></a>  this.ignoreMissingFields_ = !!opt_ignoreMissingFields;
+<a name="line537"></a>  this.tokenizer_ = new goog.proto2.TextFormatSerializer.Tokenizer_(data, true);
+<a name="line538"></a>  this.tokenizer_.next();
+<a name="line539"></a>  return this.consumeMessage_(message, &#39;&#39;);
+<a name="line540"></a>};
+<a name="line541"></a>
+<a name="line542"></a>
+<a name="line543"></a>/**
+<a name="line544"></a> * @return {?string} The parse error, if any.
+<a name="line545"></a> */
+<a name="line546"></a>goog.proto2.TextFormatSerializer.Parser.prototype.getError = function() {
+<a name="line547"></a>  return this.error_;
+<a name="line548"></a>};
+<a name="line549"></a>
+<a name="line550"></a>
+<a name="line551"></a>/**
+<a name="line552"></a> * Reports a parse error.
+<a name="line553"></a> * @param {string} msg The error message.
+<a name="line554"></a> * @private
+<a name="line555"></a> */
+<a name="line556"></a>goog.proto2.TextFormatSerializer.Parser.prototype.reportError_ =
+<a name="line557"></a>    function(msg) {
+<a name="line558"></a>  this.error_ = msg;
+<a name="line559"></a>};
+<a name="line560"></a>
+<a name="line561"></a>
+<a name="line562"></a>/**
+<a name="line563"></a> * Attempts to consume the given message.
+<a name="line564"></a> * @param {goog.proto2.Message} message The message to consume and fill. If
+<a name="line565"></a> *    null, then the message contents will be consumed without ever being set
+<a name="line566"></a> *    to anything.
+<a name="line567"></a> * @param {string} delimiter The delimiter expected at the end of the message.
+<a name="line568"></a> * @return {boolean} True on success, false otherwise.
+<a name="line569"></a> * @private
+<a name="line570"></a> */
+<a name="line571"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeMessage_ =
+<a name="line572"></a>    function(message, delimiter) {
+<a name="line573"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line574"></a>  while (!this.lookingAt_(&#39;&gt;&#39;) &amp;&amp; !this.lookingAt_(&#39;}&#39;) &amp;&amp;
+<a name="line575"></a>         !this.lookingAtType_(types.END)) {
+<a name="line576"></a>    if (!this.consumeField_(message)) { return false; }
+<a name="line577"></a>  }
+<a name="line578"></a>
+<a name="line579"></a>  if (delimiter) {
+<a name="line580"></a>    if (!this.consume_(delimiter)) { return false; }
+<a name="line581"></a>  } else {
+<a name="line582"></a>    if (!this.lookingAtType_(types.END)) {
+<a name="line583"></a>      this.reportError_(&#39;Expected END token&#39;);
+<a name="line584"></a>    }
+<a name="line585"></a>  }
+<a name="line586"></a>
+<a name="line587"></a>  return true;
+<a name="line588"></a>};
+<a name="line589"></a>
+<a name="line590"></a>
+<a name="line591"></a>/**
+<a name="line592"></a> * Attempts to consume the value of the given field.
+<a name="line593"></a> * @param {goog.proto2.Message} message The parent message.
+<a name="line594"></a> * @param {goog.proto2.FieldDescriptor} field The field.
+<a name="line595"></a> * @return {boolean} True on success, false otherwise.
+<a name="line596"></a> * @private
+<a name="line597"></a> */
+<a name="line598"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeFieldValue_ =
+<a name="line599"></a>    function(message, field) {
+<a name="line600"></a>  var value = this.getFieldValue_(field);
+<a name="line601"></a>  if (goog.isNull(value)) { return false; }
+<a name="line602"></a>
+<a name="line603"></a>  if (field.isRepeated()) {
+<a name="line604"></a>    message.add(field, value);
+<a name="line605"></a>  } else {
+<a name="line606"></a>    message.set(field, value);
+<a name="line607"></a>  }
+<a name="line608"></a>
+<a name="line609"></a>  return true;
+<a name="line610"></a>};
+<a name="line611"></a>
+<a name="line612"></a>
+<a name="line613"></a>/**
+<a name="line614"></a> * Attempts to convert a string to a number.
+<a name="line615"></a> * @param {string} num in hexadecimal or float format.
+<a name="line616"></a> * @return {?number} The converted number or null on error.
+<a name="line617"></a> * @private
+<a name="line618"></a> */
+<a name="line619"></a>goog.proto2.TextFormatSerializer.Parser.prototype.getNumberFromString_ =
+<a name="line620"></a>    function(num) {
+<a name="line621"></a>  var numberString = num;
+<a name="line622"></a>  var numberBase = 10;
+<a name="line623"></a>  if (num.substr(0, 2) == &#39;0x&#39;) {
+<a name="line624"></a>    // ASCII output can be printed in unsigned hexadecimal format
+<a name="line625"></a>    // occasionally. e.g. 0xaed9b43
+<a name="line626"></a>    numberString = num.substr(2);
+<a name="line627"></a>    numberBase = 16;
+<a name="line628"></a>  } else if (goog.string.endsWith(num, &#39;f&#39;)) {
+<a name="line629"></a>    numberString = num.substring(0, num.length - 1);
+<a name="line630"></a>  }
+<a name="line631"></a>
+<a name="line632"></a>  var actualNumber = numberBase == 10 ?
+<a name="line633"></a>      parseFloat(numberString) : parseInt(numberString, numberBase);
+<a name="line634"></a>  if (actualNumber.toString(numberBase) != numberString) {
+<a name="line635"></a>    this.reportError_(&#39;Unknown number: &#39; + num);
+<a name="line636"></a>    return null;
+<a name="line637"></a>  }
+<a name="line638"></a>  return actualNumber;
+<a name="line639"></a>};
+<a name="line640"></a>
+<a name="line641"></a>
+<a name="line642"></a>/**
+<a name="line643"></a> * Attempts to parse the given field&#39;s value from the stream.
+<a name="line644"></a> * @param {goog.proto2.FieldDescriptor} field The field.
+<a name="line645"></a> * @return {*} The field&#39;s value or null if none.
+<a name="line646"></a> * @private
+<a name="line647"></a> */
+<a name="line648"></a>goog.proto2.TextFormatSerializer.Parser.prototype.getFieldValue_ =
+<a name="line649"></a>    function(field) {
+<a name="line650"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line651"></a>  switch (field.getFieldType()) {
+<a name="line652"></a>    case goog.proto2.FieldDescriptor.FieldType.DOUBLE:
+<a name="line653"></a>    case goog.proto2.FieldDescriptor.FieldType.FLOAT:
+<a name="line654"></a>    case goog.proto2.FieldDescriptor.FieldType.INT32:
+<a name="line655"></a>    case goog.proto2.FieldDescriptor.FieldType.UINT32:
+<a name="line656"></a>    case goog.proto2.FieldDescriptor.FieldType.FIXED32:
+<a name="line657"></a>    case goog.proto2.FieldDescriptor.FieldType.SFIXED32:
+<a name="line658"></a>    case goog.proto2.FieldDescriptor.FieldType.SINT32:
+<a name="line659"></a>      var num = this.consumeNumber_();
+<a name="line660"></a>      if (!num) { return null; }
+<a name="line661"></a>
+<a name="line662"></a>      return this.getNumberFromString_(num);
+<a name="line663"></a>
+<a name="line664"></a>    case goog.proto2.FieldDescriptor.FieldType.INT64:
+<a name="line665"></a>    case goog.proto2.FieldDescriptor.FieldType.UINT64:
+<a name="line666"></a>    case goog.proto2.FieldDescriptor.FieldType.FIXED64:
+<a name="line667"></a>    case goog.proto2.FieldDescriptor.FieldType.SFIXED64:
+<a name="line668"></a>    case goog.proto2.FieldDescriptor.FieldType.SINT64:
+<a name="line669"></a>      var num = this.consumeNumber_();
+<a name="line670"></a>      if (!num) { return null; }
+<a name="line671"></a>
+<a name="line672"></a>      if (field.getNativeType() == Number) {
+<a name="line673"></a>        // 64-bit number stored as a number.
+<a name="line674"></a>        return this.getNumberFromString_(num);
+<a name="line675"></a>      }
+<a name="line676"></a>
+<a name="line677"></a>      return num; // 64-bit numbers are by default stored as strings.
+<a name="line678"></a>
+<a name="line679"></a>    case goog.proto2.FieldDescriptor.FieldType.BOOL:
+<a name="line680"></a>      var ident = this.consumeIdentifier_();
+<a name="line681"></a>      if (!ident) { return null; }
+<a name="line682"></a>
+<a name="line683"></a>      switch (ident) {
+<a name="line684"></a>        case &#39;true&#39;: return true;
+<a name="line685"></a>        case &#39;false&#39;: return false;
+<a name="line686"></a>        default:
+<a name="line687"></a>          this.reportError_(&#39;Unknown type for bool: &#39; + ident);
+<a name="line688"></a>          return null;
+<a name="line689"></a>      }
+<a name="line690"></a>
+<a name="line691"></a>    case goog.proto2.FieldDescriptor.FieldType.ENUM:
+<a name="line692"></a>      if (this.lookingAtType_(types.NUMBER)) {
+<a name="line693"></a>        return this.consumeNumber_();
+<a name="line694"></a>      } else {
+<a name="line695"></a>        // Search the enum type for a matching key.
+<a name="line696"></a>        var name = this.consumeIdentifier_();
+<a name="line697"></a>        if (!name) {
+<a name="line698"></a>          return null;
+<a name="line699"></a>        }
+<a name="line700"></a>
+<a name="line701"></a>        var enumValue = field.getNativeType()[name];
+<a name="line702"></a>        if (enumValue == null) {
+<a name="line703"></a>          this.reportError_(&#39;Unknown enum value: &#39; + name);
+<a name="line704"></a>          return null;
+<a name="line705"></a>        }
+<a name="line706"></a>
+<a name="line707"></a>        return enumValue;
+<a name="line708"></a>      }
+<a name="line709"></a>
+<a name="line710"></a>    case goog.proto2.FieldDescriptor.FieldType.BYTES:
+<a name="line711"></a>    case goog.proto2.FieldDescriptor.FieldType.STRING:
+<a name="line712"></a>      return this.consumeString_();
+<a name="line713"></a>  }
+<a name="line714"></a>};
+<a name="line715"></a>
+<a name="line716"></a>
+<a name="line717"></a>/**
+<a name="line718"></a> * Attempts to consume a nested message.
+<a name="line719"></a> * @param {goog.proto2.Message} message The parent message.
+<a name="line720"></a> * @param {goog.proto2.FieldDescriptor} field The field.
+<a name="line721"></a> * @return {boolean} True on success, false otherwise.
+<a name="line722"></a> * @private
+<a name="line723"></a> */
+<a name="line724"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeNestedMessage_ =
+<a name="line725"></a>    function(message, field) {
+<a name="line726"></a>  var delimiter = &#39;&#39;;
+<a name="line727"></a>
+<a name="line728"></a>  // Messages support both &lt; &gt; and { } as delimiters for legacy reasons.
+<a name="line729"></a>  if (this.tryConsume_(&#39;&lt;&#39;)) {
+<a name="line730"></a>    delimiter = &#39;&gt;&#39;;
+<a name="line731"></a>  } else {
+<a name="line732"></a>    if (!this.consume_(&#39;{&#39;)) { return false; }
+<a name="line733"></a>    delimiter = &#39;}&#39;;
+<a name="line734"></a>  }
+<a name="line735"></a>
+<a name="line736"></a>  var msg = field.getFieldMessageType().createMessageInstance();
+<a name="line737"></a>  var result = this.consumeMessage_(msg, delimiter);
+<a name="line738"></a>  if (!result) { return false; }
+<a name="line739"></a>
+<a name="line740"></a>  // Add the message to the parent message.
+<a name="line741"></a>  if (field.isRepeated()) {
+<a name="line742"></a>    message.add(field, msg);
+<a name="line743"></a>  } else {
+<a name="line744"></a>    message.set(field, msg);
+<a name="line745"></a>  }
+<a name="line746"></a>
+<a name="line747"></a>  return true;
+<a name="line748"></a>};
+<a name="line749"></a>
+<a name="line750"></a>
+<a name="line751"></a>/**
+<a name="line752"></a> * Attempts to consume the value of an unknown field. This method uses
+<a name="line753"></a> * heuristics to try to consume just the right tokens.
+<a name="line754"></a> * @return {boolean} True on success, false otherwise.
+<a name="line755"></a> * @private
+<a name="line756"></a> */
+<a name="line757"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeUnknownFieldValue_ =
+<a name="line758"></a>    function() {
+<a name="line759"></a>  // : is optional.
+<a name="line760"></a>  this.tryConsume_(&#39;:&#39;);
+<a name="line761"></a>
+<a name="line762"></a>  // Handle form: [.. , ... , ..]
+<a name="line763"></a>  if (this.tryConsume_(&#39;[&#39;)) {
+<a name="line764"></a>    while (true) {
+<a name="line765"></a>      this.tokenizer_.next();
+<a name="line766"></a>      if (this.tryConsume_(&#39;]&#39;)) {
+<a name="line767"></a>        break;
+<a name="line768"></a>      }
+<a name="line769"></a>      if (!this.consume_(&#39;,&#39;)) { return false; }
+<a name="line770"></a>    }
+<a name="line771"></a>
+<a name="line772"></a>    return true;
+<a name="line773"></a>  }
+<a name="line774"></a>
+<a name="line775"></a>  // Handle nested messages/groups.
+<a name="line776"></a>  if (this.tryConsume_(&#39;&lt;&#39;)) {
+<a name="line777"></a>    return this.consumeMessage_(null /* unknown */, &#39;&gt;&#39;);
+<a name="line778"></a>  } else if (this.tryConsume_(&#39;{&#39;)) {
+<a name="line779"></a>    return this.consumeMessage_(null /* unknown */, &#39;}&#39;);
+<a name="line780"></a>  } else {
+<a name="line781"></a>    // Otherwise, consume a single token for the field value.
+<a name="line782"></a>    this.tokenizer_.next();
+<a name="line783"></a>  }
+<a name="line784"></a>
+<a name="line785"></a>  return true;
+<a name="line786"></a>};
+<a name="line787"></a>
+<a name="line788"></a>
+<a name="line789"></a>/**
+<a name="line790"></a> * Attempts to consume a field under a message.
+<a name="line791"></a> * @param {goog.proto2.Message} message The parent message. If null, then the
+<a name="line792"></a> *     field value will be consumed without being assigned to anything.
+<a name="line793"></a> * @return {boolean} True on success, false otherwise.
+<a name="line794"></a> * @private
+<a name="line795"></a> */
+<a name="line796"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeField_ =
+<a name="line797"></a>    function(message) {
+<a name="line798"></a>  var fieldName = this.consumeIdentifier_();
+<a name="line799"></a>  if (!fieldName) {
+<a name="line800"></a>    this.reportError_(&#39;Missing field name&#39;);
+<a name="line801"></a>    return false;
+<a name="line802"></a>  }
+<a name="line803"></a>
+<a name="line804"></a>  var field = null;
+<a name="line805"></a>  if (message) {
+<a name="line806"></a>    field = message.getDescriptor().findFieldByName(fieldName.toString());
+<a name="line807"></a>  }
+<a name="line808"></a>
+<a name="line809"></a>  if (field == null) {
+<a name="line810"></a>    if (this.ignoreMissingFields_) {
+<a name="line811"></a>      return this.consumeUnknownFieldValue_();
+<a name="line812"></a>    } else {
+<a name="line813"></a>      this.reportError_(&#39;Unknown field: &#39; + fieldName);
+<a name="line814"></a>      return false;
+<a name="line815"></a>    }
+<a name="line816"></a>  }
+<a name="line817"></a>
+<a name="line818"></a>  if (field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.MESSAGE ||
+<a name="line819"></a>      field.getFieldType() == goog.proto2.FieldDescriptor.FieldType.GROUP) {
+<a name="line820"></a>    // : is optional here.
+<a name="line821"></a>    this.tryConsume_(&#39;:&#39;);
+<a name="line822"></a>    if (!this.consumeNestedMessage_(message, field)) { return false; }
+<a name="line823"></a>  } else {
+<a name="line824"></a>    // Long Format: &quot;someField: 123&quot;
+<a name="line825"></a>    // Short Format: &quot;someField: [123, 456, 789]&quot;
+<a name="line826"></a>    if (!this.consume_(&#39;:&#39;)) { return false; }
+<a name="line827"></a>
+<a name="line828"></a>    if (field.isRepeated() &amp;&amp; this.tryConsume_(&#39;[&#39;)) {
+<a name="line829"></a>      // Short repeated format, e.g.  &quot;foo: [1, 2, 3]&quot;
+<a name="line830"></a>      while (true) {
+<a name="line831"></a>        if (!this.consumeFieldValue_(message, field)) { return false; }
+<a name="line832"></a>        if (this.tryConsume_(&#39;]&#39;)) {
+<a name="line833"></a>          break;
+<a name="line834"></a>        }
+<a name="line835"></a>        if (!this.consume_(&#39;,&#39;)) { return false; }
+<a name="line836"></a>      }
+<a name="line837"></a>    } else {
+<a name="line838"></a>      // Normal field format.
+<a name="line839"></a>      if (!this.consumeFieldValue_(message, field)) { return false; }
+<a name="line840"></a>    }
+<a name="line841"></a>  }
+<a name="line842"></a>
+<a name="line843"></a>  // For historical reasons, fields may optionally be separated by commas or
+<a name="line844"></a>  // semicolons.
+<a name="line845"></a>  this.tryConsume_(&#39;,&#39;) || this.tryConsume_(&#39;;&#39;);
+<a name="line846"></a>  return true;
+<a name="line847"></a>};
+<a name="line848"></a>
+<a name="line849"></a>
+<a name="line850"></a>/**
+<a name="line851"></a> * Attempts to consume a token with the given string value.
+<a name="line852"></a> * @param {string} value The string value for the token.
+<a name="line853"></a> * @return {boolean} True if the token matches and was consumed, false
+<a name="line854"></a> *    otherwise.
+<a name="line855"></a> * @private
+<a name="line856"></a> */
+<a name="line857"></a>goog.proto2.TextFormatSerializer.Parser.prototype.tryConsume_ =
+<a name="line858"></a>    function(value) {
+<a name="line859"></a>  if (this.lookingAt_(value)) {
+<a name="line860"></a>    this.tokenizer_.next();
+<a name="line861"></a>    return true;
+<a name="line862"></a>  }
+<a name="line863"></a>  return false;
+<a name="line864"></a>};
+<a name="line865"></a>
+<a name="line866"></a>
+<a name="line867"></a>/**
+<a name="line868"></a> * Consumes a token of the given type.
+<a name="line869"></a> * @param {goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes} type The type
+<a name="line870"></a> *     of the token to consume.
+<a name="line871"></a> * @return {?string} The string value of the token or null on error.
+<a name="line872"></a> * @private
+<a name="line873"></a> */
+<a name="line874"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeToken_ =
+<a name="line875"></a>    function(type) {
+<a name="line876"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line877"></a>  if (!this.lookingAtType_(type)) {
+<a name="line878"></a>    this.reportError_(&#39;Expected token type: &#39; + type);
+<a name="line879"></a>    return null;
+<a name="line880"></a>  }
+<a name="line881"></a>
+<a name="line882"></a>  var value = this.tokenizer_.getCurrent().value;
+<a name="line883"></a>  this.tokenizer_.next();
+<a name="line884"></a>  return value;
+<a name="line885"></a>};
+<a name="line886"></a>
+<a name="line887"></a>
+<a name="line888"></a>/**
+<a name="line889"></a> * Consumes an IDENTIFIER token.
+<a name="line890"></a> * @return {?string} The string value or null on error.
+<a name="line891"></a> * @private
+<a name="line892"></a> */
+<a name="line893"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeIdentifier_ =
+<a name="line894"></a>    function() {
+<a name="line895"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line896"></a>  return this.consumeToken_(types.IDENTIFIER);
+<a name="line897"></a>};
+<a name="line898"></a>
+<a name="line899"></a>
+<a name="line900"></a>/**
+<a name="line901"></a> * Consumes a NUMBER token.
+<a name="line902"></a> * @return {?string} The string value or null on error.
+<a name="line903"></a> * @private
+<a name="line904"></a> */
+<a name="line905"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeNumber_ =
+<a name="line906"></a>    function() {
+<a name="line907"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line908"></a>  return this.consumeToken_(types.NUMBER);
+<a name="line909"></a>};
+<a name="line910"></a>
+<a name="line911"></a>
+<a name="line912"></a>/**
+<a name="line913"></a> * Consumes a STRING token.
+<a name="line914"></a> * @return {?string} The *deescaped* string value or null on error.
+<a name="line915"></a> * @private
+<a name="line916"></a> */
+<a name="line917"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consumeString_ =
+<a name="line918"></a>    function() {
+<a name="line919"></a>  var types = goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes;
+<a name="line920"></a>  var value = this.consumeToken_(types.STRING);
+<a name="line921"></a>  if (!value) {
+<a name="line922"></a>    return null;
+<a name="line923"></a>  }
+<a name="line924"></a>
+<a name="line925"></a>  return goog.json.parse(value).toString();
+<a name="line926"></a>};
+<a name="line927"></a>
+<a name="line928"></a>
+<a name="line929"></a>/**
+<a name="line930"></a> * Consumes a token with the given value. If not found, reports an error.
+<a name="line931"></a> * @param {string} value The string value expected for the token.
+<a name="line932"></a> * @return {boolean} True on success, false otherwise.
+<a name="line933"></a> * @private
+<a name="line934"></a> */
+<a name="line935"></a>goog.proto2.TextFormatSerializer.Parser.prototype.consume_ = function(value) {
+<a name="line936"></a>  if (!this.tryConsume_(value)) {
+<a name="line937"></a>    this.reportError_(&#39;Expected token &quot;&#39; + value + &#39;&quot;&#39;);
+<a name="line938"></a>    return false;
+<a name="line939"></a>  }
+<a name="line940"></a>
+<a name="line941"></a>  return true;
+<a name="line942"></a>};
+<a name="line943"></a>
+<a name="line944"></a>
+<a name="line945"></a>/**
+<a name="line946"></a> * @param {string} value The value to check against.
+<a name="line947"></a> * @return {boolean} True if the current token has the given string value.
+<a name="line948"></a> * @private
+<a name="line949"></a> */
+<a name="line950"></a>goog.proto2.TextFormatSerializer.Parser.prototype.lookingAt_ =
+<a name="line951"></a>    function(value) {
+<a name="line952"></a>  return this.tokenizer_.getCurrent().value == value;
+<a name="line953"></a>};
+<a name="line954"></a>
+<a name="line955"></a>
+<a name="line956"></a>/**
+<a name="line957"></a> * @param {goog.proto2.TextFormatSerializer.Tokenizer_.TokenTypes} type The
+<a name="line958"></a> *     token type.
+<a name="line959"></a> * @return {boolean} True if the current token has the given type.
+<a name="line960"></a> * @private
+<a name="line961"></a> */
+<a name="line962"></a>goog.proto2.TextFormatSerializer.Parser.prototype.lookingAtType_ =
+<a name="line963"></a>    function(type) {
+<a name="line964"></a>  return this.tokenizer_.getCurrent().type == type;
+<a name="line965"></a>};
+</pre>
+
+
+</body>
+</html>

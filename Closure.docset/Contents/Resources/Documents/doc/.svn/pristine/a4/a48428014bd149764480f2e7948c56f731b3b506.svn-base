@@ -1,0 +1,852 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>popupbase.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_popupbase.js.html">popupbase.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Definition of the PopupBase class.
+<a name="line17"></a> *
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.ui.PopupBase&#39;);
+<a name="line21"></a>goog.provide(&#39;goog.ui.PopupBase.EventType&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.ui.PopupBase.Type&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.Timer&#39;);
+<a name="line25"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line26"></a>goog.require(&#39;goog.events.EventHandler&#39;);
+<a name="line27"></a>goog.require(&#39;goog.events.EventTarget&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line29"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line30"></a>goog.require(&#39;goog.fx.Transition&#39;);
+<a name="line31"></a>goog.require(&#39;goog.fx.Transition.EventType&#39;);
+<a name="line32"></a>goog.require(&#39;goog.style&#39;);
+<a name="line33"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>/**
+<a name="line38"></a> * The PopupBase class provides functionality for showing and hiding a generic
+<a name="line39"></a> * container element. It also provides the option for hiding the popup element
+<a name="line40"></a> * if the user clicks outside the popup or the popup loses focus.
+<a name="line41"></a> *
+<a name="line42"></a> * @constructor
+<a name="line43"></a> * @extends {goog.events.EventTarget}
+<a name="line44"></a> * @param {Element=} opt_element A DOM element for the popup.
+<a name="line45"></a> * @param {goog.ui.PopupBase.Type=} opt_type Type of popup.
+<a name="line46"></a> */
+<a name="line47"></a>goog.ui.PopupBase = function(opt_element, opt_type) {
+<a name="line48"></a>  goog.events.EventTarget.call(this);
+<a name="line49"></a>
+<a name="line50"></a>  /**
+<a name="line51"></a>   * An event handler to manage the events easily
+<a name="line52"></a>   * @type {goog.events.EventHandler}
+<a name="line53"></a>   * @private
+<a name="line54"></a>   */
+<a name="line55"></a>  this.handler_ = new goog.events.EventHandler(this);
+<a name="line56"></a>
+<a name="line57"></a>  this.setElement(opt_element || null);
+<a name="line58"></a>  if (opt_type) {
+<a name="line59"></a>    this.setType(opt_type);
+<a name="line60"></a>  }
+<a name="line61"></a>};
+<a name="line62"></a>goog.inherits(goog.ui.PopupBase, goog.events.EventTarget);
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * Constants for type of Popup
+<a name="line67"></a> * @enum {string}
+<a name="line68"></a> */
+<a name="line69"></a>goog.ui.PopupBase.Type = {
+<a name="line70"></a>  TOGGLE_DISPLAY: &#39;toggle_display&#39;,
+<a name="line71"></a>  MOVE_OFFSCREEN: &#39;move_offscreen&#39;
+<a name="line72"></a>};
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a> * The popup dom element that this Popup wraps.
+<a name="line77"></a> * @type {Element}
+<a name="line78"></a> * @private
+<a name="line79"></a> */
+<a name="line80"></a>goog.ui.PopupBase.prototype.element_ = null;
+<a name="line81"></a>
+<a name="line82"></a>
+<a name="line83"></a>/**
+<a name="line84"></a> * Whether the Popup dismisses itself it the user clicks outside of it or the
+<a name="line85"></a> * popup loses focus
+<a name="line86"></a> * @type {boolean}
+<a name="line87"></a> * @private
+<a name="line88"></a> */
+<a name="line89"></a>goog.ui.PopupBase.prototype.autoHide_ = true;
+<a name="line90"></a>
+<a name="line91"></a>
+<a name="line92"></a>/**
+<a name="line93"></a> * Clicks outside the popup but inside this element will cause the popup to
+<a name="line94"></a> * hide if autoHide_ is true. If this is null, then the entire document is used.
+<a name="line95"></a> * For example, you can use a body-size div so that clicks on the browser
+<a name="line96"></a> * scrollbar do not dismiss the popup.
+<a name="line97"></a> * @type {Element}
+<a name="line98"></a> * @private
+<a name="line99"></a> */
+<a name="line100"></a>goog.ui.PopupBase.prototype.autoHideRegion_ = null;
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>/**
+<a name="line104"></a> * Whether the popup is currently being shown.
+<a name="line105"></a> * @type {boolean}
+<a name="line106"></a> * @private
+<a name="line107"></a> */
+<a name="line108"></a>goog.ui.PopupBase.prototype.isVisible_ = false;
+<a name="line109"></a>
+<a name="line110"></a>
+<a name="line111"></a>/**
+<a name="line112"></a> * Whether the popup should hide itself asynchrously. This was added because
+<a name="line113"></a> * there are cases where hiding the element in mouse down handler in IE can
+<a name="line114"></a> * cause textinputs to get into a bad state if the element that had focus is
+<a name="line115"></a> * hidden.
+<a name="line116"></a> * @type {boolean}
+<a name="line117"></a> * @private
+<a name="line118"></a> */
+<a name="line119"></a>goog.ui.PopupBase.prototype.shouldHideAsync_ = false;
+<a name="line120"></a>
+<a name="line121"></a>
+<a name="line122"></a>/**
+<a name="line123"></a> * The time when the popup was last shown.
+<a name="line124"></a> * @type {number}
+<a name="line125"></a> * @private
+<a name="line126"></a> */
+<a name="line127"></a>goog.ui.PopupBase.prototype.lastShowTime_ = -1;
+<a name="line128"></a>
+<a name="line129"></a>
+<a name="line130"></a>/**
+<a name="line131"></a> * The time when the popup was last hidden.
+<a name="line132"></a> * @type {number}
+<a name="line133"></a> * @private
+<a name="line134"></a> */
+<a name="line135"></a>goog.ui.PopupBase.prototype.lastHideTime_ = -1;
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * Whether to hide when the escape key is pressed.
+<a name="line140"></a> * @type {boolean}
+<a name="line141"></a> * @private
+<a name="line142"></a> */
+<a name="line143"></a>goog.ui.PopupBase.prototype.hideOnEscape_ = false;
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * Whether to enable cross-iframe dismissal.
+<a name="line148"></a> * @type {boolean}
+<a name="line149"></a> * @private
+<a name="line150"></a> */
+<a name="line151"></a>goog.ui.PopupBase.prototype.enableCrossIframeDismissal_ = true;
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * The type of popup
+<a name="line156"></a> * @type {goog.ui.PopupBase.Type}
+<a name="line157"></a> * @private
+<a name="line158"></a> */
+<a name="line159"></a>goog.ui.PopupBase.prototype.type_ = goog.ui.PopupBase.Type.TOGGLE_DISPLAY;
+<a name="line160"></a>
+<a name="line161"></a>
+<a name="line162"></a>/**
+<a name="line163"></a> * Transition to play on showing the popup.
+<a name="line164"></a> * @type {goog.fx.Transition|undefined}
+<a name="line165"></a> * @private
+<a name="line166"></a> */
+<a name="line167"></a>goog.ui.PopupBase.prototype.showTransition_;
+<a name="line168"></a>
+<a name="line169"></a>
+<a name="line170"></a>/**
+<a name="line171"></a> * Transition to play on hiding the popup.
+<a name="line172"></a> * @type {goog.fx.Transition|undefined}
+<a name="line173"></a> * @private
+<a name="line174"></a> */
+<a name="line175"></a>goog.ui.PopupBase.prototype.hideTransition_;
+<a name="line176"></a>
+<a name="line177"></a>
+<a name="line178"></a>/**
+<a name="line179"></a> * Constants for event type fired by Popup
+<a name="line180"></a> *
+<a name="line181"></a> * @enum {string}
+<a name="line182"></a> */
+<a name="line183"></a>goog.ui.PopupBase.EventType = {
+<a name="line184"></a>  BEFORE_SHOW: &#39;beforeshow&#39;,
+<a name="line185"></a>  SHOW: &#39;show&#39;,
+<a name="line186"></a>  BEFORE_HIDE: &#39;beforehide&#39;,
+<a name="line187"></a>  HIDE: &#39;hide&#39;
+<a name="line188"></a>};
+<a name="line189"></a>
+<a name="line190"></a>
+<a name="line191"></a>/**
+<a name="line192"></a> * A time in ms used to debounce events that happen right after each other.
+<a name="line193"></a> *
+<a name="line194"></a> * A note about why this is necessary. There are two cases to consider.
+<a name="line195"></a> * First case, a popup will usually see a focus event right after it&#39;s launched
+<a name="line196"></a> * because it&#39;s typical for it to be launched in a mouse-down event which will
+<a name="line197"></a> * then move focus to the launching button. We don&#39;t want to think this is a
+<a name="line198"></a> * separate user action moving focus. Second case, a user clicks on the
+<a name="line199"></a> * launcher button to close the menu. In that case, we&#39;ll close the menu in the
+<a name="line200"></a> * focus event and then show it again because of the mouse down event, even
+<a name="line201"></a> * though the intention is to just close the menu. This workaround appears to
+<a name="line202"></a> * be the least intrusive fix.
+<a name="line203"></a> *
+<a name="line204"></a> * @type {number}
+<a name="line205"></a> */
+<a name="line206"></a>goog.ui.PopupBase.DEBOUNCE_DELAY_MS = 150;
+<a name="line207"></a>
+<a name="line208"></a>
+<a name="line209"></a>/**
+<a name="line210"></a> * @return {goog.ui.PopupBase.Type} The type of popup this is.
+<a name="line211"></a> */
+<a name="line212"></a>goog.ui.PopupBase.prototype.getType = function() {
+<a name="line213"></a>  return this.type_;
+<a name="line214"></a>};
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * Specifies the type of popup to use.
+<a name="line219"></a> *
+<a name="line220"></a> * @param {goog.ui.PopupBase.Type} type Type of popup.
+<a name="line221"></a> */
+<a name="line222"></a>goog.ui.PopupBase.prototype.setType = function(type) {
+<a name="line223"></a>  this.type_ = type;
+<a name="line224"></a>};
+<a name="line225"></a>
+<a name="line226"></a>
+<a name="line227"></a>/**
+<a name="line228"></a> * Returns whether the popup should hide itself asynchronously using a timeout
+<a name="line229"></a> * instead of synchronously.
+<a name="line230"></a> * @return {boolean} Whether to hide async.
+<a name="line231"></a> */
+<a name="line232"></a>goog.ui.PopupBase.prototype.shouldHideAsync = function() {
+<a name="line233"></a>  return this.shouldHideAsync_;
+<a name="line234"></a>};
+<a name="line235"></a>
+<a name="line236"></a>
+<a name="line237"></a>/**
+<a name="line238"></a> * Sets whether the popup should hide itself asynchronously using a timeout
+<a name="line239"></a> * instead of synchronously.
+<a name="line240"></a> * @param {boolean} b Whether to hide async.
+<a name="line241"></a> */
+<a name="line242"></a>goog.ui.PopupBase.prototype.setShouldHideAsync = function(b) {
+<a name="line243"></a>  this.shouldHideAsync_ = b;
+<a name="line244"></a>};
+<a name="line245"></a>
+<a name="line246"></a>
+<a name="line247"></a>/**
+<a name="line248"></a> * Returns the dom element that should be used for the popup.
+<a name="line249"></a> *
+<a name="line250"></a> * @return {Element} The popup element.
+<a name="line251"></a> */
+<a name="line252"></a>goog.ui.PopupBase.prototype.getElement = function() {
+<a name="line253"></a>  return this.element_;
+<a name="line254"></a>};
+<a name="line255"></a>
+<a name="line256"></a>
+<a name="line257"></a>/**
+<a name="line258"></a> * Specifies the dom element that should be used for the popup.
+<a name="line259"></a> *
+<a name="line260"></a> * @param {Element} elt A DOM element for the popup.
+<a name="line261"></a> */
+<a name="line262"></a>goog.ui.PopupBase.prototype.setElement = function(elt) {
+<a name="line263"></a>  this.ensureNotVisible_();
+<a name="line264"></a>  this.element_ = elt;
+<a name="line265"></a>};
+<a name="line266"></a>
+<a name="line267"></a>
+<a name="line268"></a>/**
+<a name="line269"></a> * Returns whether the Popup dismisses itself when the user clicks outside of
+<a name="line270"></a> * it.
+<a name="line271"></a> * @return {boolean} Whether the Popup autohides on an external click.
+<a name="line272"></a> */
+<a name="line273"></a>goog.ui.PopupBase.prototype.getAutoHide = function() {
+<a name="line274"></a>  return this.autoHide_;
+<a name="line275"></a>};
+<a name="line276"></a>
+<a name="line277"></a>
+<a name="line278"></a>/**
+<a name="line279"></a> * Sets whether the Popup dismisses itself when the user clicks outside of it.
+<a name="line280"></a> * @param {boolean} autoHide Whether to autohide on an external click.
+<a name="line281"></a> */
+<a name="line282"></a>goog.ui.PopupBase.prototype.setAutoHide = function(autoHide) {
+<a name="line283"></a>  this.ensureNotVisible_();
+<a name="line284"></a>  this.autoHide_ = autoHide;
+<a name="line285"></a>};
+<a name="line286"></a>
+<a name="line287"></a>
+<a name="line288"></a>/**
+<a name="line289"></a> * @return {boolean} Whether the Popup autohides on the escape key.
+<a name="line290"></a> */
+<a name="line291"></a>goog.ui.PopupBase.prototype.getHideOnEscape = function() {
+<a name="line292"></a>  return this.hideOnEscape_;
+<a name="line293"></a>};
+<a name="line294"></a>
+<a name="line295"></a>
+<a name="line296"></a>/**
+<a name="line297"></a> * Sets whether the Popup dismisses itself on the escape key.
+<a name="line298"></a> * @param {boolean} hideOnEscape Whether to autohide on the escape key.
+<a name="line299"></a> */
+<a name="line300"></a>goog.ui.PopupBase.prototype.setHideOnEscape = function(hideOnEscape) {
+<a name="line301"></a>  this.ensureNotVisible_();
+<a name="line302"></a>  this.hideOnEscape_ = hideOnEscape;
+<a name="line303"></a>};
+<a name="line304"></a>
+<a name="line305"></a>
+<a name="line306"></a>/**
+<a name="line307"></a> * @return {boolean} Whether cross iframe dismissal is enabled.
+<a name="line308"></a> */
+<a name="line309"></a>goog.ui.PopupBase.prototype.getEnableCrossIframeDismissal = function() {
+<a name="line310"></a>  return this.enableCrossIframeDismissal_;
+<a name="line311"></a>};
+<a name="line312"></a>
+<a name="line313"></a>
+<a name="line314"></a>/**
+<a name="line315"></a> * Sets whether clicks in other iframes should dismiss this popup.  In some
+<a name="line316"></a> * cases it should be disabled, because it can cause spurious
+<a name="line317"></a> * @param {boolean} enable Whether to enable cross iframe dismissal.
+<a name="line318"></a> */
+<a name="line319"></a>goog.ui.PopupBase.prototype.setEnableCrossIframeDismissal = function(enable) {
+<a name="line320"></a>  this.enableCrossIframeDismissal_ = enable;
+<a name="line321"></a>};
+<a name="line322"></a>
+<a name="line323"></a>
+<a name="line324"></a>/**
+<a name="line325"></a> * Returns the region inside which the Popup dismisses itself when the user
+<a name="line326"></a> * clicks, or null if it&#39;s the entire document.
+<a name="line327"></a> * @return {Element} The DOM element for autohide, or null if it hasn&#39;t been
+<a name="line328"></a> *     set.
+<a name="line329"></a> */
+<a name="line330"></a>goog.ui.PopupBase.prototype.getAutoHideRegion = function() {
+<a name="line331"></a>  return this.autoHideRegion_;
+<a name="line332"></a>};
+<a name="line333"></a>
+<a name="line334"></a>
+<a name="line335"></a>/**
+<a name="line336"></a> * Sets the region inside which the Popup dismisses itself when the user
+<a name="line337"></a> * clicks.
+<a name="line338"></a> * @param {Element} element The DOM element for autohide.
+<a name="line339"></a> */
+<a name="line340"></a>goog.ui.PopupBase.prototype.setAutoHideRegion = function(element) {
+<a name="line341"></a>  this.autoHideRegion_ = element;
+<a name="line342"></a>};
+<a name="line343"></a>
+<a name="line344"></a>
+<a name="line345"></a>/**
+<a name="line346"></a> * Sets transition animation on showing and hiding the popup.
+<a name="line347"></a> * @param {goog.fx.Transition=} opt_showTransition Transition to play on
+<a name="line348"></a> *     showing the popup.
+<a name="line349"></a> * @param {goog.fx.Transition=} opt_hideTransition Transition to play on
+<a name="line350"></a> *     hiding the popup.
+<a name="line351"></a> */
+<a name="line352"></a>goog.ui.PopupBase.prototype.setTransition = function(
+<a name="line353"></a>    opt_showTransition, opt_hideTransition) {
+<a name="line354"></a>  this.showTransition_ = opt_showTransition;
+<a name="line355"></a>  this.hideTransition_ = opt_hideTransition;
+<a name="line356"></a>};
+<a name="line357"></a>
+<a name="line358"></a>
+<a name="line359"></a>/**
+<a name="line360"></a> * Returns the time when the popup was last shown.
+<a name="line361"></a> *
+<a name="line362"></a> * @return {number} time in ms since epoch when the popup was last shown, or
+<a name="line363"></a> * -1 if the popup was never shown.
+<a name="line364"></a> */
+<a name="line365"></a>goog.ui.PopupBase.prototype.getLastShowTime = function() {
+<a name="line366"></a>  return this.lastShowTime_;
+<a name="line367"></a>};
+<a name="line368"></a>
+<a name="line369"></a>
+<a name="line370"></a>/**
+<a name="line371"></a> * Returns the time when the popup was last hidden.
+<a name="line372"></a> *
+<a name="line373"></a> * @return {number} time in ms since epoch when the popup was last hidden, or
+<a name="line374"></a> * -1 if the popup was never hidden or is currently showing.
+<a name="line375"></a> */
+<a name="line376"></a>goog.ui.PopupBase.prototype.getLastHideTime = function() {
+<a name="line377"></a>  return this.lastHideTime_;
+<a name="line378"></a>};
+<a name="line379"></a>
+<a name="line380"></a>
+<a name="line381"></a>/**
+<a name="line382"></a> * Helper to throw exception if the popup is showing.
+<a name="line383"></a> * @private
+<a name="line384"></a> */
+<a name="line385"></a>goog.ui.PopupBase.prototype.ensureNotVisible_ = function() {
+<a name="line386"></a>  if (this.isVisible_) {
+<a name="line387"></a>    throw Error(&#39;Can not change this state of the popup while showing.&#39;);
+<a name="line388"></a>  }
+<a name="line389"></a>};
+<a name="line390"></a>
+<a name="line391"></a>
+<a name="line392"></a>/**
+<a name="line393"></a> * Returns whether the popup is currently visible.
+<a name="line394"></a> *
+<a name="line395"></a> * @return {boolean} whether the popup is currently visible.
+<a name="line396"></a> */
+<a name="line397"></a>goog.ui.PopupBase.prototype.isVisible = function() {
+<a name="line398"></a>  return this.isVisible_;
+<a name="line399"></a>};
+<a name="line400"></a>
+<a name="line401"></a>
+<a name="line402"></a>/**
+<a name="line403"></a> * Returns whether the popup is currently visible or was visible within about
+<a name="line404"></a> * 150 ms ago. This is used by clients to handle a very specific, but common,
+<a name="line405"></a> * popup scenario. The button that launches the popup should close the popup
+<a name="line406"></a> * on mouse down if the popup is alrady open. The problem is that the popup
+<a name="line407"></a> * closes itself during the capture phase of the mouse down and thus the button
+<a name="line408"></a> * thinks it&#39;s hidden and this should show it again. This method provides a
+<a name="line409"></a> * good heuristic for clients. Typically in their event handler they will have
+<a name="line410"></a> * code that is:
+<a name="line411"></a> *
+<a name="line412"></a> * if (menu.isOrWasRecentlyVisible()) {
+<a name="line413"></a> *   menu.setVisible(false);
+<a name="line414"></a> * } else {
+<a name="line415"></a> *   ... // code to position menu and initialize other state
+<a name="line416"></a> *   menu.setVisible(true);
+<a name="line417"></a> * }
+<a name="line418"></a> * @return {boolean} Whether the popup is currently visible or was visible
+<a name="line419"></a> *     within about 150 ms ago.
+<a name="line420"></a> */
+<a name="line421"></a>goog.ui.PopupBase.prototype.isOrWasRecentlyVisible = function() {
+<a name="line422"></a>  return this.isVisible_ ||
+<a name="line423"></a>         (goog.now() - this.lastHideTime_ &lt;
+<a name="line424"></a>          goog.ui.PopupBase.DEBOUNCE_DELAY_MS);
+<a name="line425"></a>};
+<a name="line426"></a>
+<a name="line427"></a>
+<a name="line428"></a>/**
+<a name="line429"></a> * Sets whether the popup should be visible.
+<a name="line430"></a> *
+<a name="line431"></a> * @param {boolean} visible Desired visibility state.
+<a name="line432"></a> */
+<a name="line433"></a>goog.ui.PopupBase.prototype.setVisible = function(visible) {
+<a name="line434"></a>  // Make sure that any currently running transition is stopped.
+<a name="line435"></a>  if (this.showTransition_) this.showTransition_.stop();
+<a name="line436"></a>  if (this.hideTransition_) this.hideTransition_.stop();
+<a name="line437"></a>
+<a name="line438"></a>  if (visible) {
+<a name="line439"></a>    this.show_();
+<a name="line440"></a>  } else {
+<a name="line441"></a>    this.hide_();
+<a name="line442"></a>  }
+<a name="line443"></a>};
+<a name="line444"></a>
+<a name="line445"></a>
+<a name="line446"></a>/**
+<a name="line447"></a> * Repositions the popup according to the current state.
+<a name="line448"></a> * Should be overriden by subclases.
+<a name="line449"></a> */
+<a name="line450"></a>goog.ui.PopupBase.prototype.reposition = goog.nullFunction;
+<a name="line451"></a>
+<a name="line452"></a>
+<a name="line453"></a>/**
+<a name="line454"></a> * Does the work to show the popup.
+<a name="line455"></a> * @private
+<a name="line456"></a> */
+<a name="line457"></a>goog.ui.PopupBase.prototype.show_ = function() {
+<a name="line458"></a>  // Ignore call if we are already showing.
+<a name="line459"></a>  if (this.isVisible_) {
+<a name="line460"></a>    return;
+<a name="line461"></a>  }
+<a name="line462"></a>
+<a name="line463"></a>  // Give derived classes and handlers a chance to customize popup.
+<a name="line464"></a>  if (!this.onBeforeShow()) {
+<a name="line465"></a>    return;
+<a name="line466"></a>  }
+<a name="line467"></a>
+<a name="line468"></a>  // Allow callers to set the element in the BEFORE_SHOW event.
+<a name="line469"></a>  if (!this.element_) {
+<a name="line470"></a>    throw Error(&#39;Caller must call setElement before trying to show the popup&#39;);
+<a name="line471"></a>  }
+<a name="line472"></a>
+<a name="line473"></a>  // Call reposition after onBeforeShow, as it may change the style and/or
+<a name="line474"></a>  // content of the popup and thereby affecting the size which is used for the
+<a name="line475"></a>  // viewport calculation.
+<a name="line476"></a>  this.reposition();
+<a name="line477"></a>
+<a name="line478"></a>  var doc = goog.dom.getOwnerDocument(this.element_);
+<a name="line479"></a>
+<a name="line480"></a>  if (this.hideOnEscape_) {
+<a name="line481"></a>
+<a name="line482"></a>    // Handle the escape keys.  Listen in the capture phase so that we can
+<a name="line483"></a>    // stop the escape key from propagating to other elements.  For example,
+<a name="line484"></a>    // if there is a popup within a dialog box, we want the popup to be
+<a name="line485"></a>    // dismissed first, rather than the dialog.
+<a name="line486"></a>    this.handler_.listen(doc, goog.events.EventType.KEYDOWN,
+<a name="line487"></a>        this.onDocumentKeyDown_, true);
+<a name="line488"></a>  }
+<a name="line489"></a>
+<a name="line490"></a>  // Set up event handlers.
+<a name="line491"></a>  if (this.autoHide_) {
+<a name="line492"></a>
+<a name="line493"></a>    // Even if the popup is not in the focused document, we want to
+<a name="line494"></a>    // close it on mousedowns in the document it&#39;s in.
+<a name="line495"></a>    this.handler_.listen(doc, goog.events.EventType.MOUSEDOWN,
+<a name="line496"></a>        this.onDocumentMouseDown_, true);
+<a name="line497"></a>
+<a name="line498"></a>    if (goog.userAgent.IE) {
+<a name="line499"></a>      // We want to know about deactivates/mousedowns on the document with focus
+<a name="line500"></a>      // The top-level document won&#39;t get a deactivate event if the focus is
+<a name="line501"></a>      // in an iframe and the deactivate fires within that iframe.
+<a name="line502"></a>      // The active element in the top-level document will remain the iframe
+<a name="line503"></a>      // itself.
+<a name="line504"></a>      var activeElement;
+<a name="line505"></a>      /** @preserveTry */
+<a name="line506"></a>      try {
+<a name="line507"></a>        activeElement = doc.activeElement;
+<a name="line508"></a>      } catch (e) {
+<a name="line509"></a>        // There is an IE browser bug which can cause just the reading of
+<a name="line510"></a>        // document.activeElement to throw an Unspecified Error.  This
+<a name="line511"></a>        // may have to do with loading a popup within a hidden iframe.
+<a name="line512"></a>      }
+<a name="line513"></a>      while (activeElement &amp;&amp; activeElement.nodeName == &#39;IFRAME&#39;) {
+<a name="line514"></a>        /** @preserveTry */
+<a name="line515"></a>        try {
+<a name="line516"></a>          var tempDoc = goog.dom.getFrameContentDocument(activeElement);
+<a name="line517"></a>        } catch (e) {
+<a name="line518"></a>          // The frame is on a different domain that its parent document
+<a name="line519"></a>          // This way, we grab the lowest-level document object we can get
+<a name="line520"></a>          // a handle on given cross-domain security.
+<a name="line521"></a>          break;
+<a name="line522"></a>        }
+<a name="line523"></a>        doc = tempDoc;
+<a name="line524"></a>        activeElement = doc.activeElement;
+<a name="line525"></a>      }
+<a name="line526"></a>
+<a name="line527"></a>      // Handle mousedowns in the focused document in case the user clicks
+<a name="line528"></a>      // on the activeElement (in which case the popup should hide).
+<a name="line529"></a>      this.handler_.listen(doc, goog.events.EventType.MOUSEDOWN,
+<a name="line530"></a>          this.onDocumentMouseDown_, true);
+<a name="line531"></a>
+<a name="line532"></a>      // If the active element inside the focused document changes, then
+<a name="line533"></a>      // we probably need to hide the popup.
+<a name="line534"></a>      this.handler_.listen(doc, goog.events.EventType.DEACTIVATE,
+<a name="line535"></a>          this.onDocumentBlur_);
+<a name="line536"></a>
+<a name="line537"></a>    } else {
+<a name="line538"></a>      this.handler_.listen(doc, goog.events.EventType.BLUR,
+<a name="line539"></a>          this.onDocumentBlur_);
+<a name="line540"></a>    }
+<a name="line541"></a>  }
+<a name="line542"></a>
+<a name="line543"></a>  // Make the popup visible.
+<a name="line544"></a>  if (this.type_ == goog.ui.PopupBase.Type.TOGGLE_DISPLAY) {
+<a name="line545"></a>    this.showPopupElement();
+<a name="line546"></a>  } else if (this.type_ == goog.ui.PopupBase.Type.MOVE_OFFSCREEN) {
+<a name="line547"></a>    this.reposition();
+<a name="line548"></a>  }
+<a name="line549"></a>  this.isVisible_ = true;
+<a name="line550"></a>
+<a name="line551"></a>  // If there is transition to play, we play it and fire SHOW event after
+<a name="line552"></a>  // the transition is over.
+<a name="line553"></a>  if (this.showTransition_) {
+<a name="line554"></a>    goog.events.listenOnce(
+<a name="line555"></a>        /** @type {goog.events.EventTarget} */ (this.showTransition_),
+<a name="line556"></a>        goog.fx.Transition.EventType.END, this.onShow_, false, this);
+<a name="line557"></a>    this.showTransition_.play();
+<a name="line558"></a>  } else {
+<a name="line559"></a>    // Notify derived classes and handlers.
+<a name="line560"></a>    this.onShow_();
+<a name="line561"></a>  }
+<a name="line562"></a>};
+<a name="line563"></a>
+<a name="line564"></a>
+<a name="line565"></a>/**
+<a name="line566"></a> * Hides the popup. This call is idempotent.
+<a name="line567"></a> *
+<a name="line568"></a> * @param {Object=} opt_target Target of the event causing the hide.
+<a name="line569"></a> * @return {boolean} Whether the popup was hidden and not cancelled.
+<a name="line570"></a> * @private
+<a name="line571"></a> */
+<a name="line572"></a>goog.ui.PopupBase.prototype.hide_ = function(opt_target) {
+<a name="line573"></a>  // Give derived classes and handlers a chance to cancel hiding.
+<a name="line574"></a>  if (!this.isVisible_ || !this.onBeforeHide_(opt_target)) {
+<a name="line575"></a>    return false;
+<a name="line576"></a>  }
+<a name="line577"></a>
+<a name="line578"></a>  // Remove any listeners we attached when showing the popup.
+<a name="line579"></a>  if (this.handler_) {
+<a name="line580"></a>    this.handler_.removeAll();
+<a name="line581"></a>  }
+<a name="line582"></a>
+<a name="line583"></a>  // If there is transition to play, we play it and only hide the element
+<a name="line584"></a>  // (and fire HIDE event) after the transition is over.
+<a name="line585"></a>  if (this.hideTransition_) {
+<a name="line586"></a>    goog.events.listenOnce(
+<a name="line587"></a>        /** @type {goog.events.EventTarget} */ (this.hideTransition_),
+<a name="line588"></a>        goog.fx.Transition.EventType.END,
+<a name="line589"></a>        goog.partial(this.continueHidingPopup_, opt_target), false, this);
+<a name="line590"></a>    this.hideTransition_.play();
+<a name="line591"></a>  } else {
+<a name="line592"></a>    this.continueHidingPopup_(opt_target);
+<a name="line593"></a>  }
+<a name="line594"></a>
+<a name="line595"></a>  return true;
+<a name="line596"></a>};
+<a name="line597"></a>
+<a name="line598"></a>
+<a name="line599"></a>/**
+<a name="line600"></a> * Continues hiding the popup. This is a continuation from hide_. It is
+<a name="line601"></a> * a separate method so that we can add a transition before hiding.
+<a name="line602"></a> * @param {Object=} opt_target Target of the event causing the hide.
+<a name="line603"></a> * @private
+<a name="line604"></a> */
+<a name="line605"></a>goog.ui.PopupBase.prototype.continueHidingPopup_ = function(opt_target) {
+<a name="line606"></a>  // Hide the popup.
+<a name="line607"></a>  if (this.type_ == goog.ui.PopupBase.Type.TOGGLE_DISPLAY) {
+<a name="line608"></a>    if (this.shouldHideAsync_) {
+<a name="line609"></a>      goog.Timer.callOnce(this.hidePopupElement_, 0, this);
+<a name="line610"></a>    } else {
+<a name="line611"></a>      this.hidePopupElement_();
+<a name="line612"></a>    }
+<a name="line613"></a>  } else if (this.type_ == goog.ui.PopupBase.Type.MOVE_OFFSCREEN) {
+<a name="line614"></a>    this.moveOffscreen_();
+<a name="line615"></a>  }
+<a name="line616"></a>  this.isVisible_ = false;
+<a name="line617"></a>
+<a name="line618"></a>  // Notify derived classes and handlers.
+<a name="line619"></a>  this.onHide_(opt_target);
+<a name="line620"></a>};
+<a name="line621"></a>
+<a name="line622"></a>
+<a name="line623"></a>/**
+<a name="line624"></a> * Shows the popup element.
+<a name="line625"></a> * @protected
+<a name="line626"></a> */
+<a name="line627"></a>goog.ui.PopupBase.prototype.showPopupElement = function() {
+<a name="line628"></a>  this.element_.style.visibility = &#39;visible&#39;;
+<a name="line629"></a>  goog.style.showElement(this.element_, true);
+<a name="line630"></a>};
+<a name="line631"></a>
+<a name="line632"></a>
+<a name="line633"></a>/**
+<a name="line634"></a> * Hides the popup element.
+<a name="line635"></a> * @private
+<a name="line636"></a> */
+<a name="line637"></a>goog.ui.PopupBase.prototype.hidePopupElement_ = function() {
+<a name="line638"></a>  this.element_.style.visibility = &#39;hidden&#39;;
+<a name="line639"></a>  goog.style.showElement(this.element_, false);
+<a name="line640"></a>};
+<a name="line641"></a>
+<a name="line642"></a>
+<a name="line643"></a>/**
+<a name="line644"></a> * Hides the popup by moving it offscreen.
+<a name="line645"></a> *
+<a name="line646"></a> * @private
+<a name="line647"></a> */
+<a name="line648"></a>goog.ui.PopupBase.prototype.moveOffscreen_ = function() {
+<a name="line649"></a>  this.element_.style.left = &#39;-200px&#39;;
+<a name="line650"></a>  this.element_.style.top = &#39;-200px&#39;;
+<a name="line651"></a>};
+<a name="line652"></a>
+<a name="line653"></a>
+<a name="line654"></a>/**
+<a name="line655"></a> * Called before the popup is shown. Derived classes can override to hook this
+<a name="line656"></a> * event but should make sure to call the parent class method.
+<a name="line657"></a> *
+<a name="line658"></a> * @return {boolean} If anyone called preventDefault on the event object (or
+<a name="line659"></a> *     if any of the handlers returns false this will also return false.
+<a name="line660"></a> * @protected
+<a name="line661"></a> */
+<a name="line662"></a>goog.ui.PopupBase.prototype.onBeforeShow = function() {
+<a name="line663"></a>  return this.dispatchEvent(goog.ui.PopupBase.EventType.BEFORE_SHOW);
+<a name="line664"></a>};
+<a name="line665"></a>
+<a name="line666"></a>
+<a name="line667"></a>/**
+<a name="line668"></a> * Called after the popup is shown. Derived classes can override to hook this
+<a name="line669"></a> * event but should make sure to call the parent class method.
+<a name="line670"></a> * @protected
+<a name="line671"></a> * @suppress {underscore}
+<a name="line672"></a> */
+<a name="line673"></a>goog.ui.PopupBase.prototype.onShow_ = function() {
+<a name="line674"></a>  this.lastShowTime_ = goog.now();
+<a name="line675"></a>  this.lastHideTime_ = -1;
+<a name="line676"></a>  this.dispatchEvent(goog.ui.PopupBase.EventType.SHOW);
+<a name="line677"></a>};
+<a name="line678"></a>
+<a name="line679"></a>
+<a name="line680"></a>/**
+<a name="line681"></a> * Called before the popup is hidden. Derived classes can override to hook this
+<a name="line682"></a> * event but should make sure to call the parent class method.
+<a name="line683"></a> *
+<a name="line684"></a> * @param {Object=} opt_target Target of the event causing the hide.
+<a name="line685"></a> * @return {boolean} If anyone called preventDefault on the event object (or
+<a name="line686"></a> *     if any of the handlers returns false this will also return false.
+<a name="line687"></a> * @private
+<a name="line688"></a> */
+<a name="line689"></a>goog.ui.PopupBase.prototype.onBeforeHide_ = function(opt_target) {
+<a name="line690"></a>  return this.dispatchEvent({type: goog.ui.PopupBase.EventType.BEFORE_HIDE,
+<a name="line691"></a>                             target: opt_target});
+<a name="line692"></a>};
+<a name="line693"></a>
+<a name="line694"></a>
+<a name="line695"></a>/**
+<a name="line696"></a> * Called after the popup is hidden. Derived classes can override to hook this
+<a name="line697"></a> * event but should make sure to call the parent class method.
+<a name="line698"></a> * @param {Object=} opt_target Target of the event causing the hide.
+<a name="line699"></a> * @protected
+<a name="line700"></a> * @suppress {underscore}
+<a name="line701"></a> */
+<a name="line702"></a>goog.ui.PopupBase.prototype.onHide_ = function(opt_target) {
+<a name="line703"></a>  this.lastHideTime_ = goog.now();
+<a name="line704"></a>  this.dispatchEvent({type: goog.ui.PopupBase.EventType.HIDE,
+<a name="line705"></a>                      target: opt_target});
+<a name="line706"></a>};
+<a name="line707"></a>
+<a name="line708"></a>
+<a name="line709"></a>/**
+<a name="line710"></a> * Mouse down handler for the document on capture phase. Used to hide the
+<a name="line711"></a> * popup for auto-hide mode.
+<a name="line712"></a> *
+<a name="line713"></a> * @param {goog.events.BrowserEvent} e The event object.
+<a name="line714"></a> * @private
+<a name="line715"></a> */
+<a name="line716"></a>goog.ui.PopupBase.prototype.onDocumentMouseDown_ = function(e) {
+<a name="line717"></a>  var target = /** @type {Node} */ (e.target);
+<a name="line718"></a>  if (!goog.dom.contains(this.element_, target) &amp;&amp;
+<a name="line719"></a>      (!this.autoHideRegion_ || goog.dom.contains(
+<a name="line720"></a>      this.autoHideRegion_, target)) &amp;&amp;
+<a name="line721"></a>      !this.shouldDebounce_()) {
+<a name="line722"></a>    // Mouse click was outside popup, so hide.
+<a name="line723"></a>    this.hide_(target);
+<a name="line724"></a>  }
+<a name="line725"></a>};
+<a name="line726"></a>
+<a name="line727"></a>
+<a name="line728"></a>/**
+<a name="line729"></a> * Handles key-downs on the document to handle the escape key.
+<a name="line730"></a> *
+<a name="line731"></a> * @param {goog.events.BrowserEvent} e The event object.
+<a name="line732"></a> * @private
+<a name="line733"></a> */
+<a name="line734"></a>goog.ui.PopupBase.prototype.onDocumentKeyDown_ = function(e) {
+<a name="line735"></a>  if (e.keyCode == goog.events.KeyCodes.ESC) {
+<a name="line736"></a>    if (this.hide_(e.target)) {
+<a name="line737"></a>      // Eat the escape key, but only if this popup was actually closed.
+<a name="line738"></a>      e.preventDefault();
+<a name="line739"></a>      e.stopPropagation();
+<a name="line740"></a>    }
+<a name="line741"></a>  }
+<a name="line742"></a>};
+<a name="line743"></a>
+<a name="line744"></a>
+<a name="line745"></a>/**
+<a name="line746"></a> * Deactivate handler(IE) and blur handler (other browsers) for document.
+<a name="line747"></a> * Used to hide the popup for auto-hide mode.
+<a name="line748"></a> *
+<a name="line749"></a> * @param {goog.events.BrowserEvent} e The event object.
+<a name="line750"></a> * @private
+<a name="line751"></a> */
+<a name="line752"></a>goog.ui.PopupBase.prototype.onDocumentBlur_ = function(e) {
+<a name="line753"></a>  if (!this.enableCrossIframeDismissal_) {
+<a name="line754"></a>    return;
+<a name="line755"></a>  }
+<a name="line756"></a>
+<a name="line757"></a>  var doc = goog.dom.getOwnerDocument(this.element_);
+<a name="line758"></a>
+<a name="line759"></a>  // Ignore blur events if the active element is still inside the popup or if
+<a name="line760"></a>  // there is no longer an active element.  For example, a widget like a
+<a name="line761"></a>  // goog.ui.Button might programatically blur itself before losing tabIndex.
+<a name="line762"></a>  if (goog.userAgent.IE || goog.userAgent.OPERA) {
+<a name="line763"></a>    var activeElement = doc.activeElement;
+<a name="line764"></a>    if (!activeElement || goog.dom.contains(this.element_,
+<a name="line765"></a>        activeElement) || activeElement.tagName == &#39;BODY&#39;) {
+<a name="line766"></a>      return;
+<a name="line767"></a>    }
+<a name="line768"></a>
+<a name="line769"></a>  // Ignore blur events not for the document itself in non-IE browsers.
+<a name="line770"></a>  } else if (e.target != doc) {
+<a name="line771"></a>    return;
+<a name="line772"></a>  }
+<a name="line773"></a>
+<a name="line774"></a>  // Debounce the initial focus move.
+<a name="line775"></a>  if (this.shouldDebounce_()) {
+<a name="line776"></a>    return;
+<a name="line777"></a>  }
+<a name="line778"></a>
+<a name="line779"></a>  this.hide_();
+<a name="line780"></a>};
+<a name="line781"></a>
+<a name="line782"></a>
+<a name="line783"></a>/**
+<a name="line784"></a> * @return {boolean} Whether the time since last show is less than the debounce
+<a name="line785"></a> *     delay.
+<a name="line786"></a> * @private
+<a name="line787"></a> */
+<a name="line788"></a>goog.ui.PopupBase.prototype.shouldDebounce_ = function() {
+<a name="line789"></a>  return goog.now() - this.lastShowTime_ &lt; goog.ui.PopupBase.DEBOUNCE_DELAY_MS;
+<a name="line790"></a>};
+<a name="line791"></a>
+<a name="line792"></a>
+<a name="line793"></a>/** @override */
+<a name="line794"></a>goog.ui.PopupBase.prototype.disposeInternal = function() {
+<a name="line795"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line796"></a>  this.handler_.dispose();
+<a name="line797"></a>  goog.dispose(this.showTransition_);
+<a name="line798"></a>  goog.dispose(this.hideTransition_);
+<a name="line799"></a>  delete this.element_;
+<a name="line800"></a>  delete this.handler_;
+<a name="line801"></a>};
+</pre>
+
+
+</body>
+</html>

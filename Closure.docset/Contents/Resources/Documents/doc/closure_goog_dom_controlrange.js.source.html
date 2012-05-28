@@ -1,0 +1,562 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>controlrange.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_dom_controlrange.js.html">controlrange.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities for working with IE control ranges.
+<a name="line17"></a> *
+<a name="line18"></a> * @author robbyw@google.com (Robby Walker)
+<a name="line19"></a> * @author jparent@google.com (Julie Parent)
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>
+<a name="line23"></a>goog.provide(&#39;goog.dom.ControlRange&#39;);
+<a name="line24"></a>goog.provide(&#39;goog.dom.ControlRangeIterator&#39;);
+<a name="line25"></a>
+<a name="line26"></a>goog.require(&#39;goog.array&#39;);
+<a name="line27"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line28"></a>goog.require(&#39;goog.dom.AbstractMultiRange&#39;);
+<a name="line29"></a>goog.require(&#39;goog.dom.AbstractRange&#39;);
+<a name="line30"></a>goog.require(&#39;goog.dom.RangeIterator&#39;);
+<a name="line31"></a>goog.require(&#39;goog.dom.RangeType&#39;);
+<a name="line32"></a>goog.require(&#39;goog.dom.SavedRange&#39;);
+<a name="line33"></a>goog.require(&#39;goog.dom.TagWalkType&#39;);
+<a name="line34"></a>goog.require(&#39;goog.dom.TextRange&#39;);
+<a name="line35"></a>goog.require(&#39;goog.iter.StopIteration&#39;);
+<a name="line36"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line37"></a>
+<a name="line38"></a>
+<a name="line39"></a>
+<a name="line40"></a>/**
+<a name="line41"></a> * Create a new control selection with no properties.  Do not use this
+<a name="line42"></a> * constructor: use one of the goog.dom.Range.createFrom* methods instead.
+<a name="line43"></a> * @constructor
+<a name="line44"></a> * @extends {goog.dom.AbstractMultiRange}
+<a name="line45"></a> */
+<a name="line46"></a>goog.dom.ControlRange = function() {
+<a name="line47"></a>};
+<a name="line48"></a>goog.inherits(goog.dom.ControlRange, goog.dom.AbstractMultiRange);
+<a name="line49"></a>
+<a name="line50"></a>
+<a name="line51"></a>/**
+<a name="line52"></a> * Create a new range wrapper from the given browser range object.  Do not use
+<a name="line53"></a> * this method directly - please use goog.dom.Range.createFrom* instead.
+<a name="line54"></a> * @param {Object} controlRange The browser range object.
+<a name="line55"></a> * @return {goog.dom.ControlRange} A range wrapper object.
+<a name="line56"></a> */
+<a name="line57"></a>goog.dom.ControlRange.createFromBrowserRange = function(controlRange) {
+<a name="line58"></a>  var range = new goog.dom.ControlRange();
+<a name="line59"></a>  range.range_ = controlRange;
+<a name="line60"></a>  return range;
+<a name="line61"></a>};
+<a name="line62"></a>
+<a name="line63"></a>
+<a name="line64"></a>/**
+<a name="line65"></a> * Create a new range wrapper that selects the given element.  Do not use
+<a name="line66"></a> * this method directly - please use goog.dom.Range.createFrom* instead.
+<a name="line67"></a> * @param {...Element} var_args The element(s) to select.
+<a name="line68"></a> * @return {goog.dom.ControlRange} A range wrapper object.
+<a name="line69"></a> */
+<a name="line70"></a>goog.dom.ControlRange.createFromElements = function(var_args) {
+<a name="line71"></a>  var range = goog.dom.getOwnerDocument(arguments[0]).body.createControlRange();
+<a name="line72"></a>  for (var i = 0, len = arguments.length; i &lt; len; i++) {
+<a name="line73"></a>    range.addElement(arguments[i]);
+<a name="line74"></a>  }
+<a name="line75"></a>  return goog.dom.ControlRange.createFromBrowserRange(range);
+<a name="line76"></a>};
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>/**
+<a name="line80"></a> * The IE control range obejct.
+<a name="line81"></a> * @type {Object}
+<a name="line82"></a> * @private
+<a name="line83"></a> */
+<a name="line84"></a>goog.dom.ControlRange.prototype.range_ = null;
+<a name="line85"></a>
+<a name="line86"></a>
+<a name="line87"></a>/**
+<a name="line88"></a> * Cached list of elements.
+<a name="line89"></a> * @type {Array.&lt;Element&gt;?}
+<a name="line90"></a> * @private
+<a name="line91"></a> */
+<a name="line92"></a>goog.dom.ControlRange.prototype.elements_ = null;
+<a name="line93"></a>
+<a name="line94"></a>
+<a name="line95"></a>/**
+<a name="line96"></a> * Cached sorted list of elements.
+<a name="line97"></a> * @type {Array.&lt;Element&gt;?}
+<a name="line98"></a> * @private
+<a name="line99"></a> */
+<a name="line100"></a>goog.dom.ControlRange.prototype.sortedElements_ = null;
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>// Method implementations
+<a name="line104"></a>
+<a name="line105"></a>
+<a name="line106"></a>/**
+<a name="line107"></a> * Clear cached values.
+<a name="line108"></a> * @private
+<a name="line109"></a> */
+<a name="line110"></a>goog.dom.ControlRange.prototype.clearCachedValues_ = function() {
+<a name="line111"></a>  this.elements_ = null;
+<a name="line112"></a>  this.sortedElements_ = null;
+<a name="line113"></a>};
+<a name="line114"></a>
+<a name="line115"></a>
+<a name="line116"></a>/**
+<a name="line117"></a> * @return {goog.dom.ControlRange} A clone of this range.
+<a name="line118"></a> */
+<a name="line119"></a>goog.dom.ControlRange.prototype.clone = function() {
+<a name="line120"></a>  return goog.dom.ControlRange.createFromElements.apply(this,
+<a name="line121"></a>                                                        this.getElements());
+<a name="line122"></a>};
+<a name="line123"></a>
+<a name="line124"></a>
+<a name="line125"></a>/** @override */
+<a name="line126"></a>goog.dom.ControlRange.prototype.getType = function() {
+<a name="line127"></a>  return goog.dom.RangeType.CONTROL;
+<a name="line128"></a>};
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>/** @override */
+<a name="line132"></a>goog.dom.ControlRange.prototype.getBrowserRangeObject = function() {
+<a name="line133"></a>  return this.range_ || document.body.createControlRange();
+<a name="line134"></a>};
+<a name="line135"></a>
+<a name="line136"></a>
+<a name="line137"></a>/** @override */
+<a name="line138"></a>goog.dom.ControlRange.prototype.setBrowserRangeObject = function(nativeRange) {
+<a name="line139"></a>  if (!goog.dom.AbstractRange.isNativeControlRange(nativeRange)) {
+<a name="line140"></a>    return false;
+<a name="line141"></a>  }
+<a name="line142"></a>  this.range_ = nativeRange;
+<a name="line143"></a>  return true;
+<a name="line144"></a>};
+<a name="line145"></a>
+<a name="line146"></a>
+<a name="line147"></a>/** @override */
+<a name="line148"></a>goog.dom.ControlRange.prototype.getTextRangeCount = function() {
+<a name="line149"></a>  return this.range_ ? this.range_.length : 0;
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>/** @override */
+<a name="line154"></a>goog.dom.ControlRange.prototype.getTextRange = function(i) {
+<a name="line155"></a>  return goog.dom.TextRange.createFromNodeContents(this.range_.item(i));
+<a name="line156"></a>};
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/** @override */
+<a name="line160"></a>goog.dom.ControlRange.prototype.getContainer = function() {
+<a name="line161"></a>  return goog.dom.findCommonAncestor.apply(null, this.getElements());
+<a name="line162"></a>};
+<a name="line163"></a>
+<a name="line164"></a>
+<a name="line165"></a>/** @override */
+<a name="line166"></a>goog.dom.ControlRange.prototype.getStartNode = function() {
+<a name="line167"></a>  return this.getSortedElements()[0];
+<a name="line168"></a>};
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/** @override */
+<a name="line172"></a>goog.dom.ControlRange.prototype.getStartOffset = function() {
+<a name="line173"></a>  return 0;
+<a name="line174"></a>};
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/** @override */
+<a name="line178"></a>goog.dom.ControlRange.prototype.getEndNode = function() {
+<a name="line179"></a>  var sorted = this.getSortedElements();
+<a name="line180"></a>  var startsLast = /** @type {Node} */ (goog.array.peek(sorted));
+<a name="line181"></a>  return /** @type {Node} */ (goog.array.find(sorted, function(el) {
+<a name="line182"></a>    return goog.dom.contains(el, startsLast);
+<a name="line183"></a>  }));
+<a name="line184"></a>};
+<a name="line185"></a>
+<a name="line186"></a>
+<a name="line187"></a>/** @override */
+<a name="line188"></a>goog.dom.ControlRange.prototype.getEndOffset = function() {
+<a name="line189"></a>  return this.getEndNode().childNodes.length;
+<a name="line190"></a>};
+<a name="line191"></a>
+<a name="line192"></a>
+<a name="line193"></a>// TODO(robbyw): Figure out how to unify getElements with TextRange API.
+<a name="line194"></a>/**
+<a name="line195"></a> * @return {Array.&lt;Element&gt;} Array of elements in the control range.
+<a name="line196"></a> */
+<a name="line197"></a>goog.dom.ControlRange.prototype.getElements = function() {
+<a name="line198"></a>  if (!this.elements_) {
+<a name="line199"></a>    this.elements_ = [];
+<a name="line200"></a>    if (this.range_) {
+<a name="line201"></a>      for (var i = 0; i &lt; this.range_.length; i++) {
+<a name="line202"></a>        this.elements_.push(this.range_.item(i));
+<a name="line203"></a>      }
+<a name="line204"></a>    }
+<a name="line205"></a>  }
+<a name="line206"></a>
+<a name="line207"></a>  return this.elements_;
+<a name="line208"></a>};
+<a name="line209"></a>
+<a name="line210"></a>
+<a name="line211"></a>/**
+<a name="line212"></a> * @return {Array.&lt;Element&gt;} Array of elements comprising the control range,
+<a name="line213"></a> *     sorted by document order.
+<a name="line214"></a> */
+<a name="line215"></a>goog.dom.ControlRange.prototype.getSortedElements = function() {
+<a name="line216"></a>  if (!this.sortedElements_) {
+<a name="line217"></a>    this.sortedElements_ = this.getElements().concat();
+<a name="line218"></a>    this.sortedElements_.sort(function(a, b) {
+<a name="line219"></a>      return a.sourceIndex - b.sourceIndex;
+<a name="line220"></a>    });
+<a name="line221"></a>  }
+<a name="line222"></a>
+<a name="line223"></a>  return this.sortedElements_;
+<a name="line224"></a>};
+<a name="line225"></a>
+<a name="line226"></a>
+<a name="line227"></a>/** @override */
+<a name="line228"></a>goog.dom.ControlRange.prototype.isRangeInDocument = function() {
+<a name="line229"></a>  var returnValue = false;
+<a name="line230"></a>
+<a name="line231"></a>  try {
+<a name="line232"></a>    returnValue = goog.array.every(this.getElements(), function(element) {
+<a name="line233"></a>      // On IE, this throws an exception when the range is detached.
+<a name="line234"></a>      return goog.userAgent.IE ?
+<a name="line235"></a>          element.parentNode :
+<a name="line236"></a>          goog.dom.contains(element.ownerDocument.body, element);
+<a name="line237"></a>    });
+<a name="line238"></a>  } catch (e) {
+<a name="line239"></a>    // IE sometimes throws Invalid Argument errors for detached elements.
+<a name="line240"></a>    // Note: trying to return a value from the above try block can cause IE
+<a name="line241"></a>    // to crash.  It is necessary to use the local returnValue.
+<a name="line242"></a>  }
+<a name="line243"></a>
+<a name="line244"></a>  return returnValue;
+<a name="line245"></a>};
+<a name="line246"></a>
+<a name="line247"></a>
+<a name="line248"></a>/** @override */
+<a name="line249"></a>goog.dom.ControlRange.prototype.isCollapsed = function() {
+<a name="line250"></a>  return !this.range_ || !this.range_.length;
+<a name="line251"></a>};
+<a name="line252"></a>
+<a name="line253"></a>
+<a name="line254"></a>/** @override */
+<a name="line255"></a>goog.dom.ControlRange.prototype.getText = function() {
+<a name="line256"></a>  // TODO(robbyw): What about for table selections?  Should those have text?
+<a name="line257"></a>  return &#39;&#39;;
+<a name="line258"></a>};
+<a name="line259"></a>
+<a name="line260"></a>
+<a name="line261"></a>/** @override */
+<a name="line262"></a>goog.dom.ControlRange.prototype.getHtmlFragment = function() {
+<a name="line263"></a>  return goog.array.map(this.getSortedElements(), goog.dom.getOuterHtml).
+<a name="line264"></a>      join(&#39;&#39;);
+<a name="line265"></a>};
+<a name="line266"></a>
+<a name="line267"></a>
+<a name="line268"></a>/** @override */
+<a name="line269"></a>goog.dom.ControlRange.prototype.getValidHtml = function() {
+<a name="line270"></a>  return this.getHtmlFragment();
+<a name="line271"></a>};
+<a name="line272"></a>
+<a name="line273"></a>
+<a name="line274"></a>/** @override */
+<a name="line275"></a>goog.dom.ControlRange.prototype.getPastableHtml =
+<a name="line276"></a>    goog.dom.ControlRange.prototype.getValidHtml;
+<a name="line277"></a>
+<a name="line278"></a>
+<a name="line279"></a>/** @override */
+<a name="line280"></a>goog.dom.ControlRange.prototype.__iterator__ = function(opt_keys) {
+<a name="line281"></a>  return new goog.dom.ControlRangeIterator(this);
+<a name="line282"></a>};
+<a name="line283"></a>
+<a name="line284"></a>
+<a name="line285"></a>// RANGE ACTIONS
+<a name="line286"></a>
+<a name="line287"></a>
+<a name="line288"></a>/** @override */
+<a name="line289"></a>goog.dom.ControlRange.prototype.select = function() {
+<a name="line290"></a>  if (this.range_) {
+<a name="line291"></a>    this.range_.select();
+<a name="line292"></a>  }
+<a name="line293"></a>};
+<a name="line294"></a>
+<a name="line295"></a>
+<a name="line296"></a>/** @override */
+<a name="line297"></a>goog.dom.ControlRange.prototype.removeContents = function() {
+<a name="line298"></a>  // TODO(robbyw): Test implementing with execCommand(&#39;Delete&#39;)
+<a name="line299"></a>  if (this.range_) {
+<a name="line300"></a>    var nodes = [];
+<a name="line301"></a>    for (var i = 0, len = this.range_.length; i &lt; len; i++) {
+<a name="line302"></a>      nodes.push(this.range_.item(i));
+<a name="line303"></a>    }
+<a name="line304"></a>    goog.array.forEach(nodes, goog.dom.removeNode);
+<a name="line305"></a>
+<a name="line306"></a>    this.collapse(false);
+<a name="line307"></a>  }
+<a name="line308"></a>};
+<a name="line309"></a>
+<a name="line310"></a>
+<a name="line311"></a>/** @override */
+<a name="line312"></a>goog.dom.ControlRange.prototype.replaceContentsWithNode = function(node) {
+<a name="line313"></a>  // Control selections have to have the node inserted before removing the
+<a name="line314"></a>  // selection contents because a collapsed control range doesn&#39;t have start or
+<a name="line315"></a>  // end nodes.
+<a name="line316"></a>  var result = this.insertNode(node, true);
+<a name="line317"></a>
+<a name="line318"></a>  if (!this.isCollapsed()) {
+<a name="line319"></a>    this.removeContents();
+<a name="line320"></a>  }
+<a name="line321"></a>
+<a name="line322"></a>  return result;
+<a name="line323"></a>};
+<a name="line324"></a>
+<a name="line325"></a>
+<a name="line326"></a>// SAVE/RESTORE
+<a name="line327"></a>
+<a name="line328"></a>
+<a name="line329"></a>/** @override */
+<a name="line330"></a>goog.dom.ControlRange.prototype.saveUsingDom = function() {
+<a name="line331"></a>  return new goog.dom.DomSavedControlRange_(this);
+<a name="line332"></a>};
+<a name="line333"></a>
+<a name="line334"></a>
+<a name="line335"></a>// RANGE MODIFICATION
+<a name="line336"></a>
+<a name="line337"></a>
+<a name="line338"></a>/** @override */
+<a name="line339"></a>goog.dom.ControlRange.prototype.collapse = function(toAnchor) {
+<a name="line340"></a>  // TODO(robbyw): Should this return a text range?  If so, API needs to change.
+<a name="line341"></a>  this.range_ = null;
+<a name="line342"></a>  this.clearCachedValues_();
+<a name="line343"></a>};
+<a name="line344"></a>
+<a name="line345"></a>
+<a name="line346"></a>// SAVED RANGE OBJECTS
+<a name="line347"></a>
+<a name="line348"></a>
+<a name="line349"></a>
+<a name="line350"></a>/**
+<a name="line351"></a> * A SavedRange implementation using DOM endpoints.
+<a name="line352"></a> * @param {goog.dom.ControlRange} range The range to save.
+<a name="line353"></a> * @constructor
+<a name="line354"></a> * @extends {goog.dom.SavedRange}
+<a name="line355"></a> * @private
+<a name="line356"></a> */
+<a name="line357"></a>goog.dom.DomSavedControlRange_ = function(range) {
+<a name="line358"></a>  /**
+<a name="line359"></a>   * The element list.
+<a name="line360"></a>   * @type {Array.&lt;Element&gt;}
+<a name="line361"></a>   * @private
+<a name="line362"></a>   */
+<a name="line363"></a>  this.elements_ = range.getElements();
+<a name="line364"></a>};
+<a name="line365"></a>goog.inherits(goog.dom.DomSavedControlRange_, goog.dom.SavedRange);
+<a name="line366"></a>
+<a name="line367"></a>
+<a name="line368"></a>/**
+<a name="line369"></a> * @return {goog.dom.ControlRange} The restored range.
+<a name="line370"></a> */
+<a name="line371"></a>goog.dom.DomSavedControlRange_.prototype.restoreInternal = function() {
+<a name="line372"></a>  var doc = this.elements_.length ?
+<a name="line373"></a>      goog.dom.getOwnerDocument(this.elements_[0]) : document;
+<a name="line374"></a>  var controlRange = doc.body.createControlRange();
+<a name="line375"></a>  for (var i = 0, len = this.elements_.length; i &lt; len; i++) {
+<a name="line376"></a>    controlRange.addElement(this.elements_[i]);
+<a name="line377"></a>  }
+<a name="line378"></a>  return goog.dom.ControlRange.createFromBrowserRange(controlRange);
+<a name="line379"></a>};
+<a name="line380"></a>
+<a name="line381"></a>
+<a name="line382"></a>/** @override */
+<a name="line383"></a>goog.dom.DomSavedControlRange_.prototype.disposeInternal = function() {
+<a name="line384"></a>  goog.dom.DomSavedControlRange_.superClass_.disposeInternal.call(this);
+<a name="line385"></a>  delete this.elements_;
+<a name="line386"></a>};
+<a name="line387"></a>
+<a name="line388"></a>
+<a name="line389"></a>// RANGE ITERATION
+<a name="line390"></a>
+<a name="line391"></a>
+<a name="line392"></a>
+<a name="line393"></a>/**
+<a name="line394"></a> * Subclass of goog.dom.TagIterator that iterates over a DOM range.  It
+<a name="line395"></a> * adds functions to determine the portion of each text node that is selected.
+<a name="line396"></a> *
+<a name="line397"></a> * @param {goog.dom.ControlRange?} range The range to traverse.
+<a name="line398"></a> * @constructor
+<a name="line399"></a> * @extends {goog.dom.RangeIterator}
+<a name="line400"></a> */
+<a name="line401"></a>goog.dom.ControlRangeIterator = function(range) {
+<a name="line402"></a>  if (range) {
+<a name="line403"></a>    this.elements_ = range.getSortedElements();
+<a name="line404"></a>    this.startNode_ = this.elements_.shift();
+<a name="line405"></a>    this.endNode_ = /** @type {Node} */ (goog.array.peek(this.elements_)) ||
+<a name="line406"></a>        this.startNode_;
+<a name="line407"></a>  }
+<a name="line408"></a>
+<a name="line409"></a>  goog.dom.RangeIterator.call(this, this.startNode_, false);
+<a name="line410"></a>};
+<a name="line411"></a>goog.inherits(goog.dom.ControlRangeIterator, goog.dom.RangeIterator);
+<a name="line412"></a>
+<a name="line413"></a>
+<a name="line414"></a>/**
+<a name="line415"></a> * The first node in the selection.
+<a name="line416"></a> * @type {Node}
+<a name="line417"></a> * @private
+<a name="line418"></a> */
+<a name="line419"></a>goog.dom.ControlRangeIterator.prototype.startNode_ = null;
+<a name="line420"></a>
+<a name="line421"></a>
+<a name="line422"></a>/**
+<a name="line423"></a> * The last node in the selection.
+<a name="line424"></a> * @type {Node}
+<a name="line425"></a> * @private
+<a name="line426"></a> */
+<a name="line427"></a>goog.dom.ControlRangeIterator.prototype.endNode_ = null;
+<a name="line428"></a>
+<a name="line429"></a>
+<a name="line430"></a>/**
+<a name="line431"></a> * The list of elements left to traverse.
+<a name="line432"></a> * @type {Array.&lt;Element&gt;?}
+<a name="line433"></a> * @private
+<a name="line434"></a> */
+<a name="line435"></a>goog.dom.ControlRangeIterator.prototype.elements_ = null;
+<a name="line436"></a>
+<a name="line437"></a>
+<a name="line438"></a>/** @override */
+<a name="line439"></a>goog.dom.ControlRangeIterator.prototype.getStartTextOffset = function() {
+<a name="line440"></a>  return 0;
+<a name="line441"></a>};
+<a name="line442"></a>
+<a name="line443"></a>
+<a name="line444"></a>/** @override */
+<a name="line445"></a>goog.dom.ControlRangeIterator.prototype.getEndTextOffset = function() {
+<a name="line446"></a>  return 0;
+<a name="line447"></a>};
+<a name="line448"></a>
+<a name="line449"></a>
+<a name="line450"></a>/** @override */
+<a name="line451"></a>goog.dom.ControlRangeIterator.prototype.getStartNode = function() {
+<a name="line452"></a>  return this.startNode_;
+<a name="line453"></a>};
+<a name="line454"></a>
+<a name="line455"></a>
+<a name="line456"></a>/** @override */
+<a name="line457"></a>goog.dom.ControlRangeIterator.prototype.getEndNode = function() {
+<a name="line458"></a>  return this.endNode_;
+<a name="line459"></a>};
+<a name="line460"></a>
+<a name="line461"></a>
+<a name="line462"></a>/** @override */
+<a name="line463"></a>goog.dom.ControlRangeIterator.prototype.isLast = function() {
+<a name="line464"></a>  return !this.depth &amp;&amp; !this.elements_.length;
+<a name="line465"></a>};
+<a name="line466"></a>
+<a name="line467"></a>
+<a name="line468"></a>/**
+<a name="line469"></a> * Move to the next position in the selection.
+<a name="line470"></a> * Throws {@code goog.iter.StopIteration} when it passes the end of the range.
+<a name="line471"></a> * @return {Node} The node at the next position.
+<a name="line472"></a> */
+<a name="line473"></a>goog.dom.ControlRangeIterator.prototype.next = function() {
+<a name="line474"></a>  // Iterate over each element in the range, and all of its children.
+<a name="line475"></a>  if (this.isLast()) {
+<a name="line476"></a>    throw goog.iter.StopIteration;
+<a name="line477"></a>  } else if (!this.depth) {
+<a name="line478"></a>    var el = this.elements_.shift();
+<a name="line479"></a>    this.setPosition(el,
+<a name="line480"></a>                     goog.dom.TagWalkType.START_TAG,
+<a name="line481"></a>                     goog.dom.TagWalkType.START_TAG);
+<a name="line482"></a>    return el;
+<a name="line483"></a>  }
+<a name="line484"></a>
+<a name="line485"></a>  // Call the super function.
+<a name="line486"></a>  return goog.dom.ControlRangeIterator.superClass_.next.call(this);
+<a name="line487"></a>};
+<a name="line488"></a>
+<a name="line489"></a>
+<a name="line490"></a>/**
+<a name="line491"></a> * Replace this iterator&#39;s values with values from another.
+<a name="line492"></a> * @param {goog.dom.ControlRangeIterator} other The iterator to copy.
+<a name="line493"></a> * @protected
+<a name="line494"></a> */
+<a name="line495"></a>goog.dom.ControlRangeIterator.prototype.copyFrom = function(other) {
+<a name="line496"></a>  this.elements_ = other.elements_;
+<a name="line497"></a>  this.startNode_ = other.startNode_;
+<a name="line498"></a>  this.endNode_ = other.endNode_;
+<a name="line499"></a>
+<a name="line500"></a>  goog.dom.ControlRangeIterator.superClass_.copyFrom.call(this, other);
+<a name="line501"></a>};
+<a name="line502"></a>
+<a name="line503"></a>
+<a name="line504"></a>/**
+<a name="line505"></a> * @return {goog.dom.ControlRangeIterator} An identical iterator.
+<a name="line506"></a> */
+<a name="line507"></a>goog.dom.ControlRangeIterator.prototype.clone = function() {
+<a name="line508"></a>  var copy = new goog.dom.ControlRangeIterator(null);
+<a name="line509"></a>  copy.copyFrom(this);
+<a name="line510"></a>  return copy;
+<a name="line511"></a>};
+</pre>
+
+
+</body>
+</html>

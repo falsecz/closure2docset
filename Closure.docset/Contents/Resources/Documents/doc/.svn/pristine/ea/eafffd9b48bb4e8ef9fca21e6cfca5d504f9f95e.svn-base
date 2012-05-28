@@ -1,0 +1,345 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>dispatcher.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_jsaction_dispatcher.js.html">dispatcher.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview The jsaction dispatcher.
+<a name="line17"></a> * Serves as the registry with which clients register jsaction handlers.
+<a name="line18"></a> * When EventContract finds a jsaction to be invoked for an event, it
+<a name="line19"></a> * calls the dispatcher, which then looks up the corresponding handler
+<a name="line20"></a> * function and invokes it.
+<a name="line21"></a> *
+<a name="line22"></a> * A fully qualified jsaction name consists of a namespace and an action
+<a name="line23"></a> * name separated by a dot: &quot;namespace.action.
+<a name="line24"></a> * Hierarchichal namespaces are not supported. Namespace and action names
+<a name="line25"></a> * should only consist of alphanumeric characters and underscores.
+<a name="line26"></a> *
+<a name="line27"></a> * Usage:
+<a name="line28"></a> *
+<a name="line29"></a> * The dispatcher first needs to be hooked up to an instance of
+<a name="line30"></a> * goog.jsaction.EventContract.
+<a name="line31"></a> *
+<a name="line32"></a> * var dispatcher = new goog.jsaction.Dispatcher;
+<a name="line33"></a> * eventContract.setDispatcher(dispatcher);
+<a name="line34"></a> *
+<a name="line35"></a> * Clients can register handlers for the jsactions they use in their
+<a name="line36"></a> * markup. For example, the code to add the action handler for element
+<a name="line37"></a> *   &lt;div jsaction=&quot;foo.bar&quot;&gt;Do stuff&lt;/div&gt;
+<a name="line38"></a> * would look like this:
+<a name="line39"></a> *
+<a name="line40"></a> * var fooBarHandler = function(context) {
+<a name="line41"></a> *   // Do stuff.
+<a name="line42"></a> * };
+<a name="line43"></a> * dispatcher.registerHandlers(&#39;foo&#39;, {&#39;bar&#39;: fooBarHandler});
+<a name="line44"></a> *
+<a name="line45"></a> * If a &#39;jsaction&#39; attribute doesn&#39;t specify a fully qualified jsaction name,
+<a name="line46"></a> * the dispatcher will search for an ancestor with a &#39;jsnamespace&#39; attribute.
+<a name="line47"></a> * Example markup using the same names as above:
+<a name="line48"></a> * &lt;div jsnamespace=&quot;foo&quot;&gt;
+<a name="line49"></a> *   &lt;div jsaction=&quot;bar&quot;&gt;Do Stuff&lt;/div&gt;
+<a name="line50"></a> * &lt;/div&gt;
+<a name="line51"></a> *
+<a name="line52"></a> */
+<a name="line53"></a>
+<a name="line54"></a>
+<a name="line55"></a>goog.provide(&#39;goog.jsaction.Dispatcher&#39;);
+<a name="line56"></a>goog.provide(&#39;goog.jsaction.HandlerFunction&#39;);
+<a name="line57"></a>goog.provide(&#39;goog.jsaction.LoaderFunction&#39;);
+<a name="line58"></a>
+<a name="line59"></a>goog.require(&#39;goog.asserts&#39;);
+<a name="line60"></a>goog.require(&#39;goog.jsaction.Context&#39;);
+<a name="line61"></a>goog.require(&#39;goog.jsaction.EventContract&#39;);
+<a name="line62"></a>goog.require(&#39;goog.jsaction.replay&#39;);
+<a name="line63"></a>goog.require(&#39;goog.jsaction.util&#39;);
+<a name="line64"></a>
+<a name="line65"></a>
+<a name="line66"></a>/**
+<a name="line67"></a> * The signature of action handler functions.
+<a name="line68"></a> * @typedef {function(!goog.jsaction.Context):void}
+<a name="line69"></a> */
+<a name="line70"></a>goog.jsaction.HandlerFunction;
+<a name="line71"></a>
+<a name="line72"></a>
+<a name="line73"></a>/**
+<a name="line74"></a> * The signature of a loader function. It gets a namespace as argument.
+<a name="line75"></a> * A loader function is expected to do whatever necessary to load code and
+<a name="line76"></a> * eventually register the action handlers for the namespace.
+<a name="line77"></a> * @typedef {function(string)}
+<a name="line78"></a> */
+<a name="line79"></a>goog.jsaction.LoaderFunction;
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>
+<a name="line83"></a>/**
+<a name="line84"></a> * Creates jsaction dispatcher that serves as registry for
+<a name="line85"></a> * action handlers and dispatches actions to appropriate handlers.
+<a name="line86"></a> * @constructor
+<a name="line87"></a> */
+<a name="line88"></a>goog.jsaction.Dispatcher = function() {
+<a name="line89"></a>  /**
+<a name="line90"></a>   * The handler registry.
+<a name="line91"></a>   * @type {!Object.&lt;string, !goog.jsaction.HandlerFunction&gt;}
+<a name="line92"></a>   * @private
+<a name="line93"></a>   */
+<a name="line94"></a>  this.handlers_ = {};
+<a name="line95"></a>
+<a name="line96"></a>  /**
+<a name="line97"></a>   * The loader registry.
+<a name="line98"></a>   * @type {!Object.&lt;string, !goog.jsaction.LoaderFunction&gt;}
+<a name="line99"></a>   * @private
+<a name="line100"></a>   */
+<a name="line101"></a>  this.loaders_ = {};
+<a name="line102"></a>};
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * Constant for the name of the &#39;jsnamespace&#39;-attribute.
+<a name="line107"></a> * @type {string}
+<a name="line108"></a> * @private
+<a name="line109"></a> */
+<a name="line110"></a>goog.jsaction.Dispatcher.ATTRIBUTE_NAME_JSNAMESPACE_ = &#39;jsnamespace&#39;;
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/**
+<a name="line114"></a> * Array of queued events. This is shared between EventContract and the
+<a name="line115"></a> * attached dispatcher. EventContract adds entries, while the dispatcher
+<a name="line116"></a> * consumes them when replaying the events.
+<a name="line117"></a> * @type {Array.&lt;!goog.jsaction.ReplayInfo&gt;}
+<a name="line118"></a> * @private
+<a name="line119"></a> */
+<a name="line120"></a>goog.jsaction.Dispatcher.prototype.queue_;
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>/**
+<a name="line124"></a> * Attaches this dispatcher to the given EventContract instance.
+<a name="line125"></a> * @param {goog.jsaction.EventContract} contract The EventContract instance
+<a name="line126"></a> *     to attach to.
+<a name="line127"></a> */
+<a name="line128"></a>goog.jsaction.Dispatcher.prototype.attach = function(contract) {
+<a name="line129"></a>  goog.asserts.assert(!this.queue_, &#39;Already attached.&#39;);
+<a name="line130"></a>
+<a name="line131"></a>  contract.setDispatcher(this);
+<a name="line132"></a>  this.queue_ = contract.getQueue();
+<a name="line133"></a>  this.replayEvents_();
+<a name="line134"></a>};
+<a name="line135"></a>
+<a name="line136"></a>
+<a name="line137"></a>/**
+<a name="line138"></a> * Registers a loader function for a namespace. The loader function
+<a name="line139"></a> * will be invoked when an action occurs from that namespace without a
+<a name="line140"></a> * handler being present.
+<a name="line141"></a> * The loader is expected to do whatever necessary to load code and
+<a name="line142"></a> * eventually register action handlers for the namespace.
+<a name="line143"></a> * @param {string} ns The namespace.
+<a name="line144"></a> * @param {!goog.jsaction.LoaderFunction} loaderFn The loader function.
+<a name="line145"></a> */
+<a name="line146"></a>goog.jsaction.Dispatcher.prototype.registerLoader = function(ns, loaderFn) {
+<a name="line147"></a>  this.loaders_[ns] = loaderFn;
+<a name="line148"></a>
+<a name="line149"></a>  // Invoke the loader right away if there are queued jsactions
+<a name="line150"></a>  // in the namespace it is registered for.
+<a name="line151"></a>  if (this.hasQueuedActionInNamespace_(ns)) {
+<a name="line152"></a>    loaderFn(ns);
+<a name="line153"></a>  }
+<a name="line154"></a>};
+<a name="line155"></a>
+<a name="line156"></a>
+<a name="line157"></a>/**
+<a name="line158"></a> * Registers action handlers.
+<a name="line159"></a> * @param {string} ns The namespace.
+<a name="line160"></a> * @param {!Object.&lt;string, !goog.jsaction.HandlerFunction&gt;} handlers
+<a name="line161"></a> *     The handlers. Map from action name to action handler function.
+<a name="line162"></a> */
+<a name="line163"></a>goog.jsaction.Dispatcher.prototype.registerHandlers = function(ns, handlers) {
+<a name="line164"></a>  for (var name in handlers) {
+<a name="line165"></a>    var action = ns + &#39;.&#39; + name;
+<a name="line166"></a>    goog.jsaction.Dispatcher.assertValidAction_(action);
+<a name="line167"></a>    this.handlers_[action] = handlers[name];
+<a name="line168"></a>  }
+<a name="line169"></a>
+<a name="line170"></a>  this.replayEvents_();
+<a name="line171"></a>};
+<a name="line172"></a>
+<a name="line173"></a>
+<a name="line174"></a>/**
+<a name="line175"></a> * Dispatches an action to the appropriate handler function.
+<a name="line176"></a> * @param {string} action The action.
+<a name="line177"></a> * @param {!Element} elem The element.
+<a name="line178"></a> * @param {!Event} e The event object.
+<a name="line179"></a> * @param {number} time The time when the event occured.
+<a name="line180"></a> * @return {boolean} Whether the action has been handled.
+<a name="line181"></a> */
+<a name="line182"></a>goog.jsaction.Dispatcher.prototype.dispatch = function(
+<a name="line183"></a>    action, elem, e, time) {
+<a name="line184"></a>  // If the action doesn&#39;t specify a namespace, find the ancestor with a
+<a name="line185"></a>  // &#39;jsnamespace&#39; attribute.
+<a name="line186"></a>  if (action.indexOf(&#39;.&#39;) == -1) {
+<a name="line187"></a>    for (var ancestor = elem; ancestor; ancestor = ancestor.parentNode) {
+<a name="line188"></a>      var ns = ancestor.getAttribute(
+<a name="line189"></a>          goog.jsaction.Dispatcher.ATTRIBUTE_NAME_JSNAMESPACE_);
+<a name="line190"></a>      if (ns) {
+<a name="line191"></a>        action = ns + &#39;.&#39; + action;
+<a name="line192"></a>        break;
+<a name="line193"></a>      }
+<a name="line194"></a>    }
+<a name="line195"></a>  }
+<a name="line196"></a>
+<a name="line197"></a>  goog.jsaction.Dispatcher.assertValidAction_(action);
+<a name="line198"></a>
+<a name="line199"></a>  if (this.maybeInvokeHandler_(action, elem, e, time)) {
+<a name="line200"></a>    return true;
+<a name="line201"></a>  }
+<a name="line202"></a>
+<a name="line203"></a>  var ns = goog.jsaction.Dispatcher.getNamespace_(action);
+<a name="line204"></a>  var loaderFn = this.loaders_[ns];
+<a name="line205"></a>  if (loaderFn) {
+<a name="line206"></a>    loaderFn(ns);
+<a name="line207"></a>    // The loader may register handlers synchronously (although this
+<a name="line208"></a>    // will not be the typical case), therefore attempt again to invoke
+<a name="line209"></a>    // the handler.
+<a name="line210"></a>    return this.maybeInvokeHandler_(action, elem, e, time);
+<a name="line211"></a>  }
+<a name="line212"></a>  return false;
+<a name="line213"></a>};
+<a name="line214"></a>
+<a name="line215"></a>
+<a name="line216"></a>/**
+<a name="line217"></a> * Looks up the handler for an action an invokes it (if present).
+<a name="line218"></a> * @param {string} action The action.
+<a name="line219"></a> * @param {!Element} elem The element.
+<a name="line220"></a> * @param {!Event} e The event object.
+<a name="line221"></a> * @param {number} time The time when the event occured.
+<a name="line222"></a> * @return {boolean} Whether the handler has been invoked.
+<a name="line223"></a> * @private
+<a name="line224"></a> */
+<a name="line225"></a>goog.jsaction.Dispatcher.prototype.maybeInvokeHandler_ = function(
+<a name="line226"></a>    action, elem, e, time) {
+<a name="line227"></a>  var handler = this.handlers_[action];
+<a name="line228"></a>  if (handler) {
+<a name="line229"></a>    handler(new goog.jsaction.Context(action, elem, e, time));
+<a name="line230"></a>    goog.jsaction.util.preventDefault(e);
+<a name="line231"></a>    return true;
+<a name="line232"></a>  }
+<a name="line233"></a>  return false;
+<a name="line234"></a>};
+<a name="line235"></a>
+<a name="line236"></a>
+<a name="line237"></a>/**
+<a name="line238"></a> * Extracts and returns the namespace from a fully qualified jsaction
+<a name="line239"></a> * of the form &quot;namespace.actionname&quot;.
+<a name="line240"></a> * @param {string} action The action.
+<a name="line241"></a> * @return {string} The namespace.
+<a name="line242"></a> * @private
+<a name="line243"></a> */
+<a name="line244"></a>goog.jsaction.Dispatcher.getNamespace_ = function(action) {
+<a name="line245"></a>  return action.split(&#39;.&#39;)[0];
+<a name="line246"></a>};
+<a name="line247"></a>
+<a name="line248"></a>
+<a name="line249"></a>/**
+<a name="line250"></a> * Asserts the validity of fully qualified action name.
+<a name="line251"></a> * @param {string} action The action name to validate.
+<a name="line252"></a> * @private
+<a name="line253"></a> */
+<a name="line254"></a>goog.jsaction.Dispatcher.assertValidAction_ = function(action) {
+<a name="line255"></a>  goog.asserts.assert(/^[a-zA-Z_]*\.[a-zA-Z_]*$/.test(action));
+<a name="line256"></a>};
+<a name="line257"></a>
+<a name="line258"></a>
+<a name="line259"></a>/**
+<a name="line260"></a> * Determines whether there is a queued action for the given namespace.
+<a name="line261"></a> * @param {string} ns The namespace.
+<a name="line262"></a> * @return {boolean} Whether there is a queued action for the given namespace.
+<a name="line263"></a> * @private
+<a name="line264"></a> */
+<a name="line265"></a>goog.jsaction.Dispatcher.prototype.hasQueuedActionInNamespace_ = function(ns) {
+<a name="line266"></a>  if (this.queue_) {
+<a name="line267"></a>    for (var i = 0; i &lt; this.queue_.length; ++i) {
+<a name="line268"></a>      if (ns == goog.jsaction.Dispatcher.getNamespace_(this.queue_[i].action)) {
+<a name="line269"></a>        return true;
+<a name="line270"></a>      }
+<a name="line271"></a>    }
+<a name="line272"></a>  }
+<a name="line273"></a>  return false;
+<a name="line274"></a>};
+<a name="line275"></a>
+<a name="line276"></a>
+<a name="line277"></a>/**
+<a name="line278"></a> * Replays all events in the queue for which there is a handler.
+<a name="line279"></a> * @private
+<a name="line280"></a> */
+<a name="line281"></a>goog.jsaction.Dispatcher.prototype.replayEvents_ = function() {
+<a name="line282"></a>  if (!this.queue_) {
+<a name="line283"></a>    return;
+<a name="line284"></a>  }
+<a name="line285"></a>  for (var i = 0, replayInfo; replayInfo = this.queue_[i]; ) {
+<a name="line286"></a>    if (replayInfo.action in this.handlers_) {
+<a name="line287"></a>      // Remove the entry from the queue and replay the event.
+<a name="line288"></a>      this.queue_.splice(i, 1);
+<a name="line289"></a>      goog.jsaction.replay.replayEvent(replayInfo);
+<a name="line290"></a>    } else {
+<a name="line291"></a>      ++i;
+<a name="line292"></a>    }
+<a name="line293"></a>  }
+<a name="line294"></a>};
+</pre>
+
+
+</body>
+</html>

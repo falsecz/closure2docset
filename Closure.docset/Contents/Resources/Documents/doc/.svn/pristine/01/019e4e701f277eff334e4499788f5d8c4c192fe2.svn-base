@@ -1,0 +1,187 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>coordinate.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_math_coordinate.js.html">coordinate.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A utility class for representing two-dimensional positions.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.math.Coordinate&#39;);
+<a name="line21"></a>
+<a name="line22"></a>
+<a name="line23"></a>
+<a name="line24"></a>/**
+<a name="line25"></a> * Class for representing coordinates and positions.
+<a name="line26"></a> * @param {number=} opt_x Left, defaults to 0.
+<a name="line27"></a> * @param {number=} opt_y Top, defaults to 0.
+<a name="line28"></a> * @constructor
+<a name="line29"></a> */
+<a name="line30"></a>goog.math.Coordinate = function(opt_x, opt_y) {
+<a name="line31"></a>  /**
+<a name="line32"></a>   * X-value
+<a name="line33"></a>   * @type {number}
+<a name="line34"></a>   */
+<a name="line35"></a>  this.x = goog.isDef(opt_x) ? opt_x : 0;
+<a name="line36"></a>
+<a name="line37"></a>  /**
+<a name="line38"></a>   * Y-value
+<a name="line39"></a>   * @type {number}
+<a name="line40"></a>   */
+<a name="line41"></a>  this.y = goog.isDef(opt_y) ? opt_y : 0;
+<a name="line42"></a>};
+<a name="line43"></a>
+<a name="line44"></a>
+<a name="line45"></a>/**
+<a name="line46"></a> * Returns a new copy of the coordinate.
+<a name="line47"></a> * @return {!goog.math.Coordinate} A clone of this coordinate.
+<a name="line48"></a> */
+<a name="line49"></a>goog.math.Coordinate.prototype.clone = function() {
+<a name="line50"></a>  return new goog.math.Coordinate(this.x, this.y);
+<a name="line51"></a>};
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>if (goog.DEBUG) {
+<a name="line55"></a>  /**
+<a name="line56"></a>   * Returns a nice string representing the coordinate.
+<a name="line57"></a>   * @return {string} In the form (50, 73).
+<a name="line58"></a>   */
+<a name="line59"></a>  goog.math.Coordinate.prototype.toString = function() {
+<a name="line60"></a>    return &#39;(&#39; + this.x + &#39;, &#39; + this.y + &#39;)&#39;;
+<a name="line61"></a>  };
+<a name="line62"></a>}
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * Compares coordinates for equality.
+<a name="line67"></a> * @param {goog.math.Coordinate} a A Coordinate.
+<a name="line68"></a> * @param {goog.math.Coordinate} b A Coordinate.
+<a name="line69"></a> * @return {boolean} True iff the coordinates are equal, or if both are null.
+<a name="line70"></a> */
+<a name="line71"></a>goog.math.Coordinate.equals = function(a, b) {
+<a name="line72"></a>  if (a == b) {
+<a name="line73"></a>    return true;
+<a name="line74"></a>  }
+<a name="line75"></a>  if (!a || !b) {
+<a name="line76"></a>    return false;
+<a name="line77"></a>  }
+<a name="line78"></a>  return a.x == b.x &amp;&amp; a.y == b.y;
+<a name="line79"></a>};
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>/**
+<a name="line83"></a> * Returns the distance between two coordinates.
+<a name="line84"></a> * @param {!goog.math.Coordinate} a A Coordinate.
+<a name="line85"></a> * @param {!goog.math.Coordinate} b A Coordinate.
+<a name="line86"></a> * @return {number} The distance between {@code a} and {@code b}.
+<a name="line87"></a> */
+<a name="line88"></a>goog.math.Coordinate.distance = function(a, b) {
+<a name="line89"></a>  var dx = a.x - b.x;
+<a name="line90"></a>  var dy = a.y - b.y;
+<a name="line91"></a>  return Math.sqrt(dx * dx + dy * dy);
+<a name="line92"></a>};
+<a name="line93"></a>
+<a name="line94"></a>
+<a name="line95"></a>/**
+<a name="line96"></a> * Returns the squared distance between two coordinates. Squared distances can
+<a name="line97"></a> * be used for comparisons when the actual value is not required.
+<a name="line98"></a> *
+<a name="line99"></a> * Performance note: eliminating the square root is an optimization often used
+<a name="line100"></a> * in lower-level languages, but the speed difference is not nearly as
+<a name="line101"></a> * pronounced in JavaScript (only a few percent.)
+<a name="line102"></a> *
+<a name="line103"></a> * @param {!goog.math.Coordinate} a A Coordinate.
+<a name="line104"></a> * @param {!goog.math.Coordinate} b A Coordinate.
+<a name="line105"></a> * @return {number} The squared distance between {@code a} and {@code b}.
+<a name="line106"></a> */
+<a name="line107"></a>goog.math.Coordinate.squaredDistance = function(a, b) {
+<a name="line108"></a>  var dx = a.x - b.x;
+<a name="line109"></a>  var dy = a.y - b.y;
+<a name="line110"></a>  return dx * dx + dy * dy;
+<a name="line111"></a>};
+<a name="line112"></a>
+<a name="line113"></a>
+<a name="line114"></a>/**
+<a name="line115"></a> * Returns the difference between two coordinates as a new
+<a name="line116"></a> * goog.math.Coordinate.
+<a name="line117"></a> * @param {!goog.math.Coordinate} a A Coordinate.
+<a name="line118"></a> * @param {!goog.math.Coordinate} b A Coordinate.
+<a name="line119"></a> * @return {!goog.math.Coordinate} A Coordinate representing the difference
+<a name="line120"></a> *     between {@code a} and {@code b}.
+<a name="line121"></a> */
+<a name="line122"></a>goog.math.Coordinate.difference = function(a, b) {
+<a name="line123"></a>  return new goog.math.Coordinate(a.x - b.x, a.y - b.y);
+<a name="line124"></a>};
+<a name="line125"></a>
+<a name="line126"></a>
+<a name="line127"></a>/**
+<a name="line128"></a> * Returns the sum of two coordinates as a new goog.math.Coordinate.
+<a name="line129"></a> * @param {!goog.math.Coordinate} a A Coordinate.
+<a name="line130"></a> * @param {!goog.math.Coordinate} b A Coordinate.
+<a name="line131"></a> * @return {!goog.math.Coordinate} A Coordinate representing the sum of the two
+<a name="line132"></a> *     coordinates.
+<a name="line133"></a> */
+<a name="line134"></a>goog.math.Coordinate.sum = function(a, b) {
+<a name="line135"></a>  return new goog.math.Coordinate(a.x + b.x, a.y + b.y);
+<a name="line136"></a>};
+</pre>
+
+
+</body>
+</html>

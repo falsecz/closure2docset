@@ -1,0 +1,811 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>silverlight.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_third_party_closure_goog_silverlight_silverlight.js.html">silverlight.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>/**
+<a name="line2"></a> * @license
+<a name="line3"></a> * Portions of this code are from Silverlight.js under the Ms-PL license and
+<a name="line4"></a> * modified by The Closure Authors.
+<a name="line5"></a> *
+<a name="line6"></a> * Silverlight.js                      version 4.0.50401.0
+<a name="line7"></a> *
+<a name="line8"></a> * This file is provided by Microsoft as a helper file for websites that
+<a name="line9"></a> * incorporate Silverlight Objects. This file is provided under the Microsoft
+<a name="line10"></a> * Public License available at
+<a name="line11"></a> * http://code.msdn.microsoft.com/silverlightjs/Project/License.aspx.
+<a name="line12"></a> * You may not use or distribute this file or the code in this file except as
+<a name="line13"></a> * expressly permitted under that license.
+<a name="line14"></a> *
+<a name="line15"></a> * Copyright (c) Microsoft Corporation. All rights reserved.
+<a name="line16"></a> */
+<a name="line17"></a>
+<a name="line18"></a>/**
+<a name="line19"></a> * @fileoverview Modified version of Silverlight.js to work with
+<a name="line20"></a> * the compiler&#39;s advanced modes. The API should be the same, except
+<a name="line21"></a> * that they&#39;re namespaced under goog.silverlight instead of Silverlight.
+<a name="line22"></a> *
+<a name="line23"></a> * We&#39;ve also modified this so that the silverlight bootstrapper
+<a name="line24"></a> * does not run by default. If you need to start up silverlight, you
+<a name="line25"></a> * should explicitly call goog.silverlight.startup().
+<a name="line26"></a> *
+<a name="line27"></a> * @author nicksantos@google.com (Nick Santos) (ported to Closure)
+<a name="line28"></a> */
+<a name="line29"></a>
+<a name="line30"></a>goog.provide(&#39;goog.silverlight&#39;);
+<a name="line31"></a>
+<a name="line32"></a>
+<a name="line33"></a>/**
+<a name="line34"></a> * Counter of globalized event handlers
+<a name="line35"></a> * @type {number}
+<a name="line36"></a> */
+<a name="line37"></a>goog.silverlight._silverlightCount = 0;
+<a name="line38"></a>
+<a name="line39"></a>
+<a name="line40"></a>/**
+<a name="line41"></a> * Prevents onSilverlightInstalled from being called multiple
+<a name="line42"></a> * times
+<a name="line43"></a> * @type {boolean}
+<a name="line44"></a> */
+<a name="line45"></a>goog.silverlight.__onSilverlightInstalledCalled = false;
+<a name="line46"></a>
+<a name="line47"></a>
+<a name="line48"></a>/**
+<a name="line49"></a> * Prefix for fwlink URL&#39;s
+<a name="line50"></a> * @type {string}
+<a name="line51"></a> */
+<a name="line52"></a>goog.silverlight.fwlinkRoot = &#39;http://go2.microsoft.com/fwlink/?LinkID=&#39;;
+<a name="line53"></a>
+<a name="line54"></a>
+<a name="line55"></a>/**
+<a name="line56"></a> * Ensures that only one Installation State event is fired.
+<a name="line57"></a> * @type {boolean}
+<a name="line58"></a> */
+<a name="line59"></a>goog.silverlight.__installationEventFired = false;
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Called by goog.silverlight.getSilverlight to notify the page that a user
+<a name="line64"></a> * has requested the Silverlight installer
+<a name="line65"></a> * @type {Function}
+<a name="line66"></a> */
+<a name="line67"></a>goog.silverlight.onGetSilverlight = null;
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/**
+<a name="line71"></a> * Called by Silverlight.waitForInstallCompletion when the page detects
+<a name="line72"></a> * that Silverlight has been installed. The event handler is not called
+<a name="line73"></a> * in upgrade scenarios.
+<a name="line74"></a> */
+<a name="line75"></a>goog.silverlight.onSilverlightInstalled = function() {
+<a name="line76"></a>  window.location.reload(false);
+<a name="line77"></a>};
+<a name="line78"></a>
+<a name="line79"></a>
+<a name="line80"></a>/**
+<a name="line81"></a> * Checks to see if the correct version is installed.
+<a name="line82"></a> * @param {?string=} version The silverlight version.
+<a name="line83"></a> * @return {boolean} Whether silverlight is installed.
+<a name="line84"></a> */
+<a name="line85"></a>goog.silverlight.isInstalled = function(version) {
+<a name="line86"></a>  if (version == undefined)
+<a name="line87"></a>    version = null;
+<a name="line88"></a>
+<a name="line89"></a>  var isVersionSupported = false;
+<a name="line90"></a>  var container = null;
+<a name="line91"></a>
+<a name="line92"></a>  try {
+<a name="line93"></a>    var control = null;
+<a name="line94"></a>    var tryNS = false;
+<a name="line95"></a>    if (typeof ActiveXObject == &#39;undefined&#39;) {
+<a name="line96"></a>      try {
+<a name="line97"></a>        control = new ActiveXObject(&#39;AgControl.AgControl&#39;);
+<a name="line98"></a>        if (version === null) {
+<a name="line99"></a>          isVersionSupported = true;
+<a name="line100"></a>        } else if (control.isVersionSupported(version)) {
+<a name="line101"></a>          isVersionSupported = true;
+<a name="line102"></a>        }
+<a name="line103"></a>        control = null;
+<a name="line104"></a>      } catch (e) {
+<a name="line105"></a>        tryNS = true;
+<a name="line106"></a>      }
+<a name="line107"></a>    } else {
+<a name="line108"></a>      tryNS = true;
+<a name="line109"></a>    }
+<a name="line110"></a>    if (tryNS) {
+<a name="line111"></a>      var plugin = navigator.plugins[&#39;Silverlight Plug-In&#39;];
+<a name="line112"></a>      if (plugin) {
+<a name="line113"></a>        if (version === null) {
+<a name="line114"></a>          isVersionSupported = true;
+<a name="line115"></a>        } else {
+<a name="line116"></a>          var actualVer = plugin.description;
+<a name="line117"></a>          if (actualVer === &#39;1.0.30226.2&#39;)
+<a name="line118"></a>            actualVer = &#39;2.0.30226.2&#39;;
+<a name="line119"></a>          var actualVerArray = actualVer.split(&#39;.&#39;);
+<a name="line120"></a>          while (actualVerArray.length &gt; 3) {
+<a name="line121"></a>            actualVerArray.pop();
+<a name="line122"></a>          }
+<a name="line123"></a>          while (actualVerArray.length &lt; 4) {
+<a name="line124"></a>            actualVerArray.push(0);
+<a name="line125"></a>          }
+<a name="line126"></a>          var reqVerArray = version.split(&#39;.&#39;);
+<a name="line127"></a>          while (reqVerArray.length &gt; 4) {
+<a name="line128"></a>            reqVerArray.pop();
+<a name="line129"></a>          }
+<a name="line130"></a>
+<a name="line131"></a>          var requiredVersionPart;
+<a name="line132"></a>          var actualVersionPart;
+<a name="line133"></a>          var index = 0;
+<a name="line134"></a>
+<a name="line135"></a>
+<a name="line136"></a>          do {
+<a name="line137"></a>            requiredVersionPart = parseInt(reqVerArray[index], 10);
+<a name="line138"></a>            actualVersionPart = parseInt(actualVerArray[index], 10);
+<a name="line139"></a>            index++;
+<a name="line140"></a>          }
+<a name="line141"></a>          while (index &lt; reqVerArray.length &amp;&amp;
+<a name="line142"></a>                 requiredVersionPart === actualVersionPart);
+<a name="line143"></a>
+<a name="line144"></a>          if (requiredVersionPart &lt;= actualVersionPart &amp;&amp;
+<a name="line145"></a>              !isNaN(requiredVersionPart)) {
+<a name="line146"></a>            isVersionSupported = true;
+<a name="line147"></a>          }
+<a name="line148"></a>        }
+<a name="line149"></a>      }
+<a name="line150"></a>    }
+<a name="line151"></a>  } catch (e) {
+<a name="line152"></a>    isVersionSupported = false;
+<a name="line153"></a>  }
+<a name="line154"></a>
+<a name="line155"></a>  return isVersionSupported;
+<a name="line156"></a>};
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/**
+<a name="line160"></a> * Occasionally checks for Silverlight installation status. If it
+<a name="line161"></a> * detects that Silverlight has been installed then it calls
+<a name="line162"></a> * Silverlight.onSilverlightInstalled();. This is only supported
+<a name="line163"></a> * if Silverlight was not previously installed on this computer.
+<a name="line164"></a> */
+<a name="line165"></a>goog.silverlight.waitForInstallCompletion = function() {
+<a name="line166"></a>  if (!goog.silverlight.isBrowserRestartRequired &amp;&amp;
+<a name="line167"></a>      goog.silverlight.onSilverlightInstalled) {
+<a name="line168"></a>    try {
+<a name="line169"></a>      navigator.plugins.refresh();
+<a name="line170"></a>    } catch (e) {
+<a name="line171"></a>    }
+<a name="line172"></a>    if (goog.silverlight.isInstalled(null) &amp;&amp;
+<a name="line173"></a>        !goog.silverlight.__onSilverlightInstalledCalled) {
+<a name="line174"></a>      goog.silverlight.onSilverlightInstalled();
+<a name="line175"></a>      goog.silverlight.__onSilverlightInstalledCalled = true;
+<a name="line176"></a>    } else {
+<a name="line177"></a>      setTimeout(goog.silverlight.waitForInstallCompletion, 3000);
+<a name="line178"></a>    }
+<a name="line179"></a>  }
+<a name="line180"></a>};
+<a name="line181"></a>
+<a name="line182"></a>
+<a name="line183"></a>/**
+<a name="line184"></a> * Performs startup tasks.
+<a name="line185"></a> */
+<a name="line186"></a>goog.silverlight.startup = function() {
+<a name="line187"></a>  navigator.plugins.refresh();
+<a name="line188"></a>  goog.silverlight.isBrowserRestartRequired =
+<a name="line189"></a>      goog.silverlight.isInstalled(null);
+<a name="line190"></a>  if (!goog.silverlight.isBrowserRestartRequired) {
+<a name="line191"></a>    goog.silverlight.waitForInstallCompletion();
+<a name="line192"></a>    if (!goog.silverlight.__installationEventFired) {
+<a name="line193"></a>      goog.silverlight.onInstallRequired();
+<a name="line194"></a>      goog.silverlight.__installationEventFired = true;
+<a name="line195"></a>    }
+<a name="line196"></a>  } else if (window.navigator.mimeTypes) {
+<a name="line197"></a>    var mimeSL2 = navigator.mimeTypes[&#39;application/x-silverlight-2&#39;];
+<a name="line198"></a>    var mimeSL2b2 = navigator.mimeTypes[&#39;application/x-silverlight-2-b2&#39;];
+<a name="line199"></a>    var mimeSL2b1 = navigator.mimeTypes[&#39;application/x-silverlight-2-b1&#39;];
+<a name="line200"></a>    var mimeHighestBeta = mimeSL2b1;
+<a name="line201"></a>    if (mimeSL2b2)
+<a name="line202"></a>      mimeHighestBeta = mimeSL2b2;
+<a name="line203"></a>
+<a name="line204"></a>    if (!mimeSL2 &amp;&amp; (mimeSL2b1 || mimeSL2b2)) {
+<a name="line205"></a>      if (!goog.silverlight.__installationEventFired) {
+<a name="line206"></a>        goog.silverlight.onUpgradeRequired();
+<a name="line207"></a>        goog.silverlight.__installationEventFired = true;
+<a name="line208"></a>      }
+<a name="line209"></a>    } else if (mimeSL2 &amp;&amp; mimeHighestBeta) {
+<a name="line210"></a>      if (mimeSL2.enabledPlugin &amp;&amp;
+<a name="line211"></a>          mimeHighestBeta.enabledPlugin) {
+<a name="line212"></a>        if (mimeSL2.enabledPlugin.description !=
+<a name="line213"></a>            mimeHighestBeta.enabledPlugin.description) {
+<a name="line214"></a>          if (!goog.silverlight.__installationEventFired) {
+<a name="line215"></a>            goog.silverlight.onRestartRequired();
+<a name="line216"></a>            goog.silverlight.__installationEventFired = true;
+<a name="line217"></a>          }
+<a name="line218"></a>        }
+<a name="line219"></a>      }
+<a name="line220"></a>    }
+<a name="line221"></a>  }
+<a name="line222"></a>};
+<a name="line223"></a>
+<a name="line224"></a>
+<a name="line225"></a>/**
+<a name="line226"></a> * Inserts a Silverlight &lt;object&gt; tag or installation experience into
+<a name="line227"></a> * the HTML DOM based on the current installed state of
+<a name="line228"></a> * goog.silverlight.
+<a name="line229"></a> * @param {string} source The source file.
+<a name="line230"></a> * @param {Element} parentElement The place to render the tag.
+<a name="line231"></a> * @param {(string|null)=} opt_id A DOM id for the tag.
+<a name="line232"></a> * @param {Object=} opt_properties Properties for the tag. One of these should
+<a name="line233"></a> *     be version, to get the correct version of silverlight.
+<a name="line234"></a> * @param {Array.&lt;Function&gt;=} opt_events An array of functions, keyed by
+<a name="line235"></a> *     the name of the event that they should be listening on (e.g.,
+<a name="line236"></a> *     &quot;onload&quot;). What a weird API. The keys should be quoted if you&#39;re
+<a name="line237"></a> *     compiling with property renaming on.
+<a name="line238"></a> * @param {string=} opt_initParams The initParams property of SilverlightPlugin.
+<a name="line239"></a> * @param {Object=} opt_userContext Context to fire the events in. doesn&#39;t
+<a name="line240"></a> *     really work correctly. Use goog.bind instead.
+<a name="line241"></a> * @return {?string} The html for the object, if no rendering parent
+<a name="line242"></a> *     was specified.
+<a name="line243"></a> */
+<a name="line244"></a>goog.silverlight.createObject =
+<a name="line245"></a>    function(source, parentElement, opt_id, opt_properties,
+<a name="line246"></a>             opt_events, opt_initParams, opt_userContext) {
+<a name="line247"></a>  var slPluginHelper = {};
+<a name="line248"></a>  var slProperties = opt_properties;
+<a name="line249"></a>  var slEvents = opt_events;
+<a name="line250"></a>
+<a name="line251"></a>  slPluginHelper.version = slProperties.version;
+<a name="line252"></a>  slProperties.source = source;
+<a name="line253"></a>  slPluginHelper.alt = slProperties.alt;
+<a name="line254"></a>
+<a name="line255"></a>  // Rename properties to their tag property names. For backwards compatibility
+<a name="line256"></a>  // with goog.silverlight.js version 1.0
+<a name="line257"></a>  if (opt_initParams)
+<a name="line258"></a>    slProperties.initParams = opt_initParams;
+<a name="line259"></a>  if (slProperties.isWindowless &amp;&amp; !slProperties.windowless)
+<a name="line260"></a>    slProperties.windowless = slProperties.isWindowless;
+<a name="line261"></a>  if (slProperties.framerate &amp;&amp; !slProperties.maxFramerate)
+<a name="line262"></a>    slProperties.maxFramerate = slProperties.framerate;
+<a name="line263"></a>  if (opt_id &amp;&amp; !slProperties.id)
+<a name="line264"></a>    slProperties.id = opt_id;
+<a name="line265"></a>
+<a name="line266"></a>  // remove elements which are not to be added to the instantiation tag
+<a name="line267"></a>  delete slProperties.ignoreBrowserVer;
+<a name="line268"></a>  delete slProperties.inplaceInstallPrompt;
+<a name="line269"></a>  delete slProperties.version;
+<a name="line270"></a>  delete slProperties.isWindowless;
+<a name="line271"></a>  delete slProperties.framerate;
+<a name="line272"></a>  delete slProperties.data;
+<a name="line273"></a>  delete slProperties.src;
+<a name="line274"></a>  delete slProperties.alt;
+<a name="line275"></a>
+<a name="line276"></a>
+<a name="line277"></a>  // detect that the correct version of Silverlight is installed, else
+<a name="line278"></a>  // display install
+<a name="line279"></a>  var slPluginHtml;
+<a name="line280"></a>  if (goog.silverlight.isInstalled(slPluginHelper.version)) {
+<a name="line281"></a>    // move unknown events to the slProperties array
+<a name="line282"></a>    for (var name in slEvents) {
+<a name="line283"></a>      if (slEvents[name]) {
+<a name="line284"></a>        if (name == &#39;onLoad&#39; &amp;&amp; typeof slEvents[name] == &#39;function&#39; &amp;&amp;
+<a name="line285"></a>            slEvents[name].length != 1) {
+<a name="line286"></a>          var onLoadHandler = slEvents[name];
+<a name="line287"></a>          slEvents[name] = function(sender) {
+<a name="line288"></a>            return onLoadHandler(
+<a name="line289"></a>                document.getElementById(/** @type {string} */ (opt_id)),
+<a name="line290"></a>                opt_userContext,
+<a name="line291"></a>                sender);
+<a name="line292"></a>          };
+<a name="line293"></a>        }
+<a name="line294"></a>        var handlerName = goog.silverlight.getHandlerName(slEvents[name]);
+<a name="line295"></a>        if (handlerName != null) {
+<a name="line296"></a>          slProperties[name] = handlerName;
+<a name="line297"></a>          slEvents[name] = null;
+<a name="line298"></a>        } else {
+<a name="line299"></a>          throw &#39;typeof events.&#39; + name + &quot; must be &#39;function&#39; or &#39;string&#39;&quot;;
+<a name="line300"></a>        }
+<a name="line301"></a>      }
+<a name="line302"></a>    }
+<a name="line303"></a>    slPluginHtml = goog.silverlight.buildHtml(slProperties);
+<a name="line304"></a>  } else {
+<a name="line305"></a>    // The control could not be instantiated. Show the installation prompt
+<a name="line306"></a>    slPluginHtml = goog.silverlight.buildPromptHtml(slPluginHelper);
+<a name="line307"></a>  }
+<a name="line308"></a>
+<a name="line309"></a>  // insert or return the HTML
+<a name="line310"></a>  if (parentElement) {
+<a name="line311"></a>    parentElement.innerHTML = slPluginHtml;
+<a name="line312"></a>  } else {
+<a name="line313"></a>    return slPluginHtml;
+<a name="line314"></a>  }
+<a name="line315"></a>  return null;
+<a name="line316"></a>};
+<a name="line317"></a>
+<a name="line318"></a>
+<a name="line319"></a>/**
+<a name="line320"></a> * Create HTML that instantiates the control
+<a name="line321"></a> * @param {Object} slProperties The properties of the object.
+<a name="line322"></a> * @return {string} The HTML for the object.
+<a name="line323"></a> */
+<a name="line324"></a>goog.silverlight.buildHtml = function(slProperties) {
+<a name="line325"></a>  var htmlBuilder = [];
+<a name="line326"></a>
+<a name="line327"></a>  htmlBuilder.push(
+<a name="line328"></a>      &#39;&lt;object type=\&quot;application/x-silverlight\&quot; &#39; +
+<a name="line329"></a>      &#39;data=&quot;data:application/x-silverlight,&quot;&#39;);
+<a name="line330"></a>  if (slProperties.id != null) {
+<a name="line331"></a>    htmlBuilder.push(
+<a name="line332"></a>        &#39; id=&quot;&#39; +
+<a name="line333"></a>        goog.silverlight.htmlAttributeEncode(slProperties.id) + &#39;&quot;&#39;);
+<a name="line334"></a>  }
+<a name="line335"></a>  if (slProperties.width != null) {
+<a name="line336"></a>    htmlBuilder.push(&#39; width=&quot;&#39; + slProperties.width + &#39;&quot;&#39;);
+<a name="line337"></a>  }
+<a name="line338"></a>  if (slProperties.height != null) {
+<a name="line339"></a>    htmlBuilder.push(&#39; height=&quot;&#39; + slProperties.height + &#39;&quot;&#39;);
+<a name="line340"></a>  }
+<a name="line341"></a>  htmlBuilder.push(&#39; &gt;&#39;);
+<a name="line342"></a>
+<a name="line343"></a>  delete slProperties.id;
+<a name="line344"></a>  delete slProperties.width;
+<a name="line345"></a>  delete slProperties.height;
+<a name="line346"></a>
+<a name="line347"></a>  for (var name in slProperties) {
+<a name="line348"></a>    if (slProperties[name]) {
+<a name="line349"></a>      htmlBuilder.push(
+<a name="line350"></a>          &#39;&lt;param name=&quot;&#39; + goog.silverlight.htmlAttributeEncode(name) +
+<a name="line351"></a>          &#39;&quot; value=&quot;&#39; +
+<a name="line352"></a>          goog.silverlight.htmlAttributeEncode(slProperties[name]) +
+<a name="line353"></a>          &#39;&quot; /&gt;&#39;);
+<a name="line354"></a>    }
+<a name="line355"></a>  }
+<a name="line356"></a>  htmlBuilder.push(&#39;&lt;\/object&gt;&#39;);
+<a name="line357"></a>  return htmlBuilder.join(&#39;&#39;);
+<a name="line358"></a>};
+<a name="line359"></a>
+<a name="line360"></a>
+<a name="line361"></a>/**
+<a name="line362"></a> * takes a single parameter of all createObject
+<a name="line363"></a> * parameters enclosed in {}
+<a name="line364"></a> * @param {{source: string,
+<a name="line365"></a> *          parentElement: Element,
+<a name="line366"></a> *          id: string,
+<a name="line367"></a> *          properties: Object,
+<a name="line368"></a> *          events: Array.&lt;Function&gt;,
+<a name="line369"></a> *          initParams: string,
+<a name="line370"></a> *          context: Object}} params Named parameters of createObject.
+<a name="line371"></a> * @return {?string} See #createObject.
+<a name="line372"></a> */
+<a name="line373"></a>goog.silverlight.createObjectEx = function(params) {
+<a name="line374"></a>  // stupid hack to make compiler stop complaining.
+<a name="line375"></a>  var unused = {properties: 0, events: 0, context: 0};
+<a name="line376"></a>
+<a name="line377"></a>  var parameters = params;
+<a name="line378"></a>  var html = goog.silverlight.createObject(
+<a name="line379"></a>      parameters.source, parameters.parentElement, parameters.id,
+<a name="line380"></a>      parameters.properties, parameters.events, parameters.initParams,
+<a name="line381"></a>      parameters.context);
+<a name="line382"></a>  if (parameters.parentElement == null) {
+<a name="line383"></a>    return html;
+<a name="line384"></a>  }
+<a name="line385"></a>  return null;
+<a name="line386"></a>};
+<a name="line387"></a>
+<a name="line388"></a>
+<a name="line389"></a>/**
+<a name="line390"></a> * Builds the HTML to prompt the user to download and install Silverlight
+<a name="line391"></a> *
+<a name="line392"></a> * @param {{version: string, alt: string}} slPluginHelper Alt is an alternate
+<a name="line393"></a> *     link to silverlight. If no alternate is specified, a default will
+<a name="line394"></a> *     be used with the given version number.
+<a name="line395"></a> * @return {string} The UI.
+<a name="line396"></a> */
+<a name="line397"></a>goog.silverlight.buildPromptHtml = function(slPluginHelper) {
+<a name="line398"></a>  var slPluginHtml = &#39;&#39;;
+<a name="line399"></a>  var urlRoot = goog.silverlight.fwlinkRoot;
+<a name="line400"></a>  var version = slPluginHelper.version;
+<a name="line401"></a>  if (slPluginHelper.alt) {
+<a name="line402"></a>    slPluginHtml = slPluginHelper.alt;
+<a name="line403"></a>  } else {
+<a name="line404"></a>    if (!version) {
+<a name="line405"></a>      version = &#39;&#39;;
+<a name="line406"></a>    }
+<a name="line407"></a>    slPluginHtml =
+<a name="line408"></a>        &quot;&lt;a href=&#39;javascript:goog.silverlight.getSilverlight(\&quot;{1}\&quot;);&#39; &quot; +
+<a name="line409"></a>        &quot;style=&#39;text-decoration: none;&#39;&gt;&lt;img src=&#39;{2}&#39; &quot; +
+<a name="line410"></a>        &quot;alt=&#39;Get Microsoft Silverlight&#39; style=&#39;border-style: none&#39;/&gt;&lt;/a&gt;&quot;;
+<a name="line411"></a>    slPluginHtml = slPluginHtml.replace(&#39;{1}&#39;, version);
+<a name="line412"></a>    slPluginHtml = slPluginHtml.replace(&#39;{2}&#39;, urlRoot + &#39;108181&#39;);
+<a name="line413"></a>  }
+<a name="line414"></a>
+<a name="line415"></a>  return slPluginHtml;
+<a name="line416"></a>};
+<a name="line417"></a>
+<a name="line418"></a>
+<a name="line419"></a>/**
+<a name="line420"></a> * Navigates the browser to the appropriate Silverlight installer
+<a name="line421"></a> * @param {string} version The silverlight version.
+<a name="line422"></a> */
+<a name="line423"></a>goog.silverlight.getSilverlight = function(version) {
+<a name="line424"></a>  if (goog.silverlight.onGetSilverlight) {
+<a name="line425"></a>    goog.silverlight.onGetSilverlight();
+<a name="line426"></a>  }
+<a name="line427"></a>
+<a name="line428"></a>  var shortVer = &#39;&#39;;
+<a name="line429"></a>  var reqVerArray = String(version).split(&#39;.&#39;);
+<a name="line430"></a>  if (reqVerArray.length &gt; 1) {
+<a name="line431"></a>    var majorNum = parseInt(reqVerArray[0], 10);
+<a name="line432"></a>    if (isNaN(majorNum) || majorNum &lt; 2) {
+<a name="line433"></a>      shortVer = &#39;1.0&#39;;
+<a name="line434"></a>    } else {
+<a name="line435"></a>      shortVer = reqVerArray[0] + &#39;.&#39; + reqVerArray[1];
+<a name="line436"></a>    }
+<a name="line437"></a>  }
+<a name="line438"></a>
+<a name="line439"></a>  var verArg = &#39;&#39;;
+<a name="line440"></a>
+<a name="line441"></a>  if (shortVer.match(/^\d+\056\d+$/)) {
+<a name="line442"></a>    verArg = &#39;&amp;v=&#39; + shortVer;
+<a name="line443"></a>  }
+<a name="line444"></a>
+<a name="line445"></a>  goog.silverlight.followFWLink(&#39;149156&#39; + verArg);
+<a name="line446"></a>};
+<a name="line447"></a>
+<a name="line448"></a>
+<a name="line449"></a>/**
+<a name="line450"></a> * Navigates to a url based on fwlinkid
+<a name="line451"></a> * @param {string} linkid The link suffix.
+<a name="line452"></a> */
+<a name="line453"></a>goog.silverlight.followFWLink = function(linkid) {
+<a name="line454"></a>  top.location = goog.silverlight.fwlinkRoot + String(linkid);
+<a name="line455"></a>};
+<a name="line456"></a>
+<a name="line457"></a>
+<a name="line458"></a>/**
+<a name="line459"></a> * Encodes special characters in input strings as charcodes
+<a name="line460"></a> * @param {?string} strInput String to encode, or null. If null
+<a name="line461"></a> *     is passed, we give null right back.
+<a name="line462"></a> * @return {?string} The encoded string, or null.
+<a name="line463"></a> */
+<a name="line464"></a>goog.silverlight.htmlAttributeEncode = function(strInput) {
+<a name="line465"></a>  var c;
+<a name="line466"></a>  var retVal = &#39;&#39;;
+<a name="line467"></a>
+<a name="line468"></a>  if (strInput == null) {
+<a name="line469"></a>    return null;
+<a name="line470"></a>  }
+<a name="line471"></a>
+<a name="line472"></a>  for (var cnt = 0; cnt &lt; strInput.length; cnt++) {
+<a name="line473"></a>    c = strInput.charCodeAt(cnt);
+<a name="line474"></a>
+<a name="line475"></a>    if (((c &gt; 96) &amp;&amp; (c &lt; 123)) ||
+<a name="line476"></a>        ((c &gt; 64) &amp;&amp; (c &lt; 91)) ||
+<a name="line477"></a>        ((c &gt; 43) &amp;&amp; (c &lt; 58) &amp;&amp; (c != 47)) ||
+<a name="line478"></a>        (c == 95)) {
+<a name="line479"></a>      retVal = retVal + String.fromCharCode(c);
+<a name="line480"></a>    } else {
+<a name="line481"></a>      retVal = retVal + &#39;&amp;#&#39; + c + &#39;;&#39;;
+<a name="line482"></a>    }
+<a name="line483"></a>  }
+<a name="line484"></a>
+<a name="line485"></a>  return retVal;
+<a name="line486"></a>};
+<a name="line487"></a>
+<a name="line488"></a>
+<a name="line489"></a>/**
+<a name="line490"></a> * Default error handling function
+<a name="line491"></a> * @param {SilverlightDependencyObject} sender dep object.
+<a name="line492"></a> * @param {SilverlightErrorEventArgs} args The event.
+<a name="line493"></a> */
+<a name="line494"></a>goog.silverlight.defaultErrorHandler = function(sender, args) {
+<a name="line495"></a>  var iErrorCode;
+<a name="line496"></a>  var errorType = args.errorType;
+<a name="line497"></a>
+<a name="line498"></a>  iErrorCode = args.errorCode;
+<a name="line499"></a>
+<a name="line500"></a>  var errMsg = &#39;\nSilverlight error message     \n&#39;;
+<a name="line501"></a>
+<a name="line502"></a>  errMsg += &#39;ErrorCode: &#39; + iErrorCode + &#39;\n&#39;;
+<a name="line503"></a>
+<a name="line504"></a>
+<a name="line505"></a>  errMsg += &#39;ErrorType: &#39; + errorType + &#39;       \n&#39;;
+<a name="line506"></a>  errMsg += &#39;Message: &#39; + args.errorMessage + &#39;     \n&#39;;
+<a name="line507"></a>
+<a name="line508"></a>  if (errorType == &#39;ParserError&#39;) {
+<a name="line509"></a>    errMsg += &#39;XamlFile: &#39; + args.xamlFile + &#39;     \n&#39;;
+<a name="line510"></a>    errMsg += &#39;Line: &#39; + args.lineNumber + &#39;     \n&#39;;
+<a name="line511"></a>    errMsg += &#39;Position: &#39; + args.charPosition + &#39;     \n&#39;;
+<a name="line512"></a>  } else if (errorType == &#39;RuntimeError&#39;) {
+<a name="line513"></a>    if (args.lineNumber != 0) {
+<a name="line514"></a>      errMsg += &#39;Line: &#39; + args.lineNumber + &#39;     \n&#39;;
+<a name="line515"></a>      errMsg += &#39;Position: &#39; + args.charPosition + &#39;     \n&#39;;
+<a name="line516"></a>    }
+<a name="line517"></a>    errMsg += &#39;MethodName: &#39; + args.methodName + &#39;     \n&#39;;
+<a name="line518"></a>  }
+<a name="line519"></a>  alert(errMsg);
+<a name="line520"></a>};
+<a name="line521"></a>
+<a name="line522"></a>
+<a name="line523"></a>/**
+<a name="line524"></a> * Releases event handler resources when the page is unloaded
+<a name="line525"></a> */
+<a name="line526"></a>goog.silverlight.__cleanup = function() {
+<a name="line527"></a>  for (var i = goog.silverlight._silverlightCount - 1; i &gt;= 0; i--) {
+<a name="line528"></a>    goog.global[&#39;__closure_slEvent&#39; + i] = null;
+<a name="line529"></a>  }
+<a name="line530"></a>  goog.silverlight._silverlightCount = 0;
+<a name="line531"></a>  if (window.removeEventListener) {
+<a name="line532"></a>    window.removeEventListener(&#39;unload&#39;, goog.silverlight.__cleanup, false);
+<a name="line533"></a>  } else {
+<a name="line534"></a>    window.detachEvent(&#39;onunload&#39;, goog.silverlight.__cleanup);
+<a name="line535"></a>  }
+<a name="line536"></a>};
+<a name="line537"></a>
+<a name="line538"></a>
+<a name="line539"></a>/**
+<a name="line540"></a> * Generates named event handlers for delegates.
+<a name="line541"></a> *
+<a name="line542"></a> * Attaches them to the global window with the name __closure_slEvent +
+<a name="line543"></a> * a unique id.
+<a name="line544"></a> *
+<a name="line545"></a> * @param {Function|string} handler A function to export.
+<a name="line546"></a> * @return {?string} The name of the handler.
+<a name="line547"></a> */
+<a name="line548"></a>goog.silverlight.getHandlerName = function(handler) {
+<a name="line549"></a>  var handlerName = &#39;&#39;;
+<a name="line550"></a>  if (typeof handler == &#39;string&#39;) {
+<a name="line551"></a>    handlerName = handler;
+<a name="line552"></a>  } else if (typeof handler == &#39;function&#39;) {
+<a name="line553"></a>    if (goog.silverlight._silverlightCount == 0) {
+<a name="line554"></a>      if (window.addEventListener) {
+<a name="line555"></a>        window.addEventListener(&#39;unload&#39;, goog.silverlight.__cleanup, false);
+<a name="line556"></a>      } else {
+<a name="line557"></a>        window.attachEvent(&#39;onunload&#39;, goog.silverlight.__cleanup);
+<a name="line558"></a>      }
+<a name="line559"></a>    }
+<a name="line560"></a>    var count = goog.silverlight._silverlightCount++;
+<a name="line561"></a>    handlerName = &#39;__closure_slEvent&#39; + count;
+<a name="line562"></a>
+<a name="line563"></a>    goog.global[handlerName] = handler;
+<a name="line564"></a>  } else {
+<a name="line565"></a>    handlerName = null;
+<a name="line566"></a>  }
+<a name="line567"></a>  return handlerName;
+<a name="line568"></a>};
+<a name="line569"></a>
+<a name="line570"></a>
+<a name="line571"></a>/**
+<a name="line572"></a> * Frees a handler created by getHandlerName.
+<a name="line573"></a> * @param {string} handlerName A handler name.
+<a name="line574"></a> */
+<a name="line575"></a>goog.silverlight.disposeHandlerName = function(handlerName) {
+<a name="line576"></a>  delete goog.global[handlerName];
+<a name="line577"></a>};
+<a name="line578"></a>
+<a name="line579"></a>
+<a name="line580"></a>/**
+<a name="line581"></a> * Called by version  verification control to notify the page that
+<a name="line582"></a> * an appropriate build of Silverlight is available. The page
+<a name="line583"></a> * should respond by injecting the appropriate Silverlight control
+<a name="line584"></a> */
+<a name="line585"></a>goog.silverlight.onRequiredVersionAvailable = function() {
+<a name="line586"></a>
+<a name="line587"></a>};
+<a name="line588"></a>
+<a name="line589"></a>
+<a name="line590"></a>/**
+<a name="line591"></a> * Called by version verification control to notify the page that
+<a name="line592"></a> * an appropriate build of Silverlight is installed but not loaded.
+<a name="line593"></a> * The page should respond by injecting a clear and visible
+<a name="line594"></a> * &quot;Thanks for installing. Please restart your browser and return
+<a name="line595"></a> * to mysite.com&quot; or equivalent into the browser DOM
+<a name="line596"></a> */
+<a name="line597"></a>goog.silverlight.onRestartRequired = function() {
+<a name="line598"></a>
+<a name="line599"></a>};
+<a name="line600"></a>
+<a name="line601"></a>
+<a name="line602"></a>/**
+<a name="line603"></a> * Called by version verification control to notify the page that
+<a name="line604"></a> * Silverlight must be upgraded. The page should respond by
+<a name="line605"></a> * injecting a clear, visible, and actionable upgrade message into
+<a name="line606"></a> * the DOM. The message must inform the user that they need to
+<a name="line607"></a> * upgrade Silverlight to use the page. They are already somewhat
+<a name="line608"></a> * familiar with the Silverlight product when they encounter this.
+<a name="line609"></a> * Silverlight should be mentioned so the user expects to see that
+<a name="line610"></a> * string in the installer UI. However, the Silverlight-powered
+<a name="line611"></a> * application should be the focus of the solicitation. The user
+<a name="line612"></a> * wants the app. Silverlight is a means to the app.
+<a name="line613"></a> *
+<a name="line614"></a> * The upgrade solicitation will have a button that directs
+<a name="line615"></a> * the user to the Silverlight installer. Upon click the button
+<a name="line616"></a> * should both kick off a download of the installer URL and replace
+<a name="line617"></a> * the Upgrade text with &quot;Thanks for downloading. When the upgarde
+<a name="line618"></a> * is complete please restart your browser and return to
+<a name="line619"></a> * mysite.com&quot; or equivalent.
+<a name="line620"></a> *
+<a name="line621"></a> * Note: For a more interesting upgrade UX we can use Silverlight
+<a name="line622"></a> * 1.0-style XAML for this upgrade experience. Contact PiotrP for
+<a name="line623"></a> * details.
+<a name="line624"></a> */
+<a name="line625"></a>goog.silverlight.onUpgradeRequired = function() {
+<a name="line626"></a>
+<a name="line627"></a>};
+<a name="line628"></a>
+<a name="line629"></a>
+<a name="line630"></a>/**
+<a name="line631"></a> * Called by goog.silverlight.checkInstallStatus to notify the page
+<a name="line632"></a> * that Silverlight has not been installed by this user.
+<a name="line633"></a> * The page should respond by
+<a name="line634"></a> * injecting a clear, visible, and actionable upgrade message into
+<a name="line635"></a> * the DOM. The message must inform the user that they need to
+<a name="line636"></a> * download and install components needed to use the page.
+<a name="line637"></a> * Silverlight should be mentioned so the user expects to see that
+<a name="line638"></a> * string in the installer UI. However, the Silverlight-powered
+<a name="line639"></a> * application should be the focus of the solicitation. The user
+<a name="line640"></a> * wants the app. Silverlight is a means to the app.
+<a name="line641"></a> *
+<a name="line642"></a> * The installation solicitation will have a button that directs
+<a name="line643"></a> * the user to the Silverlight installer. Upon click the button
+<a name="line644"></a> * should both kick off a download of the installer URL and replace
+<a name="line645"></a> * the Upgrade text with &quot;Thanks for downloading. When installation
+<a name="line646"></a> * is complete you may need to refresh the page to view this
+<a name="line647"></a> * content&quot; or equivalent.
+<a name="line648"></a> */
+<a name="line649"></a>goog.silverlight.onInstallRequired = function() {
+<a name="line650"></a>
+<a name="line651"></a>};
+<a name="line652"></a>
+<a name="line653"></a>
+<a name="line654"></a>/**
+<a name="line655"></a> * This function should be called at the beginning of a web page&#39;s
+<a name="line656"></a> * Silverlight error handler. It will determine if the required
+<a name="line657"></a> * version of Silverlight is installed and available in the
+<a name="line658"></a> * current process.
+<a name="line659"></a> *
+<a name="line660"></a> * During its execution the function will trigger one of the
+<a name="line661"></a> * Silverlight installation state events, if appropriate.
+<a name="line662"></a> *
+<a name="line663"></a> * Sender and Args should be passed through from  the calling
+<a name="line664"></a> * onError handler&#39;s parameters.
+<a name="line665"></a> *
+<a name="line666"></a> * The associated Sivlerlight &lt;object&gt; tag must have
+<a name="line667"></a> * minRuntimeVersion set and should have autoUpgrade set to false.
+<a name="line668"></a> *
+<a name="line669"></a> * @param {SilverlightDependencyObject} sender The sender.
+<a name="line670"></a> * @param {SilverlightErrorEventArgs} args The event arguments.
+<a name="line671"></a> * @return {boolean} Is the version available?
+<a name="line672"></a> */
+<a name="line673"></a>goog.silverlight.isVersionAvailableOnError = function(sender, args) {
+<a name="line674"></a>  var retVal = false;
+<a name="line675"></a>  try {
+<a name="line676"></a>    if (args.errorCode == 8001 &amp;&amp; !goog.silverlight.__installationEventFired) {
+<a name="line677"></a>      goog.silverlight.onUpgradeRequired();
+<a name="line678"></a>      goog.silverlight.__installationEventFired = true;
+<a name="line679"></a>    } else if (args.errorCode == 8002 &amp;&amp;
+<a name="line680"></a>               !goog.silverlight.__installationEventFired) {
+<a name="line681"></a>      goog.silverlight.onRestartRequired();
+<a name="line682"></a>      goog.silverlight.__installationEventFired = true;
+<a name="line683"></a>    }
+<a name="line684"></a>    // this handles upgrades from 1.0. That control did not
+<a name="line685"></a>    // understand the minRuntimeVerison parameter. It also
+<a name="line686"></a>    // did not know how to parse XAP files, so would throw
+<a name="line687"></a>    // Parse Error (5014). A Beta 2 control may throw 2106
+<a name="line688"></a>    else if (args.errorCode == 5014 || args.errorCode == 2106) {
+<a name="line689"></a>      if (goog.silverlight.__verifySilverlight2UpgradeSuccess(args.getHost())) {
+<a name="line690"></a>        retVal = true;
+<a name="line691"></a>      }
+<a name="line692"></a>    } else {
+<a name="line693"></a>      retVal = true;
+<a name="line694"></a>    }
+<a name="line695"></a>  } catch (e) {
+<a name="line696"></a>  }
+<a name="line697"></a>  return retVal;
+<a name="line698"></a>};
+<a name="line699"></a>
+<a name="line700"></a>
+<a name="line701"></a>/**
+<a name="line702"></a> * This function should be called at the beginning of a web page&#39;s
+<a name="line703"></a> * Silverlight onLoad handler. It will determine if the required
+<a name="line704"></a> * version of Silverlight is installed and available in the
+<a name="line705"></a> * current process.
+<a name="line706"></a> *
+<a name="line707"></a> * During its execution the function will trigger one of the
+<a name="line708"></a> * Silverlight installation state events, if appropriate.
+<a name="line709"></a> *
+<a name="line710"></a> * Sender should be passed through from the calling
+<a name="line711"></a> * onError handler&#39;s parameters.
+<a name="line712"></a> *
+<a name="line713"></a> * The associated Sivlerlight &lt;object&gt; tag must have
+<a name="line714"></a> * minRuntimeVersion set and should have autoUpgrade set to false.
+<a name="line715"></a> *
+<a name="line716"></a> * @param {SilverlightDependencyObject} sender The dep object.
+<a name="line717"></a> * @return {boolean} Is the version available?
+<a name="line718"></a> */
+<a name="line719"></a>goog.silverlight.isVersionAvailableOnLoad = function(sender) {
+<a name="line720"></a>  var retVal = false;
+<a name="line721"></a>  try {
+<a name="line722"></a>    if (goog.silverlight.__verifySilverlight2UpgradeSuccess(sender.getHost())) {
+<a name="line723"></a>      retVal = true;
+<a name="line724"></a>    }
+<a name="line725"></a>  } catch (e) {
+<a name="line726"></a>  }
+<a name="line727"></a>  return retVal;
+<a name="line728"></a>};
+<a name="line729"></a>
+<a name="line730"></a>
+<a name="line731"></a>/**
+<a name="line732"></a> * This internal function helps identify installation state by
+<a name="line733"></a> * taking advantage of behavioral differences between the
+<a name="line734"></a> * 1.0 and 2.0 releases of goog.silverlight.
+<a name="line735"></a> * @param {SilverlightPlugin} host The dep object.
+<a name="line736"></a> * @return {boolean} If verification succeeded.
+<a name="line737"></a> */
+<a name="line738"></a>goog.silverlight.__verifySilverlight2UpgradeSuccess = function(host) {
+<a name="line739"></a>  var retVal = false;
+<a name="line740"></a>  var version = &#39;4.0.50401&#39;;
+<a name="line741"></a>  var installationEvent = null;
+<a name="line742"></a>
+<a name="line743"></a>  try {
+<a name="line744"></a>    if (host.isVersionSupported(version + &#39;.99&#39;)) {
+<a name="line745"></a>      installationEvent = goog.silverlight.onRequiredVersionAvailable;
+<a name="line746"></a>      retVal = true;
+<a name="line747"></a>    } else if (host.isVersionSupported(version + &#39;.0&#39;)) {
+<a name="line748"></a>      installationEvent = goog.silverlight.onRestartRequired;
+<a name="line749"></a>    } else {
+<a name="line750"></a>      installationEvent = goog.silverlight.onUpgradeRequired;
+<a name="line751"></a>    }
+<a name="line752"></a>
+<a name="line753"></a>    if (installationEvent &amp;&amp; !goog.silverlight.__installationEventFired) {
+<a name="line754"></a>      installationEvent();
+<a name="line755"></a>      goog.silverlight.__installationEventFired = true;
+<a name="line756"></a>    }
+<a name="line757"></a>  } catch (e) {
+<a name="line758"></a>  }
+<a name="line759"></a>  return retVal;
+<a name="line760"></a>};
+</pre>
+
+
+</body>
+</html>

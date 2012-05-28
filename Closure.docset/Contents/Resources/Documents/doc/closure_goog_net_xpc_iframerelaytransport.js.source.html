@@ -1,0 +1,439 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>iframerelaytransport.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_net_xpc_iframerelaytransport.js.html">iframerelaytransport.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Contains the iframe relay tranport.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.net.xpc.IframeRelayTransport&#39;);
+<a name="line21"></a>
+<a name="line22"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line23"></a>goog.require(&#39;goog.events&#39;);
+<a name="line24"></a>goog.require(&#39;goog.net.xpc&#39;);
+<a name="line25"></a>goog.require(&#39;goog.net.xpc.Transport&#39;);
+<a name="line26"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>/**
+<a name="line31"></a> * Iframe relay transport. Creates hidden iframes containing a document
+<a name="line32"></a> * from the peer&#39;s origin. Data is transferred in the fragment identifier.
+<a name="line33"></a> * Therefore the document loaded in the iframes can be served from the
+<a name="line34"></a> * browser&#39;s cache.
+<a name="line35"></a> *
+<a name="line36"></a> * @param {goog.net.xpc.CrossPageChannel} channel The channel this
+<a name="line37"></a> *     transport belongs to.
+<a name="line38"></a> * @param {goog.dom.DomHelper=} opt_domHelper The dom helper to use for finding
+<a name="line39"></a> *     the correct window.
+<a name="line40"></a> * @constructor
+<a name="line41"></a> * @extends {goog.net.xpc.Transport}
+<a name="line42"></a> */
+<a name="line43"></a>goog.net.xpc.IframeRelayTransport = function(channel, opt_domHelper) {
+<a name="line44"></a>  goog.base(this, opt_domHelper);
+<a name="line45"></a>
+<a name="line46"></a>  /**
+<a name="line47"></a>   * The channel this transport belongs to.
+<a name="line48"></a>   * @type {goog.net.xpc.CrossPageChannel}
+<a name="line49"></a>   * @private
+<a name="line50"></a>   */
+<a name="line51"></a>  this.channel_ = channel;
+<a name="line52"></a>
+<a name="line53"></a>  /**
+<a name="line54"></a>   * The URI used to relay data to the peer.
+<a name="line55"></a>   * @type {string}
+<a name="line56"></a>   * @private
+<a name="line57"></a>   */
+<a name="line58"></a>  this.peerRelayUri_ =
+<a name="line59"></a>      this.channel_.cfg_[goog.net.xpc.CfgFields.PEER_RELAY_URI];
+<a name="line60"></a>
+<a name="line61"></a>  /**
+<a name="line62"></a>   * The id of the iframe the peer page lives in.
+<a name="line63"></a>   * @type {string}
+<a name="line64"></a>   * @private
+<a name="line65"></a>   */
+<a name="line66"></a>  this.peerIframeId_ = this.channel_.cfg_[goog.net.xpc.CfgFields.IFRAME_ID];
+<a name="line67"></a>
+<a name="line68"></a>  if (goog.userAgent.WEBKIT) {
+<a name="line69"></a>    goog.net.xpc.IframeRelayTransport.startCleanupTimer_();
+<a name="line70"></a>  }
+<a name="line71"></a>};
+<a name="line72"></a>goog.inherits(goog.net.xpc.IframeRelayTransport, goog.net.xpc.Transport);
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>if (goog.userAgent.WEBKIT) {
+<a name="line76"></a>  /**
+<a name="line77"></a>   * Array to keep references to the relay-iframes. Used only if
+<a name="line78"></a>   * there is no way to detect when the iframes are loaded. In that
+<a name="line79"></a>   * case the relay-iframes are removed after a timeout.
+<a name="line80"></a>   * @type {Array.&lt;Object&gt;}
+<a name="line81"></a>   * @private
+<a name="line82"></a>   */
+<a name="line83"></a>  goog.net.xpc.IframeRelayTransport.iframeRefs_ = [];
+<a name="line84"></a>
+<a name="line85"></a>
+<a name="line86"></a>  /**
+<a name="line87"></a>   * Interval at which iframes are destroyed.
+<a name="line88"></a>   * @type {number}
+<a name="line89"></a>   * @private
+<a name="line90"></a>   */
+<a name="line91"></a>  goog.net.xpc.IframeRelayTransport.CLEANUP_INTERVAL_ = 1000;
+<a name="line92"></a>
+<a name="line93"></a>
+<a name="line94"></a>  /**
+<a name="line95"></a>   * Time after which a relay-iframe is destroyed.
+<a name="line96"></a>   * @type {number}
+<a name="line97"></a>   * @private
+<a name="line98"></a>   */
+<a name="line99"></a>  goog.net.xpc.IframeRelayTransport.IFRAME_MAX_AGE_ = 3000;
+<a name="line100"></a>
+<a name="line101"></a>
+<a name="line102"></a>  /**
+<a name="line103"></a>   * The cleanup timer id.
+<a name="line104"></a>   * @type {number}
+<a name="line105"></a>   * @private
+<a name="line106"></a>   */
+<a name="line107"></a>  goog.net.xpc.IframeRelayTransport.cleanupTimer_ = 0;
+<a name="line108"></a>
+<a name="line109"></a>
+<a name="line110"></a>  /**
+<a name="line111"></a>   * Starts the cleanup timer.
+<a name="line112"></a>   * @private
+<a name="line113"></a>   */
+<a name="line114"></a>  goog.net.xpc.IframeRelayTransport.startCleanupTimer_ = function() {
+<a name="line115"></a>    if (!goog.net.xpc.IframeRelayTransport.cleanupTimer_) {
+<a name="line116"></a>      goog.net.xpc.IframeRelayTransport.cleanupTimer_ = window.setTimeout(
+<a name="line117"></a>          function() { goog.net.xpc.IframeRelayTransport.cleanup_(); },
+<a name="line118"></a>          goog.net.xpc.IframeRelayTransport.CLEANUP_INTERVAL_);
+<a name="line119"></a>    }
+<a name="line120"></a>  };
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>  /**
+<a name="line124"></a>   * Remove all relay-iframes which are older than the maximal age.
+<a name="line125"></a>   * @param {number=} opt_maxAge The maximal age in milliseconds.
+<a name="line126"></a>   * @private
+<a name="line127"></a>   */
+<a name="line128"></a>  goog.net.xpc.IframeRelayTransport.cleanup_ = function(opt_maxAge) {
+<a name="line129"></a>    var now = goog.now();
+<a name="line130"></a>    var maxAge =
+<a name="line131"></a>        opt_maxAge || goog.net.xpc.IframeRelayTransport.IFRAME_MAX_AGE_;
+<a name="line132"></a>
+<a name="line133"></a>    while (goog.net.xpc.IframeRelayTransport.iframeRefs_.length &amp;&amp;
+<a name="line134"></a>           now - goog.net.xpc.IframeRelayTransport.iframeRefs_[0].timestamp &gt;=
+<a name="line135"></a>           maxAge) {
+<a name="line136"></a>      var ifr = goog.net.xpc.IframeRelayTransport.iframeRefs_.
+<a name="line137"></a>          shift().iframeElement;
+<a name="line138"></a>      goog.dom.removeNode(ifr);
+<a name="line139"></a>      goog.net.xpc.logger.finest(&#39;iframe removed&#39;);
+<a name="line140"></a>    }
+<a name="line141"></a>
+<a name="line142"></a>    goog.net.xpc.IframeRelayTransport.cleanupTimer_ = window.setTimeout(
+<a name="line143"></a>        goog.net.xpc.IframeRelayTransport.cleanupCb_,
+<a name="line144"></a>        goog.net.xpc.IframeRelayTransport.CLEANUP_INTERVAL_);
+<a name="line145"></a>  };
+<a name="line146"></a>
+<a name="line147"></a>
+<a name="line148"></a>  /**
+<a name="line149"></a>   * Function which wraps cleanup_().
+<a name="line150"></a>   * @private
+<a name="line151"></a>   */
+<a name="line152"></a>  goog.net.xpc.IframeRelayTransport.cleanupCb_ = function() {
+<a name="line153"></a>    goog.net.xpc.IframeRelayTransport.cleanup_();
+<a name="line154"></a>  };
+<a name="line155"></a>}
+<a name="line156"></a>
+<a name="line157"></a>
+<a name="line158"></a>/**
+<a name="line159"></a> * Maximum sendable size of a payload via a single iframe in IE.
+<a name="line160"></a> * @type {number}
+<a name="line161"></a> * @private
+<a name="line162"></a> */
+<a name="line163"></a>goog.net.xpc.IframeRelayTransport.IE_PAYLOAD_MAX_SIZE_ = 1800;
+<a name="line164"></a>
+<a name="line165"></a>
+<a name="line166"></a>/**
+<a name="line167"></a> * @typedef {{fragments: !Array.&lt;string&gt;, received: number, expected: number}}
+<a name="line168"></a> */
+<a name="line169"></a>goog.net.xpc.IframeRelayTransport.FragmentInfo;
+<a name="line170"></a>
+<a name="line171"></a>
+<a name="line172"></a>/**
+<a name="line173"></a> * Used to track incoming payload fragments. The implementation can process
+<a name="line174"></a> * incoming fragments from several channels at a time, even if data is
+<a name="line175"></a> * out-of-order or interleaved.
+<a name="line176"></a> *
+<a name="line177"></a> * @type {!Object.&lt;string, !goog.net.xpc.IframeRelayTransport.FragmentInfo&gt;}
+<a name="line178"></a> * @private
+<a name="line179"></a> */
+<a name="line180"></a>goog.net.xpc.IframeRelayTransport.fragmentMap_ = {};
+<a name="line181"></a>
+<a name="line182"></a>
+<a name="line183"></a>/**
+<a name="line184"></a> * The transport type.
+<a name="line185"></a> * @type {number}
+<a name="line186"></a> */
+<a name="line187"></a>goog.net.xpc.IframeRelayTransport.prototype.transportType =
+<a name="line188"></a>  goog.net.xpc.TransportTypes.IFRAME_RELAY;
+<a name="line189"></a>
+<a name="line190"></a>
+<a name="line191"></a>/**
+<a name="line192"></a> * Connects this transport.
+<a name="line193"></a> */
+<a name="line194"></a>goog.net.xpc.IframeRelayTransport.prototype.connect = function() {
+<a name="line195"></a>  if (!this.getWindow()[&#39;xpcRelay&#39;]) {
+<a name="line196"></a>    this.getWindow()[&#39;xpcRelay&#39;] =
+<a name="line197"></a>        goog.net.xpc.IframeRelayTransport.receiveMessage_;
+<a name="line198"></a>  }
+<a name="line199"></a>
+<a name="line200"></a>  this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP);
+<a name="line201"></a>};
+<a name="line202"></a>
+<a name="line203"></a>
+<a name="line204"></a>/**
+<a name="line205"></a> * Processes an incoming message.
+<a name="line206"></a> *
+<a name="line207"></a> * @param {string} channelName The name of the channel.
+<a name="line208"></a> * @param {string} frame The raw frame content.
+<a name="line209"></a> * @private
+<a name="line210"></a> */
+<a name="line211"></a>goog.net.xpc.IframeRelayTransport.receiveMessage_ =
+<a name="line212"></a>    function(channelName, frame) {
+<a name="line213"></a>  var pos = frame.indexOf(&#39;:&#39;);
+<a name="line214"></a>  var header = frame.substr(0, pos);
+<a name="line215"></a>  var payload = frame.substr(pos + 1);
+<a name="line216"></a>
+<a name="line217"></a>  if (!goog.userAgent.IE || (pos = header.indexOf(&#39;|&#39;)) == -1) {
+<a name="line218"></a>    // First, the easy case.
+<a name="line219"></a>    var service = header;
+<a name="line220"></a>  } else {
+<a name="line221"></a>    // There was a fragment id in the header, so this is a message
+<a name="line222"></a>    // fragment, not a whole message.
+<a name="line223"></a>    var service = header.substr(0, pos);
+<a name="line224"></a>    var fragmentIdStr = header.substr(pos + 1);
+<a name="line225"></a>
+<a name="line226"></a>    // Separate the message id string and the fragment number. Note that
+<a name="line227"></a>    // there may be a single leading + in the argument to parseInt, but
+<a name="line228"></a>    // this is harmless.
+<a name="line229"></a>    pos = fragmentIdStr.indexOf(&#39;+&#39;);
+<a name="line230"></a>    var messageIdStr = fragmentIdStr.substr(0, pos);
+<a name="line231"></a>    var fragmentNum = parseInt(fragmentIdStr.substr(pos + 1), 10);
+<a name="line232"></a>    var fragmentInfo =
+<a name="line233"></a>        goog.net.xpc.IframeRelayTransport.fragmentMap_[messageIdStr];
+<a name="line234"></a>    if (!fragmentInfo) {
+<a name="line235"></a>      fragmentInfo =
+<a name="line236"></a>          goog.net.xpc.IframeRelayTransport.fragmentMap_[messageIdStr] =
+<a name="line237"></a>          {fragments: [], received: 0, expected: 0};
+<a name="line238"></a>    }
+<a name="line239"></a>
+<a name="line240"></a>    if (goog.string.contains(fragmentIdStr, &#39;++&#39;)) {
+<a name="line241"></a>      fragmentInfo.expected = fragmentNum + 1;
+<a name="line242"></a>    }
+<a name="line243"></a>    fragmentInfo.fragments[fragmentNum] = payload;
+<a name="line244"></a>    fragmentInfo.received++;
+<a name="line245"></a>
+<a name="line246"></a>    if (fragmentInfo.received != fragmentInfo.expected) {
+<a name="line247"></a>      return;
+<a name="line248"></a>    }
+<a name="line249"></a>
+<a name="line250"></a>    // We&#39;ve received all outstanding fragments; combine what we&#39;ve received
+<a name="line251"></a>    // into payload and fall out to the call to deliver_.
+<a name="line252"></a>    payload = fragmentInfo.fragments.join(&#39;&#39;);
+<a name="line253"></a>    delete goog.net.xpc.IframeRelayTransport.fragmentMap_[messageIdStr];
+<a name="line254"></a>  }
+<a name="line255"></a>
+<a name="line256"></a>  goog.net.xpc.channels_[channelName].deliver_(service,
+<a name="line257"></a>                                               decodeURIComponent(payload));
+<a name="line258"></a>};
+<a name="line259"></a>
+<a name="line260"></a>
+<a name="line261"></a>/**
+<a name="line262"></a> * Handles transport service messages (internal signalling).
+<a name="line263"></a> * @param {string} payload The message content.
+<a name="line264"></a> */
+<a name="line265"></a>goog.net.xpc.IframeRelayTransport.prototype.transportServiceHandler =
+<a name="line266"></a>    function(payload) {
+<a name="line267"></a>  if (payload == goog.net.xpc.SETUP) {
+<a name="line268"></a>    // TODO(user) Safari swallows the SETUP_ACK from the iframe to the
+<a name="line269"></a>    // container after hitting reload.
+<a name="line270"></a>    this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP_ACK_);
+<a name="line271"></a>    this.channel_.notifyConnected_();
+<a name="line272"></a>  }
+<a name="line273"></a>  else if (payload == goog.net.xpc.SETUP_ACK_) {
+<a name="line274"></a>    this.channel_.notifyConnected_();
+<a name="line275"></a>  }
+<a name="line276"></a>};
+<a name="line277"></a>
+<a name="line278"></a>
+<a name="line279"></a>/**
+<a name="line280"></a> * Sends a message.
+<a name="line281"></a> *
+<a name="line282"></a> * @param {string} service Name of service this the message has to be delivered.
+<a name="line283"></a> * @param {string} payload The message content.
+<a name="line284"></a> */
+<a name="line285"></a>goog.net.xpc.IframeRelayTransport.prototype.send = function(service, payload) {
+<a name="line286"></a>  // If we&#39;re on IE and the post-encoding payload is large, split it
+<a name="line287"></a>  // into multiple payloads and send each one separately. Otherwise,
+<a name="line288"></a>  // just send the whole thing.
+<a name="line289"></a>  var encodedPayload = encodeURIComponent(payload);
+<a name="line290"></a>  var encodedLen = encodedPayload.length;
+<a name="line291"></a>  var maxSize = goog.net.xpc.IframeRelayTransport.IE_PAYLOAD_MAX_SIZE_;
+<a name="line292"></a>
+<a name="line293"></a>  if (goog.userAgent.IE &amp;&amp; encodedLen &gt; maxSize) {
+<a name="line294"></a>    // A probabilistically-unique string used to link together all fragments
+<a name="line295"></a>    // in this message.
+<a name="line296"></a>    var messageIdStr = goog.string.getRandomString();
+<a name="line297"></a>
+<a name="line298"></a>    for (var startIndex = 0, fragmentNum = 0; startIndex &lt; encodedLen;
+<a name="line299"></a>         fragmentNum++) {
+<a name="line300"></a>      var payloadFragment = encodedPayload.substr(startIndex, maxSize);
+<a name="line301"></a>      startIndex += maxSize;
+<a name="line302"></a>      var fragmentIdStr =
+<a name="line303"></a>          messageIdStr + (startIndex &gt;= encodedLen ? &#39;++&#39; : &#39;+&#39;) + fragmentNum;
+<a name="line304"></a>      this.send_(service, payloadFragment, fragmentIdStr);
+<a name="line305"></a>    }
+<a name="line306"></a>  } else {
+<a name="line307"></a>    this.send_(service, encodedPayload);
+<a name="line308"></a>  }
+<a name="line309"></a>};
+<a name="line310"></a>
+<a name="line311"></a>
+<a name="line312"></a>/**
+<a name="line313"></a> * Sends an encoded message or message fragment.
+<a name="line314"></a> * @param {string} service Name of service this the message has to be delivered.
+<a name="line315"></a> * @param {string} encodedPayload The message content, URI encoded.
+<a name="line316"></a> * @param {string=} opt_fragmentIdStr If sending a fragment, a string that
+<a name="line317"></a> *     identifies the fragment.
+<a name="line318"></a> * @private
+<a name="line319"></a> */
+<a name="line320"></a>goog.net.xpc.IframeRelayTransport.prototype.send_ =
+<a name="line321"></a>    function(service, encodedPayload, opt_fragmentIdStr) {
+<a name="line322"></a>  // IE requires that we create the onload attribute inline, otherwise the
+<a name="line323"></a>  // handler is not triggered
+<a name="line324"></a>  if (goog.userAgent.IE) {
+<a name="line325"></a>    var div = this.getWindow().document.createElement(&#39;div&#39;);
+<a name="line326"></a>    div.innerHTML = &#39;&lt;iframe onload=&quot;this.xpcOnload()&quot;&gt;&lt;/iframe&gt;&#39;;
+<a name="line327"></a>    var ifr = div.childNodes[0];
+<a name="line328"></a>    div = null;
+<a name="line329"></a>    ifr[&#39;xpcOnload&#39;] = goog.net.xpc.IframeRelayTransport.iframeLoadHandler_;
+<a name="line330"></a>  } else {
+<a name="line331"></a>    var ifr = this.getWindow().document.createElement(&#39;iframe&#39;);
+<a name="line332"></a>
+<a name="line333"></a>    if (goog.userAgent.WEBKIT) {
+<a name="line334"></a>      // safari doesn&#39;t fire load-events on iframes.
+<a name="line335"></a>      // keep a reference and remove after a timeout.
+<a name="line336"></a>      goog.net.xpc.IframeRelayTransport.iframeRefs_.push({
+<a name="line337"></a>        timestamp: goog.now(),
+<a name="line338"></a>        iframeElement: ifr
+<a name="line339"></a>      });
+<a name="line340"></a>    } else {
+<a name="line341"></a>      goog.events.listen(ifr, &#39;load&#39;,
+<a name="line342"></a>                         goog.net.xpc.IframeRelayTransport.iframeLoadHandler_);
+<a name="line343"></a>    }
+<a name="line344"></a>  }
+<a name="line345"></a>
+<a name="line346"></a>  var style = ifr.style;
+<a name="line347"></a>  style.visibility = &#39;hidden&#39;;
+<a name="line348"></a>  style.width = ifr.style.height = &#39;0px&#39;;
+<a name="line349"></a>  style.position = &#39;absolute&#39;;
+<a name="line350"></a>
+<a name="line351"></a>  var url = this.peerRelayUri_;
+<a name="line352"></a>  url += &#39;#&#39; + this.channel_.name;
+<a name="line353"></a>  if (this.peerIframeId_) {
+<a name="line354"></a>    url += &#39;,&#39; + this.peerIframeId_;
+<a name="line355"></a>  }
+<a name="line356"></a>  url += &#39;|&#39; + service;
+<a name="line357"></a>  if (opt_fragmentIdStr) {
+<a name="line358"></a>    url += &#39;|&#39; + opt_fragmentIdStr;
+<a name="line359"></a>  }
+<a name="line360"></a>  url += &#39;:&#39; + encodedPayload;
+<a name="line361"></a>
+<a name="line362"></a>  ifr.src = url;
+<a name="line363"></a>
+<a name="line364"></a>  this.getWindow().document.body.appendChild(ifr);
+<a name="line365"></a>
+<a name="line366"></a>  goog.net.xpc.logger.finest(&#39;msg sent: &#39; + url);
+<a name="line367"></a>};
+<a name="line368"></a>
+<a name="line369"></a>
+<a name="line370"></a>/**
+<a name="line371"></a> * The iframe load handler. Gets called as method on the iframe element.
+<a name="line372"></a> * @private
+<a name="line373"></a> * @this Element
+<a name="line374"></a> */
+<a name="line375"></a>goog.net.xpc.IframeRelayTransport.iframeLoadHandler_ = function() {
+<a name="line376"></a>  goog.net.xpc.logger.finest(&#39;iframe-load&#39;);
+<a name="line377"></a>  goog.dom.removeNode(this);
+<a name="line378"></a>  this.xpcOnload = null;
+<a name="line379"></a>};
+<a name="line380"></a>
+<a name="line381"></a>
+<a name="line382"></a>/** @override */
+<a name="line383"></a>goog.net.xpc.IframeRelayTransport.prototype.disposeInternal = function() {
+<a name="line384"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line385"></a>  if (goog.userAgent.WEBKIT) {
+<a name="line386"></a>    goog.net.xpc.IframeRelayTransport.cleanup_(0);
+<a name="line387"></a>  }
+<a name="line388"></a>};
+</pre>
+
+
+</body>
+</html>

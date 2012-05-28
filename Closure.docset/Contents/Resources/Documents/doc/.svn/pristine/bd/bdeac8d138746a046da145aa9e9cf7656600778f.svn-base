@@ -1,0 +1,1157 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>testcase.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_testcase.js.html">testcase.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A class representing a set of test functions to be run.
+<a name="line17"></a> *
+<a name="line18"></a> * Testing code should not have dependencies outside of goog.testing so as to
+<a name="line19"></a> * reduce the chance of masking missing dependencies.
+<a name="line20"></a> *
+<a name="line21"></a> * This file does not compile correctly with --collapse_properties. Use
+<a name="line22"></a> * --property_renaming=ALL_UNQUOTED instead.
+<a name="line23"></a> *
+<a name="line24"></a> */
+<a name="line25"></a>
+<a name="line26"></a>goog.provide(&#39;goog.testing.TestCase&#39;);
+<a name="line27"></a>goog.provide(&#39;goog.testing.TestCase.Error&#39;);
+<a name="line28"></a>goog.provide(&#39;goog.testing.TestCase.Order&#39;);
+<a name="line29"></a>goog.provide(&#39;goog.testing.TestCase.Result&#39;);
+<a name="line30"></a>goog.provide(&#39;goog.testing.TestCase.Test&#39;);
+<a name="line31"></a>
+<a name="line32"></a>goog.require(&#39;goog.testing.asserts&#39;);
+<a name="line33"></a>goog.require(&#39;goog.testing.stacktrace&#39;);
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>/**
+<a name="line38"></a> * A class representing a JsUnit test case.  A TestCase is made up of a number
+<a name="line39"></a> * of test functions which can be run.  Individual test cases can override the
+<a name="line40"></a> * following functions to set up their test environment:
+<a name="line41"></a> *   - runTests - completely override the test&#39;s runner
+<a name="line42"></a> *   - setUpPage - called before any of the test functions are run
+<a name="line43"></a> *   - tearDownPage - called after all tests are finished
+<a name="line44"></a> *   - setUp - called before each of the test functions
+<a name="line45"></a> *   - tearDown - called after each of the test functions
+<a name="line46"></a> *   - shouldRunTests - called before a test run, all tests are skipped if it
+<a name="line47"></a> *                      returns false.  Can be used to disable tests on browsers
+<a name="line48"></a> *                      where they aren&#39;t expected to pass.
+<a name="line49"></a> *
+<a name="line50"></a> * Use {@link #autoDiscoverTests}
+<a name="line51"></a> *
+<a name="line52"></a> * @param {string=} opt_name The name of the test case, defaults to
+<a name="line53"></a> *     &#39;Untitled Test Case&#39;.
+<a name="line54"></a> * @constructor
+<a name="line55"></a> */
+<a name="line56"></a>goog.testing.TestCase = function(opt_name) {
+<a name="line57"></a>  /**
+<a name="line58"></a>   * A name for the test case.
+<a name="line59"></a>   * @type {string}
+<a name="line60"></a>   * @private
+<a name="line61"></a>   */
+<a name="line62"></a>  this.name_ = opt_name || &#39;Untitled Test Case&#39;;
+<a name="line63"></a>
+<a name="line64"></a>  /**
+<a name="line65"></a>   * Array of test functions that can be executed.
+<a name="line66"></a>   * @type {Array.&lt;goog.testing.TestCase.Test&gt;}
+<a name="line67"></a>   * @private
+<a name="line68"></a>   */
+<a name="line69"></a>  this.tests_ = [];
+<a name="line70"></a>
+<a name="line71"></a>  /**
+<a name="line72"></a>   * Set of test names and/or indices to execute, or null if all tests should
+<a name="line73"></a>   * be executed.
+<a name="line74"></a>   *
+<a name="line75"></a>   * Indices are included to allow automation tools to run a subset of the
+<a name="line76"></a>   * tests without knowing the exact contents of the test file.
+<a name="line77"></a>   *
+<a name="line78"></a>   * Indices should only be used with SORTED ordering.
+<a name="line79"></a>   *
+<a name="line80"></a>   * Example valid values:
+<a name="line81"></a>   * &lt;ul&gt;
+<a name="line82"></a>   * &lt;li&gt;[testName]
+<a name="line83"></a>   * &lt;li&gt;[testName1, testName2]
+<a name="line84"></a>   * &lt;li&gt;[2] - will run the 3rd test in the order specified
+<a name="line85"></a>   * &lt;li&gt;[1,3,5]
+<a name="line86"></a>   * &lt;li&gt;[testName1, testName2, 3, 5] - will work
+<a name="line87"></a>   * &lt;ul&gt;
+<a name="line88"></a>   * @type {Object}
+<a name="line89"></a>   * @private
+<a name="line90"></a>   */
+<a name="line91"></a>  this.testsToRun_ = null;
+<a name="line92"></a>
+<a name="line93"></a>  var search = window.location.search;
+<a name="line94"></a>
+<a name="line95"></a>  // Parse the &#39;runTests&#39; query parameter into a set of test names and/or
+<a name="line96"></a>  // test indices.
+<a name="line97"></a>  var runTestsMatch = search.match(/(?:\?|&amp;)runTests=([^?&amp;]+)/i);
+<a name="line98"></a>  if (runTestsMatch) {
+<a name="line99"></a>    this.testsToRun_ = {};
+<a name="line100"></a>    var arr = runTestsMatch[1].split(&#39;,&#39;);
+<a name="line101"></a>    for (var i = 0, len = arr.length; i &lt; len; i++) {
+<a name="line102"></a>      this.testsToRun_[arr[i]] = 1;
+<a name="line103"></a>    }
+<a name="line104"></a>  }
+<a name="line105"></a>
+<a name="line106"></a>  // Checks the URL for a valid order param.
+<a name="line107"></a>  var orderMatch = search.match(/(?:\?|&amp;)order=(natural|random|sorted)/i);
+<a name="line108"></a>  if (orderMatch) {
+<a name="line109"></a>    this.order = orderMatch[1];
+<a name="line110"></a>  }
+<a name="line111"></a>
+<a name="line112"></a>  /**
+<a name="line113"></a>   * Object used to encapsulate the test results.
+<a name="line114"></a>   * @type {goog.testing.TestCase.Result}
+<a name="line115"></a>   * @protected
+<a name="line116"></a>   * @suppress {underscore}
+<a name="line117"></a>   */
+<a name="line118"></a>  this.result_ = new goog.testing.TestCase.Result(this);
+<a name="line119"></a>
+<a name="line120"></a>  // This silences a compiler warning from the legacy property check, which
+<a name="line121"></a>  // is deprecated. It idly writes to testRunner properties that are used
+<a name="line122"></a>  // in this file.
+<a name="line123"></a>  var testRunnerMethods = {isFinished: true, hasErrors: true};
+<a name="line124"></a>};
+<a name="line125"></a>
+<a name="line126"></a>
+<a name="line127"></a>/**
+<a name="line128"></a> * The order to run the auto-discovered tests.
+<a name="line129"></a> * @enum {string}
+<a name="line130"></a> */
+<a name="line131"></a>goog.testing.TestCase.Order = {
+<a name="line132"></a>  /**
+<a name="line133"></a>   * This is browser dependent and known to be different in FF and Safari
+<a name="line134"></a>   * compared to others.
+<a name="line135"></a>   */
+<a name="line136"></a>  NATURAL: &#39;natural&#39;,
+<a name="line137"></a>
+<a name="line138"></a>  /** Random order. */
+<a name="line139"></a>  RANDOM: &#39;random&#39;,
+<a name="line140"></a>
+<a name="line141"></a>  /** Sorted based on the name. */
+<a name="line142"></a>  SORTED: &#39;sorted&#39;
+<a name="line143"></a>};
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * The maximum amount of time that the test can run before we force it to be
+<a name="line148"></a> * async.  This prevents the test runner from blocking the browser and
+<a name="line149"></a> * potentially hurting the Selenium test harness.
+<a name="line150"></a> * @type {number}
+<a name="line151"></a> */
+<a name="line152"></a>goog.testing.TestCase.MAX_RUN_TIME = 200;
+<a name="line153"></a>
+<a name="line154"></a>
+<a name="line155"></a>/**
+<a name="line156"></a> * The order to run the auto-discovered tests in.
+<a name="line157"></a> * @type {string}
+<a name="line158"></a> */
+<a name="line159"></a>goog.testing.TestCase.prototype.order = goog.testing.TestCase.Order.SORTED;
+<a name="line160"></a>
+<a name="line161"></a>
+<a name="line162"></a>/**
+<a name="line163"></a> * Save a reference to window.timeout, so any code that overrides the default
+<a name="line164"></a> * behavior (e.g. MockClock) doesn&#39;t affect our runner.
+<a name="line165"></a> * @type {function((Function|string), number, *=): number}
+<a name="line166"></a> * @private
+<a name="line167"></a> */
+<a name="line168"></a>goog.testing.TestCase.protectedTimeout_ = window.setTimeout;
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/**
+<a name="line172"></a> * Saved string referencing window.setTimeout&#39;s string serialization.  IE
+<a name="line173"></a> * sometimes fails to uphold equality for setTimeout, but the string version
+<a name="line174"></a> * stays the same.
+<a name="line175"></a> * @type {string}
+<a name="line176"></a> * @private
+<a name="line177"></a> */
+<a name="line178"></a>goog.testing.TestCase.setTimeoutAsString_ = String(window.setTimeout);
+<a name="line179"></a>
+<a name="line180"></a>
+<a name="line181"></a>/**
+<a name="line182"></a> * TODO(user) replace this with prototype.currentTest.
+<a name="line183"></a> * Name of the current test that is running, or null if none is running.
+<a name="line184"></a> * @type {?string}
+<a name="line185"></a> */
+<a name="line186"></a>goog.testing.TestCase.currentTestName = null;
+<a name="line187"></a>
+<a name="line188"></a>
+<a name="line189"></a>/**
+<a name="line190"></a> * Avoid a dependency on goog.userAgent and keep our own reference of whether
+<a name="line191"></a> * the browser is IE.
+<a name="line192"></a> * @type {boolean}
+<a name="line193"></a> */
+<a name="line194"></a>goog.testing.TestCase.IS_IE = typeof opera == &#39;undefined&#39; &amp;&amp; !!navigator &amp;&amp;
+<a name="line195"></a>    navigator.userAgent.indexOf(&#39;MSIE&#39;) != -1;
+<a name="line196"></a>
+<a name="line197"></a>
+<a name="line198"></a>/**
+<a name="line199"></a> * Whether the test case has ever tried to execute.
+<a name="line200"></a> * @type {boolean}
+<a name="line201"></a> */
+<a name="line202"></a>goog.testing.TestCase.prototype.started = false;
+<a name="line203"></a>
+<a name="line204"></a>
+<a name="line205"></a>/**
+<a name="line206"></a> * Whether the test case is running.
+<a name="line207"></a> * @type {boolean}
+<a name="line208"></a> */
+<a name="line209"></a>goog.testing.TestCase.prototype.running = false;
+<a name="line210"></a>
+<a name="line211"></a>
+<a name="line212"></a>/**
+<a name="line213"></a> * Timestamp for when the test was started.
+<a name="line214"></a> * @type {number}
+<a name="line215"></a> * @private
+<a name="line216"></a> */
+<a name="line217"></a>goog.testing.TestCase.prototype.startTime_ = 0;
+<a name="line218"></a>
+<a name="line219"></a>
+<a name="line220"></a>/**
+<a name="line221"></a> * Time since the last batch of tests was started, if batchTime exceeds
+<a name="line222"></a> * {@link #MAX_RUN_TIME} a timeout will be used to stop the tests blocking the
+<a name="line223"></a> * browser and a new batch will be started.
+<a name="line224"></a> * @type {number}
+<a name="line225"></a> * @private
+<a name="line226"></a> */
+<a name="line227"></a>goog.testing.TestCase.prototype.batchTime_ = 0;
+<a name="line228"></a>
+<a name="line229"></a>
+<a name="line230"></a>/**
+<a name="line231"></a> * Pointer to the current test.
+<a name="line232"></a> * @type {number}
+<a name="line233"></a> * @private
+<a name="line234"></a> */
+<a name="line235"></a>goog.testing.TestCase.prototype.currentTestPointer_ = 0;
+<a name="line236"></a>
+<a name="line237"></a>
+<a name="line238"></a>/**
+<a name="line239"></a> * Optional callback that will be executed when the test has finalized.
+<a name="line240"></a> * @type {Function}
+<a name="line241"></a> * @private
+<a name="line242"></a> */
+<a name="line243"></a>goog.testing.TestCase.prototype.onCompleteCallback_ = null;
+<a name="line244"></a>
+<a name="line245"></a>
+<a name="line246"></a>/**
+<a name="line247"></a> * The test runner that is running this case.
+<a name="line248"></a> * @type {goog.testing.TestRunner?}
+<a name="line249"></a> * @private
+<a name="line250"></a> */
+<a name="line251"></a>goog.testing.TestCase.prototype.testRunner_ = null;
+<a name="line252"></a>
+<a name="line253"></a>
+<a name="line254"></a>/**
+<a name="line255"></a> * Adds a new test to the test case.
+<a name="line256"></a> * @param {goog.testing.TestCase.Test} test The test to add.
+<a name="line257"></a> */
+<a name="line258"></a>goog.testing.TestCase.prototype.add = function(test) {
+<a name="line259"></a>  this.tests_.push(test);
+<a name="line260"></a>};
+<a name="line261"></a>
+<a name="line262"></a>
+<a name="line263"></a>/**
+<a name="line264"></a> * Sets the tests.
+<a name="line265"></a> * @param {Array.&lt;goog.testing.TestCase.Test&gt;} tests A new test array.
+<a name="line266"></a> * @protected
+<a name="line267"></a> */
+<a name="line268"></a>goog.testing.TestCase.prototype.setTests = function(tests) {
+<a name="line269"></a>  this.tests_ = tests;
+<a name="line270"></a>};
+<a name="line271"></a>
+<a name="line272"></a>
+<a name="line273"></a>/**
+<a name="line274"></a> * Gets the tests.
+<a name="line275"></a> * @return {Array.&lt;goog.testing.TestCase.Test&gt;} The test array.
+<a name="line276"></a> * @protected
+<a name="line277"></a> */
+<a name="line278"></a>goog.testing.TestCase.prototype.getTests = function() {
+<a name="line279"></a>  return this.tests_;
+<a name="line280"></a>};
+<a name="line281"></a>
+<a name="line282"></a>
+<a name="line283"></a>/**
+<a name="line284"></a> * Returns the number of tests contained in the test case.
+<a name="line285"></a> * @return {number} The number of tests.
+<a name="line286"></a> */
+<a name="line287"></a>goog.testing.TestCase.prototype.getCount = function() {
+<a name="line288"></a>  return this.tests_.length;
+<a name="line289"></a>};
+<a name="line290"></a>
+<a name="line291"></a>
+<a name="line292"></a>/**
+<a name="line293"></a> * Returns the current test and increments the pointer.
+<a name="line294"></a> * @return {goog.testing.TestCase.Test?} The current test case.
+<a name="line295"></a> */
+<a name="line296"></a>goog.testing.TestCase.prototype.next = function() {
+<a name="line297"></a>  var test;
+<a name="line298"></a>  while ((test = this.tests_[this.currentTestPointer_++])) {
+<a name="line299"></a>    if (!this.testsToRun_ || this.testsToRun_[test.name] ||
+<a name="line300"></a>        this.testsToRun_[this.currentTestPointer_ - 1]) {
+<a name="line301"></a>      return test;
+<a name="line302"></a>    }
+<a name="line303"></a>  }
+<a name="line304"></a>  return null;
+<a name="line305"></a>};
+<a name="line306"></a>
+<a name="line307"></a>
+<a name="line308"></a>/**
+<a name="line309"></a> * Resets the test case pointer, so that next returns the first test.
+<a name="line310"></a> */
+<a name="line311"></a>goog.testing.TestCase.prototype.reset = function() {
+<a name="line312"></a>  this.currentTestPointer_ = 0;
+<a name="line313"></a>  this.result_ = new goog.testing.TestCase.Result(this);
+<a name="line314"></a>};
+<a name="line315"></a>
+<a name="line316"></a>
+<a name="line317"></a>/**
+<a name="line318"></a> * Sets the callback function that should be executed when the tests have
+<a name="line319"></a> * completed.
+<a name="line320"></a> * @param {Function} fn The callback function.
+<a name="line321"></a> */
+<a name="line322"></a>goog.testing.TestCase.prototype.setCompletedCallback = function(fn) {
+<a name="line323"></a>  this.onCompleteCallback_ = fn;
+<a name="line324"></a>};
+<a name="line325"></a>
+<a name="line326"></a>
+<a name="line327"></a>/**
+<a name="line328"></a> * Sets the test runner that is running this test case.
+<a name="line329"></a> * @param {goog.testing.TestRunner} tr The test runner.
+<a name="line330"></a> */
+<a name="line331"></a>goog.testing.TestCase.prototype.setTestRunner = function(tr) {
+<a name="line332"></a>  this.testRunner_ = tr;
+<a name="line333"></a>};
+<a name="line334"></a>
+<a name="line335"></a>
+<a name="line336"></a>/**
+<a name="line337"></a> * Can be overridden in test classes to indicate whether the tests in a case
+<a name="line338"></a> * should be run in that particular situation.  For example, this could be used
+<a name="line339"></a> * to stop tests running in a particular browser, where browser support for
+<a name="line340"></a> * the class under test was absent.
+<a name="line341"></a> * @return {boolean} Whether any of the tests in the case should be run.
+<a name="line342"></a> */
+<a name="line343"></a>goog.testing.TestCase.prototype.shouldRunTests = function() {
+<a name="line344"></a>  return true;
+<a name="line345"></a>};
+<a name="line346"></a>
+<a name="line347"></a>
+<a name="line348"></a>/**
+<a name="line349"></a> * Executes each of the tests.
+<a name="line350"></a> */
+<a name="line351"></a>goog.testing.TestCase.prototype.execute = function() {
+<a name="line352"></a>  this.started = true;
+<a name="line353"></a>  this.reset();
+<a name="line354"></a>  this.startTime_ = this.now_();
+<a name="line355"></a>  this.running = true;
+<a name="line356"></a>  this.result_.totalCount = this.getCount();
+<a name="line357"></a>
+<a name="line358"></a>  if (!this.shouldRunTests()) {
+<a name="line359"></a>    this.log(&#39;shouldRunTests() returned false, skipping these tests.&#39;);
+<a name="line360"></a>    this.result_.testSuppressed = true;
+<a name="line361"></a>    this.finalize();
+<a name="line362"></a>    return;
+<a name="line363"></a>  }
+<a name="line364"></a>
+<a name="line365"></a>  this.log(&#39;Starting tests: &#39; + this.name_);
+<a name="line366"></a>  this.cycleTests();
+<a name="line367"></a>};
+<a name="line368"></a>
+<a name="line369"></a>
+<a name="line370"></a>/**
+<a name="line371"></a> * Finalizes the test case, called when the tests have finished executing.
+<a name="line372"></a> */
+<a name="line373"></a>goog.testing.TestCase.prototype.finalize = function() {
+<a name="line374"></a>  this.saveMessage(&#39;Done&#39;);
+<a name="line375"></a>
+<a name="line376"></a>  this.tearDownPage();
+<a name="line377"></a>
+<a name="line378"></a>  var restoredSetTimeout =
+<a name="line379"></a>      goog.testing.TestCase.protectedTimeout_ == window.setTimeout;
+<a name="line380"></a>  if (!restoredSetTimeout &amp;&amp; goog.testing.TestCase.IS_IE &amp;&amp;
+<a name="line381"></a>      String(window.setTimeout) == goog.testing.TestCase.setTimeoutAsString_) {
+<a name="line382"></a>    // In strange cases, IE&#39;s value of setTimeout *appears* to change, but
+<a name="line383"></a>    // the string representation stays stable.
+<a name="line384"></a>    restoredSetTimeout = true;
+<a name="line385"></a>  }
+<a name="line386"></a>
+<a name="line387"></a>  if (!restoredSetTimeout) {
+<a name="line388"></a>    var message = &#39;ERROR: Test did not restore setTimeout&#39;;
+<a name="line389"></a>    this.saveMessage(message);
+<a name="line390"></a>    var err = new goog.testing.TestCase.Error(this.name_, message);
+<a name="line391"></a>    this.result_.errors.push(err);
+<a name="line392"></a>  }
+<a name="line393"></a>  window.setTimeout = goog.testing.TestCase.protectedTimeout_;
+<a name="line394"></a>  this.endTime_ = this.now_();
+<a name="line395"></a>  this.running = false;
+<a name="line396"></a>  this.result_.runTime = this.endTime_ - this.startTime_;
+<a name="line397"></a>  this.result_.numFilesLoaded = this.countNumFilesLoaded_();
+<a name="line398"></a>
+<a name="line399"></a>  this.log(this.result_.getSummary());
+<a name="line400"></a>
+<a name="line401"></a>  if (this.result_.isSuccess()) {
+<a name="line402"></a>    this.log(&#39;Tests complete&#39;);
+<a name="line403"></a>  } else {
+<a name="line404"></a>    this.log(&#39;Tests Failed&#39;);
+<a name="line405"></a>  }
+<a name="line406"></a>  if (this.onCompleteCallback_) {
+<a name="line407"></a>    var fn = this.onCompleteCallback_;
+<a name="line408"></a>    // Execute&#39;s the completed callback in the context of the global object.
+<a name="line409"></a>    fn();
+<a name="line410"></a>    this.onCompleteCallback_ = null;
+<a name="line411"></a>  }
+<a name="line412"></a>};
+<a name="line413"></a>
+<a name="line414"></a>
+<a name="line415"></a>/**
+<a name="line416"></a> * Saves a message to the result set.
+<a name="line417"></a> * @param {string} message The message to save.
+<a name="line418"></a> */
+<a name="line419"></a>goog.testing.TestCase.prototype.saveMessage = function(message) {
+<a name="line420"></a>  this.result_.messages.push(this.getTimeStamp_() + &#39;  &#39; + message);
+<a name="line421"></a>};
+<a name="line422"></a>
+<a name="line423"></a>
+<a name="line424"></a>/**
+<a name="line425"></a> * @return {boolean} Whether the test case is running inside the multi test
+<a name="line426"></a> *     runner.
+<a name="line427"></a> */
+<a name="line428"></a>goog.testing.TestCase.prototype.isInsideMultiTestRunner = function() {
+<a name="line429"></a>  var top = goog.global[&#39;top&#39;];
+<a name="line430"></a>  return top &amp;&amp; typeof top[&#39;_allTests&#39;] != &#39;undefined&#39;;
+<a name="line431"></a>};
+<a name="line432"></a>
+<a name="line433"></a>
+<a name="line434"></a>/**
+<a name="line435"></a> * Logs an object to the console, if available.
+<a name="line436"></a> * @param {*} val The value to log. Will be ToString&#39;d.
+<a name="line437"></a> */
+<a name="line438"></a>goog.testing.TestCase.prototype.log = function(val) {
+<a name="line439"></a>  if (!this.isInsideMultiTestRunner() &amp;&amp; window.console) {
+<a name="line440"></a>    if (typeof val == &#39;string&#39;) {
+<a name="line441"></a>      val = this.getTimeStamp_() + &#39; : &#39; + val;
+<a name="line442"></a>    }
+<a name="line443"></a>    if (val instanceof Error &amp;&amp; val.stack) {
+<a name="line444"></a>      // Chrome does console.log asynchronously in a different process
+<a name="line445"></a>      // (http://code.google.com/p/chromium/issues/detail?id=50316).
+<a name="line446"></a>      // This is an acute problem for Errors, which almost never survive.
+<a name="line447"></a>      // Grab references to the immutable strings so they survive.
+<a name="line448"></a>      window.console.log(val, val.message, val.stack);
+<a name="line449"></a>      // TODO(user): Consider for Chrome cloning any object if we can ensure
+<a name="line450"></a>      // there are no circular references.
+<a name="line451"></a>    } else {
+<a name="line452"></a>      window.console.log(val);
+<a name="line453"></a>    }
+<a name="line454"></a>  }
+<a name="line455"></a>};
+<a name="line456"></a>
+<a name="line457"></a>
+<a name="line458"></a>/**
+<a name="line459"></a> * @return {boolean} Whether the test was a success.
+<a name="line460"></a> */
+<a name="line461"></a>goog.testing.TestCase.prototype.isSuccess = function() {
+<a name="line462"></a>  return !!this.result_ &amp;&amp; this.result_.isSuccess();
+<a name="line463"></a>};
+<a name="line464"></a>
+<a name="line465"></a>
+<a name="line466"></a>/**
+<a name="line467"></a> * Returns a string detailing the results from the test.
+<a name="line468"></a> * @param {boolean=} opt_verbose If true results will include data about all
+<a name="line469"></a> *     tests, not just what failed.
+<a name="line470"></a> * @return {string} The results from the test.
+<a name="line471"></a> */
+<a name="line472"></a>goog.testing.TestCase.prototype.getReport = function(opt_verbose) {
+<a name="line473"></a>  var rv = [];
+<a name="line474"></a>  if (this.testRunner_ &amp;&amp; !this.testRunner_.isFinished()) {
+<a name="line475"></a>    rv.push(this.name_ + &#39; [RUNNING]&#39;);
+<a name="line476"></a>  } else {
+<a name="line477"></a>    var success = this.result_.isSuccess() &amp;&amp; !this.testRunner_.hasErrors();
+<a name="line478"></a>    rv.push(this.name_ + &#39; [&#39; + (success ? &#39;PASSED&#39; : &#39;FAILED&#39;) + &#39;]&#39;);
+<a name="line479"></a>  }
+<a name="line480"></a>  rv.push(this.trimPath_(window.location.href));
+<a name="line481"></a>  rv.push(this.result_.getSummary());
+<a name="line482"></a>  if (opt_verbose) {
+<a name="line483"></a>    rv.push(&#39;.&#39;, this.result_.messages.join(&#39;\n&#39;));
+<a name="line484"></a>  } else if (!this.result_.isSuccess()) {
+<a name="line485"></a>    rv.push(this.result_.errors.join(&#39;\n&#39;));
+<a name="line486"></a>  }
+<a name="line487"></a>  rv.push(&#39; &#39;);
+<a name="line488"></a>  return rv.join(&#39;\n&#39;);
+<a name="line489"></a>};
+<a name="line490"></a>
+<a name="line491"></a>
+<a name="line492"></a>/**
+<a name="line493"></a> * Returns the amount of time it took for the test to run.
+<a name="line494"></a> * @return {number} The run time, in milliseconds.
+<a name="line495"></a> */
+<a name="line496"></a>goog.testing.TestCase.prototype.getRunTime = function() {
+<a name="line497"></a>  return this.result_.runTime;
+<a name="line498"></a>};
+<a name="line499"></a>
+<a name="line500"></a>
+<a name="line501"></a>/**
+<a name="line502"></a> * Returns the number of script files that were loaded in order to run the test.
+<a name="line503"></a> * @return {number} The number of script files.
+<a name="line504"></a> */
+<a name="line505"></a>goog.testing.TestCase.prototype.getNumFilesLoaded = function() {
+<a name="line506"></a>  return this.result_.numFilesLoaded;
+<a name="line507"></a>};
+<a name="line508"></a>
+<a name="line509"></a>
+<a name="line510"></a>/**
+<a name="line511"></a> * Executes each of the tests.
+<a name="line512"></a> * Overridable by the individual test case.  This allows test cases to defer
+<a name="line513"></a> * when the test is actually started.  If overridden, finalize must be called
+<a name="line514"></a> * by the test to indicate it has finished.
+<a name="line515"></a> */
+<a name="line516"></a>goog.testing.TestCase.prototype.runTests = function() {
+<a name="line517"></a>  this.setUpPage();
+<a name="line518"></a>  this.execute();
+<a name="line519"></a>};
+<a name="line520"></a>
+<a name="line521"></a>
+<a name="line522"></a>/**
+<a name="line523"></a> * Reorders the tests depending on the {@code order} field.
+<a name="line524"></a> * @param {Array.&lt;goog.testing.TestCase.Test&gt;} tests An array of tests to
+<a name="line525"></a> *     reorder.
+<a name="line526"></a> * @private
+<a name="line527"></a> */
+<a name="line528"></a>goog.testing.TestCase.prototype.orderTests_ = function(tests) {
+<a name="line529"></a>  switch (this.order) {
+<a name="line530"></a>    case goog.testing.TestCase.Order.RANDOM:
+<a name="line531"></a>      // Fisher-Yates shuffle
+<a name="line532"></a>      var i = tests.length;
+<a name="line533"></a>      while (i &gt; 1) {
+<a name="line534"></a>        // goog.math.randomInt is inlined to reduce dependencies.
+<a name="line535"></a>        var j = Math.floor(Math.random() * i); // exclusive
+<a name="line536"></a>        i--;
+<a name="line537"></a>        var tmp = tests[i];
+<a name="line538"></a>        tests[i] = tests[j];
+<a name="line539"></a>        tests[j] = tmp;
+<a name="line540"></a>      }
+<a name="line541"></a>      break;
+<a name="line542"></a>
+<a name="line543"></a>    case goog.testing.TestCase.Order.SORTED:
+<a name="line544"></a>      tests.sort(function(t1, t2) {
+<a name="line545"></a>        if (t1.name == t2.name) {
+<a name="line546"></a>          return 0;
+<a name="line547"></a>        }
+<a name="line548"></a>        return t1.name &lt; t2.name ? -1 : 1;
+<a name="line549"></a>      });
+<a name="line550"></a>      break;
+<a name="line551"></a>
+<a name="line552"></a>    // Do nothing for NATURAL.
+<a name="line553"></a>  }
+<a name="line554"></a>};
+<a name="line555"></a>
+<a name="line556"></a>
+<a name="line557"></a>/**
+<a name="line558"></a> * Gets the object with all globals.
+<a name="line559"></a> * @param {string=} opt_prefix An optional prefix. If specified, only get things
+<a name="line560"></a> *     under this prefix.
+<a name="line561"></a> * @return {Object} An object with all globals starting with the prefix.
+<a name="line562"></a> */
+<a name="line563"></a>goog.testing.TestCase.prototype.getGlobals = function(opt_prefix) {
+<a name="line564"></a>  return goog.testing.TestCase.getGlobals(opt_prefix);
+<a name="line565"></a>};
+<a name="line566"></a>
+<a name="line567"></a>
+<a name="line568"></a>/**
+<a name="line569"></a> * Gets the object with all globals.
+<a name="line570"></a> * @param {string=} opt_prefix An optional prefix. If specified, only get things
+<a name="line571"></a> *     under this prefix.
+<a name="line572"></a> * @return {Object} An object with all globals starting with the prefix.
+<a name="line573"></a> */
+<a name="line574"></a>goog.testing.TestCase.getGlobals = function(opt_prefix) {
+<a name="line575"></a>  // Look in the global scope for most browsers, on IE we use the little known
+<a name="line576"></a>  // RuntimeObject which holds references to all globals. We reference this
+<a name="line577"></a>  // via goog.global so that there isn&#39;t an aliasing that throws an exception
+<a name="line578"></a>  // in Firefox.
+<a name="line579"></a>  return typeof goog.global[&#39;RuntimeObject&#39;] != &#39;undefined&#39; ?
+<a name="line580"></a>      goog.global[&#39;RuntimeObject&#39;]((opt_prefix || &#39;&#39;) + &#39;*&#39;) : goog.global;
+<a name="line581"></a>};
+<a name="line582"></a>
+<a name="line583"></a>
+<a name="line584"></a>/**
+<a name="line585"></a> * Gets called before any tests are executed.  Can be overridden to set up the
+<a name="line586"></a> * environment for the whole test case.
+<a name="line587"></a> */
+<a name="line588"></a>goog.testing.TestCase.prototype.setUpPage = function() {};
+<a name="line589"></a>
+<a name="line590"></a>
+<a name="line591"></a>/**
+<a name="line592"></a> * Gets called after all tests have been executed.  Can be overridden to tear
+<a name="line593"></a> * down the entire test case.
+<a name="line594"></a> */
+<a name="line595"></a>goog.testing.TestCase.prototype.tearDownPage = function() {};
+<a name="line596"></a>
+<a name="line597"></a>
+<a name="line598"></a>/**
+<a name="line599"></a> * Gets called before every goog.testing.TestCase.Test is been executed. Can be
+<a name="line600"></a> * overridden to add set up functionality to each test.
+<a name="line601"></a> */
+<a name="line602"></a>goog.testing.TestCase.prototype.setUp = function() {};
+<a name="line603"></a>
+<a name="line604"></a>
+<a name="line605"></a>/**
+<a name="line606"></a> * Gets called after every goog.testing.TestCase.Test has been executed. Can be
+<a name="line607"></a> * overriden to add tear down functionality to each test.
+<a name="line608"></a> */
+<a name="line609"></a>goog.testing.TestCase.prototype.tearDown = function() {};
+<a name="line610"></a>
+<a name="line611"></a>
+<a name="line612"></a>/**
+<a name="line613"></a> * @return {string} The function name prefix used to auto-discover tests.
+<a name="line614"></a> * @protected
+<a name="line615"></a> */
+<a name="line616"></a>goog.testing.TestCase.prototype.getAutoDiscoveryPrefix = function() {
+<a name="line617"></a>  return &#39;test&#39;;
+<a name="line618"></a>};
+<a name="line619"></a>
+<a name="line620"></a>
+<a name="line621"></a>/**
+<a name="line622"></a> * @return {number} Time since the last batch of tests was started.
+<a name="line623"></a> * @protected
+<a name="line624"></a> */
+<a name="line625"></a>goog.testing.TestCase.prototype.getBatchTime = function() {
+<a name="line626"></a>  return this.batchTime_;
+<a name="line627"></a>};
+<a name="line628"></a>
+<a name="line629"></a>
+<a name="line630"></a>/**
+<a name="line631"></a> * @param {number} batchTime Time since the last batch of tests was started.
+<a name="line632"></a> * @protected
+<a name="line633"></a> */
+<a name="line634"></a>goog.testing.TestCase.prototype.setBatchTime = function(batchTime) {
+<a name="line635"></a>  this.batchTime_ = batchTime;
+<a name="line636"></a>};
+<a name="line637"></a>
+<a name="line638"></a>
+<a name="line639"></a>/**
+<a name="line640"></a> * Creates a {@code goog.testing.TestCase.Test} from an auto-discovered
+<a name="line641"></a> *     function.
+<a name="line642"></a> * @param {string} name The name of the function.
+<a name="line643"></a> * @param {function() : void} ref The auto-discovered function.
+<a name="line644"></a> * @return {goog.testing.TestCase.Test} The newly created test.
+<a name="line645"></a> * @protected
+<a name="line646"></a> */
+<a name="line647"></a>goog.testing.TestCase.prototype.createTestFromAutoDiscoveredFunction =
+<a name="line648"></a>    function(name, ref) {
+<a name="line649"></a>  return new goog.testing.TestCase.Test(name, ref, goog.global);
+<a name="line650"></a>};
+<a name="line651"></a>
+<a name="line652"></a>
+<a name="line653"></a>/**
+<a name="line654"></a> * Adds any functions defined in the global scope that are prefixed with &quot;test&quot;
+<a name="line655"></a> * to the test case.  Also overrides setUp, tearDown, setUpPage, tearDownPage
+<a name="line656"></a> * and runTests if they are defined.
+<a name="line657"></a> */
+<a name="line658"></a>goog.testing.TestCase.prototype.autoDiscoverTests = function() {
+<a name="line659"></a>  var prefix = this.getAutoDiscoveryPrefix();
+<a name="line660"></a>  var testSource = this.getGlobals(prefix);
+<a name="line661"></a>
+<a name="line662"></a>  var foundTests = [];
+<a name="line663"></a>
+<a name="line664"></a>  for (var name in testSource) {
+<a name="line665"></a>
+<a name="line666"></a>    try {
+<a name="line667"></a>      var ref = testSource[name];
+<a name="line668"></a>    } catch (ex) {
+<a name="line669"></a>      // NOTE(user): When running tests from a file:// URL on Firefox 3.5
+<a name="line670"></a>      // for Windows, any reference to window.sessionStorage raises
+<a name="line671"></a>      // an &quot;Operation is not supported&quot; exception. Ignore any exceptions raised
+<a name="line672"></a>      // by simply accessing global properties.
+<a name="line673"></a>    }
+<a name="line674"></a>
+<a name="line675"></a>    if ((new RegExp(&#39;^&#39; + prefix)).test(name) &amp;&amp; goog.isFunction(ref)) {
+<a name="line676"></a>      foundTests.push(this.createTestFromAutoDiscoveredFunction(name, ref));
+<a name="line677"></a>    }
+<a name="line678"></a>  }
+<a name="line679"></a>
+<a name="line680"></a>  this.orderTests_(foundTests);
+<a name="line681"></a>
+<a name="line682"></a>  for (var i = 0; i &lt; foundTests.length; i++) {
+<a name="line683"></a>    this.add(foundTests[i]);
+<a name="line684"></a>  }
+<a name="line685"></a>
+<a name="line686"></a>  this.log(this.getCount() + &#39; tests auto-discovered&#39;);
+<a name="line687"></a>
+<a name="line688"></a>  if (goog.global[&#39;setUp&#39;]) {
+<a name="line689"></a>    this.setUp = goog.bind(goog.global[&#39;setUp&#39;], goog.global);
+<a name="line690"></a>  }
+<a name="line691"></a>  if (goog.global[&#39;tearDown&#39;]) {
+<a name="line692"></a>    this.tearDown = goog.bind(goog.global[&#39;tearDown&#39;], goog.global);
+<a name="line693"></a>  }
+<a name="line694"></a>  if (goog.global[&#39;setUpPage&#39;]) {
+<a name="line695"></a>    this.setUpPage = goog.bind(goog.global[&#39;setUpPage&#39;], goog.global);
+<a name="line696"></a>  }
+<a name="line697"></a>  if (goog.global[&#39;tearDownPage&#39;]) {
+<a name="line698"></a>    this.tearDownPage = goog.bind(goog.global[&#39;tearDownPage&#39;], goog.global);
+<a name="line699"></a>  }
+<a name="line700"></a>  if (goog.global[&#39;runTests&#39;]) {
+<a name="line701"></a>    this.runTests = goog.bind(goog.global[&#39;runTests&#39;], goog.global);
+<a name="line702"></a>  }
+<a name="line703"></a>  if (goog.global[&#39;shouldRunTests&#39;]) {
+<a name="line704"></a>    this.shouldRunTests = goog.bind(goog.global[&#39;shouldRunTests&#39;], goog.global);
+<a name="line705"></a>  }
+<a name="line706"></a>};
+<a name="line707"></a>
+<a name="line708"></a>
+<a name="line709"></a>/**
+<a name="line710"></a> * Cycles through the tests, breaking out using a setTimeout if the execution
+<a name="line711"></a> * time has execeeded {@link #MAX_RUN_TIME}.
+<a name="line712"></a> */
+<a name="line713"></a>goog.testing.TestCase.prototype.cycleTests = function() {
+<a name="line714"></a>  this.saveMessage(&#39;Start&#39;);
+<a name="line715"></a>  this.batchTime_ = this.now_();
+<a name="line716"></a>  var nextTest;
+<a name="line717"></a>  while ((nextTest = this.next()) &amp;&amp; this.running) {
+<a name="line718"></a>    this.result_.runCount++;
+<a name="line719"></a>    // Execute the test and handle the error, we execute all tests rather than
+<a name="line720"></a>    // stopping after a single error.
+<a name="line721"></a>    var cleanedUp = false;
+<a name="line722"></a>
+<a name="line723"></a>    try {
+<a name="line724"></a>      this.log(&#39;Running test: &#39; + nextTest.name);
+<a name="line725"></a>
+<a name="line726"></a>      goog.testing.TestCase.currentTestName = nextTest.name;
+<a name="line727"></a>      this.setUp();
+<a name="line728"></a>      nextTest.execute();
+<a name="line729"></a>      this.tearDown();
+<a name="line730"></a>      goog.testing.TestCase.currentTestName = null;
+<a name="line731"></a>
+<a name="line732"></a>      cleanedUp = true;
+<a name="line733"></a>
+<a name="line734"></a>      this.doSuccess(nextTest);
+<a name="line735"></a>    } catch (e) {
+<a name="line736"></a>      this.doError(nextTest, e);
+<a name="line737"></a>
+<a name="line738"></a>      if (!cleanedUp) {
+<a name="line739"></a>        try {
+<a name="line740"></a>          this.tearDown();
+<a name="line741"></a>        } catch (e2) {} // Fail silently if tearDown is throwing the errors.
+<a name="line742"></a>      }
+<a name="line743"></a>    }
+<a name="line744"></a>
+<a name="line745"></a>    // If the max run time is exceeded call this function again async so as not
+<a name="line746"></a>    // to block the browser.
+<a name="line747"></a>    if (this.currentTestPointer_ &lt; this.tests_.length &amp;&amp;
+<a name="line748"></a>        this.now_() - this.batchTime_ &gt; goog.testing.TestCase.MAX_RUN_TIME) {
+<a name="line749"></a>      this.saveMessage(&#39;Breaking async&#39;);
+<a name="line750"></a>      this.timeout(goog.bind(this.cycleTests, this), 100);
+<a name="line751"></a>      return;
+<a name="line752"></a>    }
+<a name="line753"></a>  }
+<a name="line754"></a>  // Tests are done.
+<a name="line755"></a>  this.finalize();
+<a name="line756"></a>};
+<a name="line757"></a>
+<a name="line758"></a>
+<a name="line759"></a>/**
+<a name="line760"></a> * Counts the number of files that were loaded for dependencies that are
+<a name="line761"></a> * required to run the test.
+<a name="line762"></a> * @return {number} The number of files loaded.
+<a name="line763"></a> * @private
+<a name="line764"></a> */
+<a name="line765"></a>goog.testing.TestCase.prototype.countNumFilesLoaded_ = function() {
+<a name="line766"></a>  var scripts = document.getElementsByTagName(&#39;script&#39;);
+<a name="line767"></a>  var count = 0;
+<a name="line768"></a>  for (var i = 0, n = scripts.length; i &lt; n; i++) {
+<a name="line769"></a>    if (scripts[i].src) {
+<a name="line770"></a>      count++;
+<a name="line771"></a>    }
+<a name="line772"></a>  }
+<a name="line773"></a>  return count;
+<a name="line774"></a>};
+<a name="line775"></a>
+<a name="line776"></a>
+<a name="line777"></a>/**
+<a name="line778"></a> * Calls a function after a delay, using the protected timeout.
+<a name="line779"></a> * @param {Function} fn The function to call.
+<a name="line780"></a> * @param {number} time Delay in milliseconds.
+<a name="line781"></a> * @return {number} The timeout id.
+<a name="line782"></a> * @protected
+<a name="line783"></a> */
+<a name="line784"></a>goog.testing.TestCase.prototype.timeout = function(fn, time) {
+<a name="line785"></a>  var protectedTimeout = goog.testing.TestCase.protectedTimeout_;
+<a name="line786"></a>  return protectedTimeout(fn, time);
+<a name="line787"></a>};
+<a name="line788"></a>
+<a name="line789"></a>
+<a name="line790"></a>/**
+<a name="line791"></a> * @return {number} The current time in milliseconds, don&#39;t use goog.now as some
+<a name="line792"></a> *     tests override it.
+<a name="line793"></a> * @private
+<a name="line794"></a> */
+<a name="line795"></a>goog.testing.TestCase.prototype.now_ = function() {
+<a name="line796"></a>  return new Date().getTime();
+<a name="line797"></a>};
+<a name="line798"></a>
+<a name="line799"></a>
+<a name="line800"></a>/**
+<a name="line801"></a> * Returns the current time.
+<a name="line802"></a> * @return {string} HH:MM:SS.
+<a name="line803"></a> * @private
+<a name="line804"></a> */
+<a name="line805"></a>goog.testing.TestCase.prototype.getTimeStamp_ = function() {
+<a name="line806"></a>  var d = new Date;
+<a name="line807"></a>
+<a name="line808"></a>  // Ensure millis are always 3-digits
+<a name="line809"></a>  var millis = &#39;00&#39; + d.getMilliseconds();
+<a name="line810"></a>  millis = millis.substr(millis.length - 3);
+<a name="line811"></a>
+<a name="line812"></a>  return this.pad_(d.getHours()) + &#39;:&#39; + this.pad_(d.getMinutes()) + &#39;:&#39; +
+<a name="line813"></a>         this.pad_(d.getSeconds()) + &#39;.&#39; + millis;
+<a name="line814"></a>};
+<a name="line815"></a>
+<a name="line816"></a>
+<a name="line817"></a>/**
+<a name="line818"></a> * Pads a number to make it have a leading zero if it&#39;s less than 10.
+<a name="line819"></a> * @param {number} number The number to pad.
+<a name="line820"></a> * @return {string} The resulting string.
+<a name="line821"></a> * @private
+<a name="line822"></a> */
+<a name="line823"></a>goog.testing.TestCase.prototype.pad_ = function(number) {
+<a name="line824"></a>  return number &lt; 10 ? &#39;0&#39; + number : String(number);
+<a name="line825"></a>};
+<a name="line826"></a>
+<a name="line827"></a>
+<a name="line828"></a>/**
+<a name="line829"></a> * Trims a path to be only that after google3.
+<a name="line830"></a> * @param {string} path The path to trim.
+<a name="line831"></a> * @return {string} The resulting string.
+<a name="line832"></a> * @private
+<a name="line833"></a> */
+<a name="line834"></a>goog.testing.TestCase.prototype.trimPath_ = function(path) {
+<a name="line835"></a>  return path.substring(path.indexOf(&#39;google3&#39;) + 8);
+<a name="line836"></a>};
+<a name="line837"></a>
+<a name="line838"></a>
+<a name="line839"></a>/**
+<a name="line840"></a> * Handles a test that passed.
+<a name="line841"></a> * @param {goog.testing.TestCase.Test} test The test that passed.
+<a name="line842"></a> * @protected
+<a name="line843"></a> */
+<a name="line844"></a>goog.testing.TestCase.prototype.doSuccess = function(test) {
+<a name="line845"></a>  this.result_.successCount++;
+<a name="line846"></a>  var message = test.name + &#39; : PASSED&#39;;
+<a name="line847"></a>  this.saveMessage(message);
+<a name="line848"></a>  this.log(message);
+<a name="line849"></a>};
+<a name="line850"></a>
+<a name="line851"></a>
+<a name="line852"></a>/**
+<a name="line853"></a> * Handles a test that failed.
+<a name="line854"></a> * @param {goog.testing.TestCase.Test} test The test that failed.
+<a name="line855"></a> * @param {*=} opt_e The exception object associated with the
+<a name="line856"></a> *     failure or a string.
+<a name="line857"></a> * @protected
+<a name="line858"></a> */
+<a name="line859"></a>goog.testing.TestCase.prototype.doError = function(test, opt_e) {
+<a name="line860"></a>  var message = test.name + &#39; : FAILED&#39;;
+<a name="line861"></a>  this.log(message);
+<a name="line862"></a>  this.saveMessage(message);
+<a name="line863"></a>  var err = this.logError(test.name, opt_e);
+<a name="line864"></a>  this.result_.errors.push(err);
+<a name="line865"></a>};
+<a name="line866"></a>
+<a name="line867"></a>
+<a name="line868"></a>/**
+<a name="line869"></a> * @param {string} name Failed test name.
+<a name="line870"></a> * @param {*=} opt_e The exception object associated with the
+<a name="line871"></a> *     failure or a string.
+<a name="line872"></a> * @return {goog.testing.TestCase.Error} Error object.
+<a name="line873"></a> */
+<a name="line874"></a>goog.testing.TestCase.prototype.logError = function(name, opt_e) {
+<a name="line875"></a>  var errMsg = null;
+<a name="line876"></a>  var stack = null;
+<a name="line877"></a>  if (opt_e) {
+<a name="line878"></a>    this.log(opt_e);
+<a name="line879"></a>    if (goog.isString(opt_e)) {
+<a name="line880"></a>      errMsg = opt_e;
+<a name="line881"></a>    } else {
+<a name="line882"></a>      errMsg = opt_e.message || opt_e.description || opt_e.toString();
+<a name="line883"></a>      stack = opt_e.stack ? goog.testing.stacktrace.canonicalize(opt_e.stack) :
+<a name="line884"></a>          opt_e[&#39;stackTrace&#39;];
+<a name="line885"></a>    }
+<a name="line886"></a>  } else {
+<a name="line887"></a>    errMsg = &#39;An unknown error occurred&#39;;
+<a name="line888"></a>  }
+<a name="line889"></a>  var err = new goog.testing.TestCase.Error(name, errMsg, stack);
+<a name="line890"></a>
+<a name="line891"></a>  // Avoid double logging.
+<a name="line892"></a>  if (!opt_e || !opt_e[&#39;isJsUnitException&#39;] ||
+<a name="line893"></a>      !opt_e[&#39;loggedJsUnitException&#39;]) {
+<a name="line894"></a>    this.saveMessage(err.toString());
+<a name="line895"></a>  }
+<a name="line896"></a>  if (opt_e &amp;&amp; opt_e[&#39;isJsUnitException&#39;]) {
+<a name="line897"></a>    opt_e[&#39;loggedJsUnitException&#39;] = true;
+<a name="line898"></a>  }
+<a name="line899"></a>
+<a name="line900"></a>  return err;
+<a name="line901"></a>};
+<a name="line902"></a>
+<a name="line903"></a>
+<a name="line904"></a>
+<a name="line905"></a>/**
+<a name="line906"></a> * A class representing a single test function.
+<a name="line907"></a> * @param {string} name The test name.
+<a name="line908"></a> * @param {Function} ref Reference to the test function.
+<a name="line909"></a> * @param {Object=} opt_scope Optional scope that the test function should be
+<a name="line910"></a> *     called in.
+<a name="line911"></a> * @constructor
+<a name="line912"></a> */
+<a name="line913"></a>goog.testing.TestCase.Test = function(name, ref, opt_scope) {
+<a name="line914"></a>  /**
+<a name="line915"></a>   * The name of the test.
+<a name="line916"></a>   * @type {string}
+<a name="line917"></a>   */
+<a name="line918"></a>  this.name = name;
+<a name="line919"></a>
+<a name="line920"></a>  /**
+<a name="line921"></a>   * Reference to the test function.
+<a name="line922"></a>   * @type {Function}
+<a name="line923"></a>   */
+<a name="line924"></a>  this.ref = ref;
+<a name="line925"></a>
+<a name="line926"></a>  /**
+<a name="line927"></a>   * Scope that the test function should be called in.
+<a name="line928"></a>   * @type {Object}
+<a name="line929"></a>   */
+<a name="line930"></a>  this.scope = opt_scope || null;
+<a name="line931"></a>};
+<a name="line932"></a>
+<a name="line933"></a>
+<a name="line934"></a>/**
+<a name="line935"></a> * Executes the test function.
+<a name="line936"></a> */
+<a name="line937"></a>goog.testing.TestCase.Test.prototype.execute = function() {
+<a name="line938"></a>  this.ref.call(this.scope);
+<a name="line939"></a>};
+<a name="line940"></a>
+<a name="line941"></a>
+<a name="line942"></a>
+<a name="line943"></a>/**
+<a name="line944"></a> * A class for representing test results.  A bag of public properties.
+<a name="line945"></a> * @param {goog.testing.TestCase} testCase The test case that owns this result.
+<a name="line946"></a> * @constructor
+<a name="line947"></a> */
+<a name="line948"></a>goog.testing.TestCase.Result = function(testCase) {
+<a name="line949"></a>
+<a name="line950"></a>  /**
+<a name="line951"></a>   * The test case that owns this result.
+<a name="line952"></a>   * @type {goog.testing.TestCase}
+<a name="line953"></a>   * @private
+<a name="line954"></a>   */
+<a name="line955"></a>  this.testCase_ = testCase;
+<a name="line956"></a>
+<a name="line957"></a>  /**
+<a name="line958"></a>   * Total number of tests that should have been run.
+<a name="line959"></a>   * @type {number}
+<a name="line960"></a>   */
+<a name="line961"></a>  this.totalCount = 0;
+<a name="line962"></a>
+<a name="line963"></a>  /**
+<a name="line964"></a>   * Total number of tests that were actually run.
+<a name="line965"></a>   * @type {number}
+<a name="line966"></a>   */
+<a name="line967"></a>  this.runCount = 0;
+<a name="line968"></a>
+<a name="line969"></a>  /**
+<a name="line970"></a>   * Number of successful tests.
+<a name="line971"></a>   * @type {number}
+<a name="line972"></a>   */
+<a name="line973"></a>  this.successCount = 0;
+<a name="line974"></a>
+<a name="line975"></a>  /**
+<a name="line976"></a>   * The amount of time the tests took to run.
+<a name="line977"></a>   * @type {number}
+<a name="line978"></a>   */
+<a name="line979"></a>  this.runTime = 0;
+<a name="line980"></a>
+<a name="line981"></a>  /**
+<a name="line982"></a>   * The number of files loaded to run this test.
+<a name="line983"></a>   * @type {number}
+<a name="line984"></a>   */
+<a name="line985"></a>  this.numFilesLoaded = 0;
+<a name="line986"></a>
+<a name="line987"></a>  /**
+<a name="line988"></a>   * Whether this test case was suppressed by shouldRunTests() returning false.
+<a name="line989"></a>   * @type {boolean}
+<a name="line990"></a>   */
+<a name="line991"></a>  this.testSuppressed = false;
+<a name="line992"></a>
+<a name="line993"></a>  /**
+<a name="line994"></a>   * Errors encountered while running the test.
+<a name="line995"></a>   * @type {Array.&lt;goog.testing.TestCase.Error&gt;}
+<a name="line996"></a>   */
+<a name="line997"></a>  this.errors = [];
+<a name="line998"></a>
+<a name="line999"></a>  /**
+<a name="line1000"></a>   * Messages to show the user after running the test.
+<a name="line1001"></a>   * @type {Array.&lt;string&gt;}
+<a name="line1002"></a>   */
+<a name="line1003"></a>  this.messages = [];
+<a name="line1004"></a>};
+<a name="line1005"></a>
+<a name="line1006"></a>
+<a name="line1007"></a>/**
+<a name="line1008"></a> * @return {boolean} Whether the test was successful.
+<a name="line1009"></a> */
+<a name="line1010"></a>goog.testing.TestCase.Result.prototype.isSuccess = function() {
+<a name="line1011"></a>  var noErrors = this.runCount == this.successCount &amp;&amp; this.errors.length == 0;
+<a name="line1012"></a>  if (noErrors &amp;&amp; !this.testSuppressed &amp;&amp; this.isStrict()) {
+<a name="line1013"></a>    return this.runCount &gt; 0;
+<a name="line1014"></a>  }
+<a name="line1015"></a>  return noErrors;
+<a name="line1016"></a>};
+<a name="line1017"></a>
+<a name="line1018"></a>
+<a name="line1019"></a>/**
+<a name="line1020"></a> * @return {string} A summary of the tests, including total number of tests that
+<a name="line1021"></a> *     passed, failed, and the time taken.
+<a name="line1022"></a> */
+<a name="line1023"></a>goog.testing.TestCase.Result.prototype.getSummary = function() {
+<a name="line1024"></a>  var summary = this.runCount + &#39; of &#39; + this.totalCount + &#39; tests run in &#39; +
+<a name="line1025"></a>      this.runTime + &#39;ms.\n&#39;;
+<a name="line1026"></a>  if (this.testSuppressed) {
+<a name="line1027"></a>    summary += &#39;Tests not run because shouldRunTests() returned false.&#39;;
+<a name="line1028"></a>  } else if (this.runCount == 0) {
+<a name="line1029"></a>    summary += &#39;No tests found.  &#39;;
+<a name="line1030"></a>    if (this.isStrict()) {
+<a name="line1031"></a>      summary +=
+<a name="line1032"></a>          &#39;Call G_testRunner.setStrict(false) if this is expected behavior.  &#39;;
+<a name="line1033"></a>    }
+<a name="line1034"></a>  } else {
+<a name="line1035"></a>    summary += this.successCount + &#39; passed, &#39; +
+<a name="line1036"></a>        (this.totalCount - this.successCount) + &#39; failed.\n&#39; +
+<a name="line1037"></a>        Math.round(this.runTime / this.runCount) + &#39; ms/test. &#39; +
+<a name="line1038"></a>        this.numFilesLoaded + &#39; files loaded.&#39;;
+<a name="line1039"></a>  }
+<a name="line1040"></a>
+<a name="line1041"></a>  return summary;
+<a name="line1042"></a>};
+<a name="line1043"></a>
+<a name="line1044"></a>
+<a name="line1045"></a>/**
+<a name="line1046"></a> * Initializes the given test case with the global test runner &#39;G_testRunner&#39;.
+<a name="line1047"></a> * @param {goog.testing.TestCase} testCase The test case to install.
+<a name="line1048"></a> */
+<a name="line1049"></a>goog.testing.TestCase.initializeTestRunner = function(testCase) {
+<a name="line1050"></a>  testCase.autoDiscoverTests();
+<a name="line1051"></a>  var gTestRunner = goog.global[&#39;G_testRunner&#39;];
+<a name="line1052"></a>  if (gTestRunner) {
+<a name="line1053"></a>    gTestRunner[&#39;initialize&#39;](testCase);
+<a name="line1054"></a>  } else {
+<a name="line1055"></a>    throw Error(&#39;G_testRunner is undefined. Please ensure goog.testing.jsunit&#39; +
+<a name="line1056"></a>        &#39;is included.&#39;);
+<a name="line1057"></a>  }
+<a name="line1058"></a>};
+<a name="line1059"></a>
+<a name="line1060"></a>
+<a name="line1061"></a>/**
+<a name="line1062"></a> * Determines whether the test result should report failure if no tests are run.
+<a name="line1063"></a> * @return {boolean} Whether this is strict.
+<a name="line1064"></a> */
+<a name="line1065"></a>goog.testing.TestCase.Result.prototype.isStrict = function() {
+<a name="line1066"></a>  return this.testCase_.testRunner_.isStrict();
+<a name="line1067"></a>};
+<a name="line1068"></a>
+<a name="line1069"></a>
+<a name="line1070"></a>
+<a name="line1071"></a>/**
+<a name="line1072"></a> * A class representing an error thrown by the test
+<a name="line1073"></a> * @param {string} source The name of the test which threw the error.
+<a name="line1074"></a> * @param {string} message The error message.
+<a name="line1075"></a> * @param {string=} opt_stack A string showing the execution stack.
+<a name="line1076"></a> * @constructor
+<a name="line1077"></a> */
+<a name="line1078"></a>goog.testing.TestCase.Error = function(source, message, opt_stack) {
+<a name="line1079"></a>  /**
+<a name="line1080"></a>   * The name of the test which threw the error.
+<a name="line1081"></a>   * @type {string}
+<a name="line1082"></a>   */
+<a name="line1083"></a>  this.source = source;
+<a name="line1084"></a>
+<a name="line1085"></a>  /**
+<a name="line1086"></a>   * Reference to the test function.
+<a name="line1087"></a>   * @type {string}
+<a name="line1088"></a>   */
+<a name="line1089"></a>  this.message = message;
+<a name="line1090"></a>
+<a name="line1091"></a>  /**
+<a name="line1092"></a>   * Scope that the test function should be called in.
+<a name="line1093"></a>   * @type {?string}
+<a name="line1094"></a>   */
+<a name="line1095"></a>  this.stack = opt_stack || null;
+<a name="line1096"></a>};
+<a name="line1097"></a>
+<a name="line1098"></a>
+<a name="line1099"></a>/**
+<a name="line1100"></a> * Returns a string representing the error object.
+<a name="line1101"></a> * @return {string} A string representation of the error.
+<a name="line1102"></a> */
+<a name="line1103"></a>goog.testing.TestCase.Error.prototype.toString = function() {
+<a name="line1104"></a>  return &#39;ERROR in &#39; + this.source + &#39;\n&#39; +
+<a name="line1105"></a>      this.message + (this.stack ? &#39;\n&#39; + this.stack : &#39;&#39;);
+<a name="line1106"></a>};
+</pre>
+
+
+</body>
+</html>

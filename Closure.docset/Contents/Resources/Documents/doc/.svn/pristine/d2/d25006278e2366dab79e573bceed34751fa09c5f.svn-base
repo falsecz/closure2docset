@@ -1,0 +1,254 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>workerchannel.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_gears_workerchannel.js.html">workerchannel.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A message channel between Gears workers. This is meant to work
+<a name="line17"></a> * even when the Gears worker has other message listeners. GearsWorkerChannel
+<a name="line18"></a> * adds a specific prefix to its messages, and handles messages with that
+<a name="line19"></a> * prefix.
+<a name="line20"></a> *
+<a name="line21"></a> */
+<a name="line22"></a>
+<a name="line23"></a>
+<a name="line24"></a>goog.provide(&#39;goog.gears.WorkerChannel&#39;);
+<a name="line25"></a>
+<a name="line26"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line27"></a>goog.require(&#39;goog.debug&#39;);
+<a name="line28"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line29"></a>goog.require(&#39;goog.events&#39;);
+<a name="line30"></a>goog.require(&#39;goog.gears.Worker&#39;);
+<a name="line31"></a>goog.require(&#39;goog.gears.Worker.EventType&#39;);
+<a name="line32"></a>goog.require(&#39;goog.gears.WorkerEvent&#39;);
+<a name="line33"></a>goog.require(&#39;goog.json&#39;);
+<a name="line34"></a>goog.require(&#39;goog.messaging.AbstractChannel&#39;);
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>
+<a name="line38"></a>/**
+<a name="line39"></a> * Creates a message channel for the given Gears worker.
+<a name="line40"></a> *
+<a name="line41"></a> * @param {goog.gears.Worker} worker The Gears worker to communicate with. This
+<a name="line42"></a> *     should already be initialized.
+<a name="line43"></a> * @constructor
+<a name="line44"></a> * @extends {goog.messaging.AbstractChannel}
+<a name="line45"></a> */
+<a name="line46"></a>goog.gears.WorkerChannel = function(worker) {
+<a name="line47"></a>  goog.base(this);
+<a name="line48"></a>
+<a name="line49"></a>  /**
+<a name="line50"></a>   * The Gears worker to communicate with.
+<a name="line51"></a>   * @type {goog.gears.Worker}
+<a name="line52"></a>   * @private
+<a name="line53"></a>   */
+<a name="line54"></a>  this.worker_ = worker;
+<a name="line55"></a>
+<a name="line56"></a>  goog.events.listen(this.worker_, goog.gears.Worker.EventType.MESSAGE,
+<a name="line57"></a>                     this.deliver_, false, this);
+<a name="line58"></a>};
+<a name="line59"></a>goog.inherits(goog.gears.WorkerChannel, goog.messaging.AbstractChannel);
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * The flag added to messages that are sent by a GearsWorkerChannel, and are
+<a name="line64"></a> * meant to be handled by one on the other side.
+<a name="line65"></a> * @type {string}
+<a name="line66"></a> */
+<a name="line67"></a>goog.gears.WorkerChannel.FLAG = &#39;--goog.gears.WorkerChannel&#39;;
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/**
+<a name="line71"></a> * The expected origin of the other end of the worker channel, represented as a
+<a name="line72"></a> * string of the form SCHEME://DOMAIN[:PORT]. The port may be omitted for
+<a name="line73"></a> * standard ports (http port 80, https port 443).
+<a name="line74"></a> *
+<a name="line75"></a> * If this is set, all GearsWorkerChannel messages are validated to come from
+<a name="line76"></a> * this origin, and ignored (with a warning) if they don&#39;t. Messages that aren&#39;t
+<a name="line77"></a> * in the GearsWorkerChannel format are not validated.
+<a name="line78"></a> *
+<a name="line79"></a> * If more complex origin validation is required, the checkMessageOrigin method
+<a name="line80"></a> * can be overridden.
+<a name="line81"></a> *
+<a name="line82"></a> * @type {?string}
+<a name="line83"></a> */
+<a name="line84"></a>goog.gears.WorkerChannel.prototype.peerOrigin;
+<a name="line85"></a>
+<a name="line86"></a>
+<a name="line87"></a>/**
+<a name="line88"></a> * Logger for this class.
+<a name="line89"></a> * @type {goog.debug.Logger}
+<a name="line90"></a> * @protected
+<a name="line91"></a> */
+<a name="line92"></a>goog.gears.WorkerChannel.prototype.logger =
+<a name="line93"></a>    goog.debug.Logger.getLogger(&#39;goog.gears.WorkerChannel&#39;);
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * @override
+<a name="line98"></a> */
+<a name="line99"></a>goog.gears.WorkerChannel.prototype.send =
+<a name="line100"></a>    function(serviceName, payload) {
+<a name="line101"></a>  var message = {&#39;serviceName&#39;: serviceName, &#39;payload&#39;: payload};
+<a name="line102"></a>  message[goog.gears.WorkerChannel.FLAG] = true;
+<a name="line103"></a>  this.worker_.sendMessage(message);
+<a name="line104"></a>};
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/** @override */
+<a name="line108"></a>goog.gears.WorkerChannel.prototype.disposeInternal = function() {
+<a name="line109"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line110"></a>  this.worker_.dispose();
+<a name="line111"></a>};
+<a name="line112"></a>
+<a name="line113"></a>
+<a name="line114"></a>/**
+<a name="line115"></a> * Delivers a message to the appropriate service handler. If this message isn&#39;t
+<a name="line116"></a> * a GearsWorkerChannel message, it&#39;s ignored and passed on to other handlers.
+<a name="line117"></a> *
+<a name="line118"></a> * @param {goog.gears.WorkerEvent} e The event.
+<a name="line119"></a> * @private
+<a name="line120"></a> */
+<a name="line121"></a>goog.gears.WorkerChannel.prototype.deliver_ = function(e) {
+<a name="line122"></a>  var messageObject = e.messageObject || {};
+<a name="line123"></a>  var body = messageObject.body;
+<a name="line124"></a>  if (!goog.isObject(body) || !body[goog.gears.WorkerChannel.FLAG]) {
+<a name="line125"></a>    return;
+<a name="line126"></a>  }
+<a name="line127"></a>
+<a name="line128"></a>  if (!this.checkMessageOrigin(messageObject.origin)) {
+<a name="line129"></a>    return;
+<a name="line130"></a>  }
+<a name="line131"></a>
+<a name="line132"></a>  if (this.validateMessage_(body)) {
+<a name="line133"></a>    this.deliver(body[&#39;serviceName&#39;], body[&#39;payload&#39;]);
+<a name="line134"></a>  }
+<a name="line135"></a>
+<a name="line136"></a>  e.preventDefault();
+<a name="line137"></a>  e.stopPropagation();
+<a name="line138"></a>};
+<a name="line139"></a>
+<a name="line140"></a>
+<a name="line141"></a>/**
+<a name="line142"></a> * Checks whether the message is invalid in some way.
+<a name="line143"></a> *
+<a name="line144"></a> * @param {Object} body The contents of the message.
+<a name="line145"></a> * @return {boolean} True if the message is valid, false otherwise.
+<a name="line146"></a> * @private
+<a name="line147"></a> */
+<a name="line148"></a>goog.gears.WorkerChannel.prototype.validateMessage_ = function(body) {
+<a name="line149"></a>  if (!(&#39;serviceName&#39; in body)) {
+<a name="line150"></a>    this.logger.warning(&#39;GearsWorkerChannel::deliver_(): &#39; +
+<a name="line151"></a>                        &#39;Message object doesn\&#39;t contain service name: &#39; +
+<a name="line152"></a>                        goog.debug.deepExpose(body));
+<a name="line153"></a>    return false;
+<a name="line154"></a>  }
+<a name="line155"></a>
+<a name="line156"></a>  if (!(&#39;payload&#39; in body)) {
+<a name="line157"></a>    this.logger.warning(&#39;GearsWorkerChannel::deliver_(): &#39; +
+<a name="line158"></a>                        &#39;Message object doesn\&#39;t contain payload: &#39; +
+<a name="line159"></a>                        goog.debug.deepExpose(body));
+<a name="line160"></a>    return false;
+<a name="line161"></a>  }
+<a name="line162"></a>
+<a name="line163"></a>  return true;
+<a name="line164"></a>};
+<a name="line165"></a>
+<a name="line166"></a>
+<a name="line167"></a>/**
+<a name="line168"></a> * Checks whether the origin for a given message is the expected origin. If it&#39;s
+<a name="line169"></a> * not, a warning is logged and the message is ignored.
+<a name="line170"></a> *
+<a name="line171"></a> * This checks that the origin matches the peerOrigin property. It can be
+<a name="line172"></a> * overridden if more complex origin detection is necessary.
+<a name="line173"></a> *
+<a name="line174"></a> * @param {string} messageOrigin The origin of the message, of the form
+<a name="line175"></a> *     SCHEME://HOST[:PORT]. The port is omitted for standard ports (http port
+<a name="line176"></a> *     80, https port 443).
+<a name="line177"></a> * @return {boolean} True if the origin is acceptable, false otherwise.
+<a name="line178"></a> * @protected
+<a name="line179"></a> */
+<a name="line180"></a>goog.gears.WorkerChannel.prototype.checkMessageOrigin = function(
+<a name="line181"></a>    messageOrigin) {
+<a name="line182"></a>  if (!this.peerOrigin) {
+<a name="line183"></a>    return true;
+<a name="line184"></a>  }
+<a name="line185"></a>
+<a name="line186"></a>  // Gears doesn&#39;t include standard port numbers, but we want to let the user
+<a name="line187"></a>  // include them, so we&#39;ll just edit them out.
+<a name="line188"></a>  var peerOrigin = this.peerOrigin;
+<a name="line189"></a>  if (/^http:/.test(peerOrigin)) {
+<a name="line190"></a>    peerOrigin = peerOrigin.replace(/\:80$/, &#39;&#39;);
+<a name="line191"></a>  } else if (/^https:/.test(peerOrigin)) {
+<a name="line192"></a>    peerOrigin = peerOrigin.replace(/\:443$/, &#39;&#39;);
+<a name="line193"></a>  }
+<a name="line194"></a>
+<a name="line195"></a>  if (messageOrigin === peerOrigin) {
+<a name="line196"></a>    return true;
+<a name="line197"></a>  }
+<a name="line198"></a>
+<a name="line199"></a>  this.logger.warning(&#39;Message from unexpected origin &quot;&#39; + messageOrigin +
+<a name="line200"></a>                      &#39;&quot;; expected only messages from origin &quot;&#39; + peerOrigin +
+<a name="line201"></a>                      &#39;&quot;&#39;);
+<a name="line202"></a>  return false;
+<a name="line203"></a>};
+</pre>
+
+
+</body>
+</html>

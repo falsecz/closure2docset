@@ -1,0 +1,146 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>mechanismfactory.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_storage_mechanism_mechanismfactory.js.html">mechanismfactory.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Provides factory methods for selecting the best storage
+<a name="line17"></a> * mechanism, depending on availability and needs.
+<a name="line18"></a> *
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.storage.mechanism.mechanismfactory&#39;);
+<a name="line22"></a>
+<a name="line23"></a>goog.require(&#39;goog.storage.mechanism.HTML5LocalStorage&#39;);
+<a name="line24"></a>goog.require(&#39;goog.storage.mechanism.IEUserData&#39;);
+<a name="line25"></a>goog.require(&#39;goog.storage.mechanism.IterableMechanism&#39;);
+<a name="line26"></a>goog.require(&#39;goog.storage.mechanism.PrefixedMechanism&#39;);
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * The key to shared userData storage.
+<a name="line31"></a> * @type {string}
+<a name="line32"></a> */
+<a name="line33"></a>goog.storage.mechanism.mechanismfactory.USER_DATA_SHARED_KEY =
+<a name="line34"></a>    &#39;UserDataSharedStore&#39;;
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>/**
+<a name="line38"></a> * Returns the best local storage mechanism, or null if unavailable.
+<a name="line39"></a> * Local storage means that the database is placed on user&#39;s computer.
+<a name="line40"></a> * The key-value database is normally shared between all the code paths
+<a name="line41"></a> * that request it, so using an optional namespace is recommended. This
+<a name="line42"></a> * provides separation and makes key collisions unlikely.
+<a name="line43"></a> *
+<a name="line44"></a> * @param {string=} opt_namespace Restricts the visibility to given namespace.
+<a name="line45"></a> * @return {goog.storage.mechanism.IterableMechanism} Created mechanism or null.
+<a name="line46"></a> */
+<a name="line47"></a>goog.storage.mechanism.mechanismfactory.create = function(opt_namespace) {
+<a name="line48"></a>  var factory = goog.storage.mechanism.mechanismfactory;
+<a name="line49"></a>  return factory.createHTML5LocalStorage(opt_namespace) ||
+<a name="line50"></a>      factory.createIEUserData(opt_namespace);
+<a name="line51"></a>};
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>/**
+<a name="line55"></a> * Returns an HTML5 local storage mechanism, or null if unavailable.
+<a name="line56"></a> * Since the HTML5 local storage does not support namespaces natively,
+<a name="line57"></a> * and the key-value database is shared between all the code paths
+<a name="line58"></a> * that request it, it is recommended that an optional namespace is
+<a name="line59"></a> * used to provide key separation employing a prefix.
+<a name="line60"></a> *
+<a name="line61"></a> * @param {string=} opt_namespace Restricts the visibility to given namespace.
+<a name="line62"></a> * @return {goog.storage.mechanism.IterableMechanism} Created mechanism or null.
+<a name="line63"></a> */
+<a name="line64"></a>goog.storage.mechanism.mechanismfactory.createHTML5LocalStorage = function(
+<a name="line65"></a>    opt_namespace) {
+<a name="line66"></a>  var storage = new goog.storage.mechanism.HTML5LocalStorage();
+<a name="line67"></a>  if (storage.isAvailable()) {
+<a name="line68"></a>    if (opt_namespace) {
+<a name="line69"></a>      return new goog.storage.mechanism.PrefixedMechanism(
+<a name="line70"></a>          storage, opt_namespace);
+<a name="line71"></a>    } else {
+<a name="line72"></a>      return storage;
+<a name="line73"></a>    }
+<a name="line74"></a>  }
+<a name="line75"></a>  return null;
+<a name="line76"></a>};
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>/**
+<a name="line80"></a> * Returns an IE userData local storage mechanism, or null if unavailable.
+<a name="line81"></a> * Using an optional namespace is recommended to provide separation and
+<a name="line82"></a> * avoid key collisions.
+<a name="line83"></a> *
+<a name="line84"></a> * @param {string=} opt_namespace Restricts the visibility to given namespace.
+<a name="line85"></a> * @return {goog.storage.mechanism.IterableMechanism} Created mechanism or null.
+<a name="line86"></a> */
+<a name="line87"></a>goog.storage.mechanism.mechanismfactory.createIEUserData = function(
+<a name="line88"></a>    opt_namespace) {
+<a name="line89"></a>  var storage = new goog.storage.mechanism.IEUserData(opt_namespace ||
+<a name="line90"></a>      goog.storage.mechanism.mechanismfactory.USER_DATA_SHARED_KEY);
+<a name="line91"></a>  if (storage.isAvailable()) {
+<a name="line92"></a>    return storage;
+<a name="line93"></a>  }
+<a name="line94"></a>  return null;
+<a name="line95"></a>};
+</pre>
+
+
+</body>
+</html>

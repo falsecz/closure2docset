@@ -1,0 +1,313 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>svgelement.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_graphics_svgelement.js.html">svgelement.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>
+<a name="line16"></a>/**
+<a name="line17"></a> * @fileoverview Thin wrappers around the DOM element returned from
+<a name="line18"></a> * the different draw methods of the graphics. This is the SVG implementation.
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.graphics.SvgEllipseElement&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.graphics.SvgGroupElement&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.graphics.SvgImageElement&#39;);
+<a name="line24"></a>goog.provide(&#39;goog.graphics.SvgPathElement&#39;);
+<a name="line25"></a>goog.provide(&#39;goog.graphics.SvgRectElement&#39;);
+<a name="line26"></a>goog.provide(&#39;goog.graphics.SvgTextElement&#39;);
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line30"></a>goog.require(&#39;goog.graphics.EllipseElement&#39;);
+<a name="line31"></a>goog.require(&#39;goog.graphics.GroupElement&#39;);
+<a name="line32"></a>goog.require(&#39;goog.graphics.ImageElement&#39;);
+<a name="line33"></a>goog.require(&#39;goog.graphics.PathElement&#39;);
+<a name="line34"></a>goog.require(&#39;goog.graphics.RectElement&#39;);
+<a name="line35"></a>goog.require(&#39;goog.graphics.TextElement&#39;);
+<a name="line36"></a>
+<a name="line37"></a>
+<a name="line38"></a>
+<a name="line39"></a>/**
+<a name="line40"></a> * Thin wrapper for SVG group elements.
+<a name="line41"></a> * You should not construct objects from this constructor. The graphics
+<a name="line42"></a> * will return the object for you.
+<a name="line43"></a> * @param {Element} element The DOM element to wrap.
+<a name="line44"></a> * @param {goog.graphics.SvgGraphics} graphics The graphics creating
+<a name="line45"></a> *     this element.
+<a name="line46"></a> * @constructor
+<a name="line47"></a> * @extends {goog.graphics.GroupElement}
+<a name="line48"></a> */
+<a name="line49"></a>goog.graphics.SvgGroupElement = function(element, graphics) {
+<a name="line50"></a>  goog.graphics.GroupElement.call(this, element, graphics);
+<a name="line51"></a>};
+<a name="line52"></a>goog.inherits(goog.graphics.SvgGroupElement, goog.graphics.GroupElement);
+<a name="line53"></a>
+<a name="line54"></a>
+<a name="line55"></a>/**
+<a name="line56"></a> * Remove all drawing elements from the group.
+<a name="line57"></a> */
+<a name="line58"></a>goog.graphics.SvgGroupElement.prototype.clear = function() {
+<a name="line59"></a>  goog.dom.removeChildren(this.getElement());
+<a name="line60"></a>};
+<a name="line61"></a>
+<a name="line62"></a>
+<a name="line63"></a>/**
+<a name="line64"></a> * Set the size of the group element.
+<a name="line65"></a> * @param {number|string} width The width of the group element.
+<a name="line66"></a> * @param {number|string} height The height of the group element.
+<a name="line67"></a> */
+<a name="line68"></a>goog.graphics.SvgGroupElement.prototype.setSize = function(width, height) {
+<a name="line69"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line70"></a>      {&#39;width&#39;: width, &#39;height&#39;: height});
+<a name="line71"></a>};
+<a name="line72"></a>
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a> * Thin wrapper for SVG ellipse elements.
+<a name="line77"></a> * This is an implementation of the goog.graphics.EllipseElement interface.
+<a name="line78"></a> * You should not construct objects from this constructor. The graphics
+<a name="line79"></a> * will return the object for you.
+<a name="line80"></a> * @param {Element} element The DOM element to wrap.
+<a name="line81"></a> * @param {goog.graphics.SvgGraphics} graphics The graphics creating
+<a name="line82"></a> *     this element.
+<a name="line83"></a> * @param {goog.graphics.Stroke?} stroke The stroke to use for this element.
+<a name="line84"></a> * @param {goog.graphics.Fill?} fill The fill to use for this element.
+<a name="line85"></a> * @constructor
+<a name="line86"></a> * @extends {goog.graphics.EllipseElement}
+<a name="line87"></a> */
+<a name="line88"></a>goog.graphics.SvgEllipseElement = function(element, graphics, stroke, fill) {
+<a name="line89"></a>  goog.graphics.EllipseElement.call(this, element, graphics, stroke, fill);
+<a name="line90"></a>};
+<a name="line91"></a>goog.inherits(goog.graphics.SvgEllipseElement, goog.graphics.EllipseElement);
+<a name="line92"></a>
+<a name="line93"></a>
+<a name="line94"></a>/**
+<a name="line95"></a> * Update the center point of the ellipse.
+<a name="line96"></a> * @param {number} cx Center X coordinate.
+<a name="line97"></a> * @param {number} cy Center Y coordinate.
+<a name="line98"></a> */
+<a name="line99"></a>goog.graphics.SvgEllipseElement.prototype.setCenter = function(cx, cy) {
+<a name="line100"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line101"></a>      {&#39;cx&#39;: cx, &#39;cy&#39;: cy});
+<a name="line102"></a>};
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * Update the radius of the ellipse.
+<a name="line107"></a> * @param {number} rx Radius length for the x-axis.
+<a name="line108"></a> * @param {number} ry Radius length for the y-axis.
+<a name="line109"></a> */
+<a name="line110"></a>goog.graphics.SvgEllipseElement.prototype.setRadius = function(rx, ry) {
+<a name="line111"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line112"></a>      {&#39;rx&#39;: rx, &#39;ry&#39;: ry});
+<a name="line113"></a>};
+<a name="line114"></a>
+<a name="line115"></a>
+<a name="line116"></a>
+<a name="line117"></a>/**
+<a name="line118"></a> * Thin wrapper for SVG rectangle elements.
+<a name="line119"></a> * This is an implementation of the goog.graphics.RectElement interface.
+<a name="line120"></a> * You should not construct objects from this constructor. The graphics
+<a name="line121"></a> * will return the object for you.
+<a name="line122"></a> * @param {Element} element The DOM element to wrap.
+<a name="line123"></a> * @param {goog.graphics.SvgGraphics} graphics The graphics creating
+<a name="line124"></a> *     this element.
+<a name="line125"></a> * @param {goog.graphics.Stroke?} stroke The stroke to use for this element.
+<a name="line126"></a> * @param {goog.graphics.Fill?} fill The fill to use for this element.
+<a name="line127"></a> * @constructor
+<a name="line128"></a> * @extends {goog.graphics.RectElement}
+<a name="line129"></a> */
+<a name="line130"></a>goog.graphics.SvgRectElement = function(element, graphics, stroke, fill) {
+<a name="line131"></a>  goog.graphics.RectElement.call(this, element, graphics, stroke, fill);
+<a name="line132"></a>};
+<a name="line133"></a>goog.inherits(goog.graphics.SvgRectElement, goog.graphics.RectElement);
+<a name="line134"></a>
+<a name="line135"></a>
+<a name="line136"></a>/**
+<a name="line137"></a> * Update the position of the rectangle.
+<a name="line138"></a> * @param {number} x X coordinate (left).
+<a name="line139"></a> * @param {number} y Y coordinate (top).
+<a name="line140"></a> */
+<a name="line141"></a>goog.graphics.SvgRectElement.prototype.setPosition = function(x, y) {
+<a name="line142"></a>  this.getGraphics().setElementAttributes(this.getElement(), {&#39;x&#39;: x, &#39;y&#39;: y});
+<a name="line143"></a>};
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * Update the size of the rectangle.
+<a name="line148"></a> * @param {number} width Width of rectangle.
+<a name="line149"></a> * @param {number} height Height of rectangle.
+<a name="line150"></a> */
+<a name="line151"></a>goog.graphics.SvgRectElement.prototype.setSize = function(width, height) {
+<a name="line152"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line153"></a>      {&#39;width&#39;: width, &#39;height&#39;: height});
+<a name="line154"></a>};
+<a name="line155"></a>
+<a name="line156"></a>
+<a name="line157"></a>
+<a name="line158"></a>/**
+<a name="line159"></a> * Thin wrapper for SVG path elements.
+<a name="line160"></a> * This is an implementation of the goog.graphics.PathElement interface.
+<a name="line161"></a> * You should not construct objects from this constructor. The graphics
+<a name="line162"></a> * will return the object for you.
+<a name="line163"></a> * @param {Element} element The DOM element to wrap.
+<a name="line164"></a> * @param {goog.graphics.SvgGraphics} graphics The graphics creating
+<a name="line165"></a> *     this element.
+<a name="line166"></a> * @param {goog.graphics.Stroke?} stroke The stroke to use for this element.
+<a name="line167"></a> * @param {goog.graphics.Fill?} fill The fill to use for this element.
+<a name="line168"></a> * @constructor
+<a name="line169"></a> * @extends {goog.graphics.PathElement}
+<a name="line170"></a> */
+<a name="line171"></a>goog.graphics.SvgPathElement = function(element, graphics, stroke, fill) {
+<a name="line172"></a>  goog.graphics.PathElement.call(this, element, graphics, stroke, fill);
+<a name="line173"></a>};
+<a name="line174"></a>goog.inherits(goog.graphics.SvgPathElement, goog.graphics.PathElement);
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * Update the underlying path.
+<a name="line179"></a> * @param {goog.graphics.Path} path The path object to draw.
+<a name="line180"></a> */
+<a name="line181"></a>goog.graphics.SvgPathElement.prototype.setPath = function(path) {
+<a name="line182"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line183"></a>      {&#39;d&#39;: goog.graphics.SvgGraphics.getSvgPath(path)});
+<a name="line184"></a>};
+<a name="line185"></a>
+<a name="line186"></a>
+<a name="line187"></a>
+<a name="line188"></a>/**
+<a name="line189"></a> * Thin wrapper for SVG text elements.
+<a name="line190"></a> * This is an implementation of the goog.graphics.TextElement interface.
+<a name="line191"></a> * You should not construct objects from this constructor. The graphics
+<a name="line192"></a> * will return the object for you.
+<a name="line193"></a> * @param {Element} element The DOM element to wrap.
+<a name="line194"></a> * @param {goog.graphics.SvgGraphics} graphics The graphics creating
+<a name="line195"></a> *     this element.
+<a name="line196"></a> * @param {goog.graphics.Stroke?} stroke The stroke to use for this element.
+<a name="line197"></a> * @param {goog.graphics.Fill?} fill The fill to use for this element.
+<a name="line198"></a> * @constructor
+<a name="line199"></a> * @extends {goog.graphics.TextElement}
+<a name="line200"></a> */
+<a name="line201"></a>goog.graphics.SvgTextElement = function(element, graphics, stroke, fill) {
+<a name="line202"></a>  goog.graphics.TextElement.call(this, element, graphics, stroke, fill);
+<a name="line203"></a>};
+<a name="line204"></a>goog.inherits(goog.graphics.SvgTextElement, goog.graphics.TextElement);
+<a name="line205"></a>
+<a name="line206"></a>
+<a name="line207"></a>/**
+<a name="line208"></a> * Update the displayed text of the element.
+<a name="line209"></a> * @param {string} text The text to draw.
+<a name="line210"></a> */
+<a name="line211"></a>goog.graphics.SvgTextElement.prototype.setText = function(text) {
+<a name="line212"></a>  this.getElement().firstChild.data = text;
+<a name="line213"></a>};
+<a name="line214"></a>
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * Thin wrapper for SVG image elements.
+<a name="line219"></a> * This is an implementation of the goog.graphics.ImageElement interface.
+<a name="line220"></a> * You should not construct objects from this constructor. The graphics
+<a name="line221"></a> * will return the object for you.
+<a name="line222"></a> * @param {Element} element The DOM element to wrap.
+<a name="line223"></a> * @param {goog.graphics.SvgGraphics} graphics The graphics creating
+<a name="line224"></a> *     this element.
+<a name="line225"></a> * @constructor
+<a name="line226"></a> * @extends {goog.graphics.ImageElement}
+<a name="line227"></a> */
+<a name="line228"></a>goog.graphics.SvgImageElement = function(element, graphics) {
+<a name="line229"></a>  goog.graphics.ImageElement.call(this, element, graphics);
+<a name="line230"></a>};
+<a name="line231"></a>goog.inherits(goog.graphics.SvgImageElement, goog.graphics.ImageElement);
+<a name="line232"></a>
+<a name="line233"></a>
+<a name="line234"></a>/**
+<a name="line235"></a> * Update the position of the image.
+<a name="line236"></a> * @param {number} x X coordinate (left).
+<a name="line237"></a> * @param {number} y Y coordinate (top).
+<a name="line238"></a> */
+<a name="line239"></a>goog.graphics.SvgImageElement.prototype.setPosition = function(x, y) {
+<a name="line240"></a>  this.getGraphics().setElementAttributes(this.getElement(), {&#39;x&#39;: x, &#39;y&#39;: y});
+<a name="line241"></a>};
+<a name="line242"></a>
+<a name="line243"></a>
+<a name="line244"></a>/**
+<a name="line245"></a> * Update the size of the image.
+<a name="line246"></a> * @param {number} width Width of image.
+<a name="line247"></a> * @param {number} height Height of image.
+<a name="line248"></a> */
+<a name="line249"></a>goog.graphics.SvgImageElement.prototype.setSize = function(width, height) {
+<a name="line250"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line251"></a>      {&#39;width&#39;: width, &#39;height&#39;: height});
+<a name="line252"></a>};
+<a name="line253"></a>
+<a name="line254"></a>
+<a name="line255"></a>/**
+<a name="line256"></a> * Update the source of the image.
+<a name="line257"></a> * @param {string} src Source of the image.
+<a name="line258"></a> */
+<a name="line259"></a>goog.graphics.SvgImageElement.prototype.setSource = function(src) {
+<a name="line260"></a>  this.getGraphics().setElementAttributes(this.getElement(),
+<a name="line261"></a>      {&#39;xlink:href&#39;: src});
+<a name="line262"></a>};
+</pre>
+
+
+</body>
+</html>

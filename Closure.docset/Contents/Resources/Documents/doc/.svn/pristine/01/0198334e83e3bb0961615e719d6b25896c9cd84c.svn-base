@@ -1,0 +1,152 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>inputhandler.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">inputhandler.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    An object that encapsulates text changed events for textareas
+ and input element of type text and password. The event occurs after the value
+ has been changed. The event does not occur if value was changed
+ programmatically.<br>
+ <br>
+ Note: this does not guarantee the correctness of <code>keyCode</code> or
+ <code>charCode</code>, or attempt to unify them across browsers. See
+ <code>goog.events.KeyHandler</code> for that functionality.<br>
+ <br>
+ Known issues:
+ <ul>
+ <li>Does not trigger for drop events on Opera due to browser bug.
+ <li>IE doesn't have native support for input event. WebKit before version 531
+ doesn't have support for textareas. For those browsers an emulation mode
+ based on key, clipboard and drop events is used. Thus this event won't
+ trigger in emulation mode if text was modified by context menu commands
+ such as 'Undo' and 'Delete'.
+ </li></li></ul>
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="../trunk/closure/goog/demos/inputhandler.html">Demo</a></li>
+            <li><a href="closure_goog_events_inputhandler.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/events/inputhandler.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">events/inputhandler.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_events_InputHandler.html">
+          goog.events.InputHandler</a><br/>
+        <div class="class-details">This event handler will dispatch events when the user types into a text
+input, password input or a textarea</div>
+ </div>
+      
+
+
+
+<h2>Enumerations</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+
+
+
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory events</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="events/inputhandler.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1400 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>vec3.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">vec3.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Supplies 3 element vectors that are compatible with WebGL.
+ Each element is a float32 since that is typically the desired size of a
+ 3-vector in the GPU.  The API is structured to avoid unnecessary memory
+ allocations.  The last parameter will typically be the output vector and
+ an object can be both an input and output parameter to all methods except
+ where noted.
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_goog_vec_vec3.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/vec/vec3.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">vec/vec3.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+   
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.add"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">add<span class="args">(<span class="arg">vec0</span>,&nbsp;<span class="arg">vec1</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Performs a component-wise addition of vec0 and vec1 together storing the
+result into resultVec.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The first addend.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">vec1</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The second addend.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the result. May be vec0 or vec1.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line140">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.clone"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">clone<span class="args">(<span class="arg">vec</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">Float32Array</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates a clone of the given 3 element vector.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The source 3 element vector.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">Float32Array</span></div>&nbsp;
+            The new cloned vector.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line97">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.create"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">create<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">Float32Array</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates a 3 element vector of Float32Array. The array is initialized to zero.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">Float32Array</span></div>&nbsp;
+            The new 3 element array.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line57">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.createFromArray"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">createFromArray<span class="args">(<span class="arg">vec</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">Float32Array</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates a new 3 element vector initialized with the value from the given
+array.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The source 3 element array.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">Float32Array</span></div>&nbsp;
+            The new 3 element array.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line69">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.createFromValues"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">createFromValues<span class="args">(<span class="arg">v0</span>,&nbsp;<span class="arg">v1</span>,&nbsp;<span class="arg">v2</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">Float32Array</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates a new 3 element vector initialized with the supplied values.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v0</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value for element at index 0.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v1</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value for element at index 1.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v2</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value for element at index 2.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">Float32Array</span></div>&nbsp;
+            The new vector.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line84">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.cross"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">cross<span class="args">(<span class="arg">v0</span>,&nbsp;<span class="arg">v1</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Computes the vector (cross) product of v0 and v1 storing the result into
+resultVec.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The first vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v1</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The second vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the results. May be either v0 or v1.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line268">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.dot"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">dot<span class="args">(<span class="arg">v0</span>,&nbsp;<span class="arg">v1</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Returns the scalar product of vectors v0 and v1.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The first vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v1</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The second vector.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>&nbsp;
+            The scalar product.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line252">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.equals"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">equals<span class="args">(<span class="arg">v0</span>,&nbsp;<span class="arg">v1</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Returns true if the components of v0 are equal to the components of v1.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The first vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v1</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The second vector.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            True if the vectors are equal, false otherwise.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line306">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.lerp"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">lerp<span class="args">(<span class="arg">v0</span>,&nbsp;<span class="arg">v1</span>,&nbsp;<span class="arg">f</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Linearly interpolate from v0 to v1 according to f. The value of f should be
+in the range [0..1] otherwise the results are undefined.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The first vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v1</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The second vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">f</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The interpolation factor.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the results (may be v0 or v1).</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line290">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.magnitude"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">magnitude<span class="args">(<span class="arg">vec0</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Returns the magnitude of the given vector.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>&nbsp;
+            The magnitude of the vector.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line221">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.magnitudeSquared"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">magnitudeSquared<span class="args">(<span class="arg">vec0</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Returns the magnitudeSquared of the given vector.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>&nbsp;
+            The magnitude of the vector.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line209">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.negate"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">negate<span class="args">(<span class="arg">vec0</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Negates vec0, storing the result into resultVec.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to negate.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the result. May be vec0.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line176">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.normalize"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">normalize<span class="args">(<span class="arg">vec0</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Normalizes the given vector storing the result into resultVec.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to normalize.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the result. May be vec0.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line236">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.scale"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">scale<span class="args">(<span class="arg">vec0</span>,&nbsp;<span class="arg">scalar</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Multiplies each component of vec0 with scalar storing the product into
+resultVec.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The source vector.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">scalar</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value to multiply with each component of vec0.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the result. May be vec0.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line195">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.setFromArray"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">setFromArray<span class="args">(<span class="arg">vec</span>,&nbsp;<span class="arg">values</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Initializes the vector with the given array of values.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the values.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">values</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The array of values.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line122">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.setFromValues"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">setFromValues<span class="args">(<span class="arg">vec</span>,&nbsp;<span class="arg">v0</span>,&nbsp;<span class="arg">v1</span>,&nbsp;<span class="arg">v2</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Initializes the vector with the given values.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the values.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v0</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value for element at index 0.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">v1</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value for element at index 1.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">v2</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The value for element at index 2.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line108">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.vec.Vec3.subtract"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.vec.Vec3.</span><span class="entryName">subtract<span class="args">(<span class="arg">vec0</span>,&nbsp;<span class="arg">vec1</span>,&nbsp;<span class="arg">resultVec</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Performs a component-wise subtraction of vec1 from vec0 storing the
+result into resultVec.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">vec0</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The minuend.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">vec1</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The subtrahend.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">resultVec</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The vector to receive the result. May be vec0 or vec1.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">Float32Array</span>)</div>&nbsp;
+            return resultVec so that operations can be chained together.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_vec_vec3.js.source.html#line159">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory vec</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="vec/vec3.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

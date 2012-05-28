@@ -1,0 +1,406 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>math.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_math_math.js.html">math.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Additional mathematical functions.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>goog.provide(&#39;goog.math&#39;);
+<a name="line20"></a>
+<a name="line21"></a>goog.require(&#39;goog.array&#39;);
+<a name="line22"></a>
+<a name="line23"></a>
+<a name="line24"></a>/**
+<a name="line25"></a> * Returns a random integer greater than or equal to 0 and less than {@code a}.
+<a name="line26"></a> * @param {number} a  The upper bound for the random integer (exclusive).
+<a name="line27"></a> * @return {number} A random integer N such that 0 &lt;= N &lt; a.
+<a name="line28"></a> */
+<a name="line29"></a>goog.math.randomInt = function(a) {
+<a name="line30"></a>  return Math.floor(Math.random() * a);
+<a name="line31"></a>};
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>/**
+<a name="line35"></a> * Returns a random number greater than or equal to {@code a} and less than
+<a name="line36"></a> * {@code b}.
+<a name="line37"></a> * @param {number} a  The lower bound for the random number (inclusive).
+<a name="line38"></a> * @param {number} b  The upper bound for the random number (exclusive).
+<a name="line39"></a> * @return {number} A random number N such that a &lt;= N &lt; b.
+<a name="line40"></a> */
+<a name="line41"></a>goog.math.uniformRandom = function(a, b) {
+<a name="line42"></a>  return a + Math.random() * (b - a);
+<a name="line43"></a>};
+<a name="line44"></a>
+<a name="line45"></a>
+<a name="line46"></a>/**
+<a name="line47"></a> * Takes a number and clamps it to within the provided bounds.
+<a name="line48"></a> * @param {number} value The input number.
+<a name="line49"></a> * @param {number} min The minimum value to return.
+<a name="line50"></a> * @param {number} max The maximum value to return.
+<a name="line51"></a> * @return {number} The input number if it is within bounds, or the nearest
+<a name="line52"></a> *     number within the bounds.
+<a name="line53"></a> */
+<a name="line54"></a>goog.math.clamp = function(value, min, max) {
+<a name="line55"></a>  return Math.min(Math.max(value, min), max);
+<a name="line56"></a>};
+<a name="line57"></a>
+<a name="line58"></a>
+<a name="line59"></a>/**
+<a name="line60"></a> * The % operator in JavaScript returns the remainder of a / b, but differs from
+<a name="line61"></a> * some other languages in that the result will have the same sign as the
+<a name="line62"></a> * dividend. For example, -1 % 8 == -1, whereas in some other languages
+<a name="line63"></a> * (such as Python) the result would be 7. This function emulates the more
+<a name="line64"></a> * correct modulo behavior, which is useful for certain applications such as
+<a name="line65"></a> * calculating an offset index in a circular list.
+<a name="line66"></a> *
+<a name="line67"></a> * @param {number} a The dividend.
+<a name="line68"></a> * @param {number} b The divisor.
+<a name="line69"></a> * @return {number} a % b where the result is between 0 and b (either 0 &lt;= x &lt; b
+<a name="line70"></a> *     or b &lt; x &lt;= 0, depending on the sign of b).
+<a name="line71"></a> */
+<a name="line72"></a>goog.math.modulo = function(a, b) {
+<a name="line73"></a>  var r = a % b;
+<a name="line74"></a>  // If r and b differ in sign, add b to wrap the result to the correct sign.
+<a name="line75"></a>  return (r * b &lt; 0) ? r + b : r;
+<a name="line76"></a>};
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>/**
+<a name="line80"></a> * Performs linear interpolation between values a and b. Returns the value
+<a name="line81"></a> * between a and b proportional to x (when x is between 0 and 1. When x is
+<a name="line82"></a> * outside this range, the return value is a linear extrapolation).
+<a name="line83"></a> * @param {number} a A number.
+<a name="line84"></a> * @param {number} b A number.
+<a name="line85"></a> * @param {number} x The proportion between a and b.
+<a name="line86"></a> * @return {number} The interpolated value between a and b.
+<a name="line87"></a> */
+<a name="line88"></a>goog.math.lerp = function(a, b, x) {
+<a name="line89"></a>  return a + x * (b - a);
+<a name="line90"></a>};
+<a name="line91"></a>
+<a name="line92"></a>
+<a name="line93"></a>/**
+<a name="line94"></a> * Tests whether the two values are equal to each other, within a certain
+<a name="line95"></a> * tolerance to adjust for floating pount errors.
+<a name="line96"></a> * @param {number} a A number.
+<a name="line97"></a> * @param {number} b A number.
+<a name="line98"></a> * @param {number=} opt_tolerance Optional tolerance range. Defaults
+<a name="line99"></a> *     to 0.000001. If specified, should be greater than 0.
+<a name="line100"></a> * @return {boolean} Whether {@code a} and {@code b} are nearly equal.
+<a name="line101"></a> */
+<a name="line102"></a>goog.math.nearlyEquals = function(a, b, opt_tolerance) {
+<a name="line103"></a>  return Math.abs(a - b) &lt;= (opt_tolerance || 0.000001);
+<a name="line104"></a>};
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Standardizes an angle to be in range [0-360). Negative angles become
+<a name="line109"></a> * positive, and values greater than 360 are returned modulo 360.
+<a name="line110"></a> * @param {number} angle Angle in degrees.
+<a name="line111"></a> * @return {number} Standardized angle.
+<a name="line112"></a> */
+<a name="line113"></a>goog.math.standardAngle = function(angle) {
+<a name="line114"></a>  return goog.math.modulo(angle, 360);
+<a name="line115"></a>};
+<a name="line116"></a>
+<a name="line117"></a>
+<a name="line118"></a>/**
+<a name="line119"></a> * Converts degrees to radians.
+<a name="line120"></a> * @param {number} angleDegrees Angle in degrees.
+<a name="line121"></a> * @return {number} Angle in radians.
+<a name="line122"></a> */
+<a name="line123"></a>goog.math.toRadians = function(angleDegrees) {
+<a name="line124"></a>  return angleDegrees * Math.PI / 180;
+<a name="line125"></a>};
+<a name="line126"></a>
+<a name="line127"></a>
+<a name="line128"></a>/**
+<a name="line129"></a> * Converts radians to degrees.
+<a name="line130"></a> * @param {number} angleRadians Angle in radians.
+<a name="line131"></a> * @return {number} Angle in degrees.
+<a name="line132"></a> */
+<a name="line133"></a>goog.math.toDegrees = function(angleRadians) {
+<a name="line134"></a>  return angleRadians * 180 / Math.PI;
+<a name="line135"></a>};
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * For a given angle and radius, finds the X portion of the offset.
+<a name="line140"></a> * @param {number} degrees Angle in degrees (zero points in +X direction).
+<a name="line141"></a> * @param {number} radius Radius.
+<a name="line142"></a> * @return {number} The x-distance for the angle and radius.
+<a name="line143"></a> */
+<a name="line144"></a>goog.math.angleDx = function(degrees, radius) {
+<a name="line145"></a>  return radius * Math.cos(goog.math.toRadians(degrees));
+<a name="line146"></a>};
+<a name="line147"></a>
+<a name="line148"></a>
+<a name="line149"></a>/**
+<a name="line150"></a> * For a given angle and radius, finds the Y portion of the offset.
+<a name="line151"></a> * @param {number} degrees Angle in degrees (zero points in +X direction).
+<a name="line152"></a> * @param {number} radius Radius.
+<a name="line153"></a> * @return {number} The y-distance for the angle and radius.
+<a name="line154"></a> */
+<a name="line155"></a>goog.math.angleDy = function(degrees, radius) {
+<a name="line156"></a>  return radius * Math.sin(goog.math.toRadians(degrees));
+<a name="line157"></a>};
+<a name="line158"></a>
+<a name="line159"></a>
+<a name="line160"></a>/**
+<a name="line161"></a> * Computes the angle between two points (x1,y1) and (x2,y2).
+<a name="line162"></a> * Angle zero points in the +X direction, 90 degrees points in the +Y
+<a name="line163"></a> * direction (down) and from there we grow clockwise towards 360 degrees.
+<a name="line164"></a> * @param {number} x1 x of first point.
+<a name="line165"></a> * @param {number} y1 y of first point.
+<a name="line166"></a> * @param {number} x2 x of second point.
+<a name="line167"></a> * @param {number} y2 y of second point.
+<a name="line168"></a> * @return {number} Standardized angle in degrees of the vector from
+<a name="line169"></a> *     x1,y1 to x2,y2.
+<a name="line170"></a> */
+<a name="line171"></a>goog.math.angle = function(x1, y1, x2, y2) {
+<a name="line172"></a>  return goog.math.standardAngle(goog.math.toDegrees(Math.atan2(y2 - y1,
+<a name="line173"></a>                                                                x2 - x1)));
+<a name="line174"></a>};
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * Computes the difference between startAngle and endAngle (angles in degrees).
+<a name="line179"></a> * @param {number} startAngle  Start angle in degrees.
+<a name="line180"></a> * @param {number} endAngle  End angle in degrees.
+<a name="line181"></a> * @return {number} The number of degrees that when added to
+<a name="line182"></a> *     startAngle will result in endAngle. Positive numbers mean that the
+<a name="line183"></a> *     direction is clockwise. Negative numbers indicate a counter-clockwise
+<a name="line184"></a> *     direction.
+<a name="line185"></a> *     The shortest route (clockwise vs counter-clockwise) between the angles
+<a name="line186"></a> *     is used.
+<a name="line187"></a> *     When the difference is 180 degrees, the function returns 180 (not -180)
+<a name="line188"></a> *     angleDifference(30, 40) is 10, and angleDifference(40, 30) is -10.
+<a name="line189"></a> *     angleDifference(350, 10) is 20, and angleDifference(10, 350) is -20.
+<a name="line190"></a> */
+<a name="line191"></a>goog.math.angleDifference = function(startAngle, endAngle) {
+<a name="line192"></a>  var d = goog.math.standardAngle(endAngle) -
+<a name="line193"></a>          goog.math.standardAngle(startAngle);
+<a name="line194"></a>  if (d &gt; 180) {
+<a name="line195"></a>    d = d - 360;
+<a name="line196"></a>  } else if (d &lt;= -180) {
+<a name="line197"></a>    d = 360 + d;
+<a name="line198"></a>  }
+<a name="line199"></a>  return d;
+<a name="line200"></a>};
+<a name="line201"></a>
+<a name="line202"></a>
+<a name="line203"></a>/**
+<a name="line204"></a> * Returns the sign of a number as per the &quot;sign&quot; or &quot;signum&quot; function.
+<a name="line205"></a> * @param {number} x The number to take the sign of.
+<a name="line206"></a> * @return {number} -1 when negative, 1 when positive, 0 when 0.
+<a name="line207"></a> */
+<a name="line208"></a>goog.math.sign = function(x) {
+<a name="line209"></a>  return x == 0 ? 0 : (x &lt; 0 ? -1 : 1);
+<a name="line210"></a>};
+<a name="line211"></a>
+<a name="line212"></a>
+<a name="line213"></a>/**
+<a name="line214"></a> * JavaScript implementation of Longest Common Subsequence problem.
+<a name="line215"></a> * http://en.wikipedia.org/wiki/Longest_common_subsequence
+<a name="line216"></a> *
+<a name="line217"></a> * Returns the longest possible array that is subarray of both of given arrays.
+<a name="line218"></a> *
+<a name="line219"></a> * @param {Array.&lt;Object&gt;} array1 First array of objects.
+<a name="line220"></a> * @param {Array.&lt;Object&gt;} array2 Second array of objects.
+<a name="line221"></a> * @param {Function=} opt_compareFn Function that acts as a custom comparator
+<a name="line222"></a> *     for the array ojects. Function should return true if objects are equal,
+<a name="line223"></a> *     otherwise false.
+<a name="line224"></a> * @param {Function=} opt_collectorFn Function used to decide what to return
+<a name="line225"></a> *     as a result subsequence. It accepts 2 arguments: index of common element
+<a name="line226"></a> *     in the first array and index in the second. The default function returns
+<a name="line227"></a> *     element from the first array.
+<a name="line228"></a> * @return {Array.&lt;Object&gt;} A list of objects that are common to both arrays
+<a name="line229"></a> *     such that there is no common subsequence with size greater than the
+<a name="line230"></a> *     length of the list.
+<a name="line231"></a> */
+<a name="line232"></a>goog.math.longestCommonSubsequence = function(
+<a name="line233"></a>    array1, array2, opt_compareFn, opt_collectorFn) {
+<a name="line234"></a>
+<a name="line235"></a>  var compare = opt_compareFn || function(a, b) {
+<a name="line236"></a>    return a == b;
+<a name="line237"></a>  };
+<a name="line238"></a>
+<a name="line239"></a>  var collect = opt_collectorFn || function(i1, i2) {
+<a name="line240"></a>    return array1[i1];
+<a name="line241"></a>  };
+<a name="line242"></a>
+<a name="line243"></a>  var length1 = array1.length;
+<a name="line244"></a>  var length2 = array2.length;
+<a name="line245"></a>
+<a name="line246"></a>  var arr = [];
+<a name="line247"></a>  for (var i = 0; i &lt; length1 + 1; i++) {
+<a name="line248"></a>    arr[i] = [];
+<a name="line249"></a>    arr[i][0] = 0;
+<a name="line250"></a>  }
+<a name="line251"></a>
+<a name="line252"></a>  for (var j = 0; j &lt; length2 + 1; j++) {
+<a name="line253"></a>    arr[0][j] = 0;
+<a name="line254"></a>  }
+<a name="line255"></a>
+<a name="line256"></a>  for (i = 1; i &lt;= length1; i++) {
+<a name="line257"></a>    for (j = 1; j &lt;= length1; j++) {
+<a name="line258"></a>      if (compare(array1[i - 1], array2[j - 1])) {
+<a name="line259"></a>        arr[i][j] = arr[i - 1][j - 1] + 1;
+<a name="line260"></a>      } else {
+<a name="line261"></a>        arr[i][j] = Math.max(arr[i - 1][j], arr[i][j - 1]);
+<a name="line262"></a>      }
+<a name="line263"></a>    }
+<a name="line264"></a>  }
+<a name="line265"></a>
+<a name="line266"></a>  // Backtracking
+<a name="line267"></a>  var result = [];
+<a name="line268"></a>  var i = length1, j = length2;
+<a name="line269"></a>  while (i &gt; 0 &amp;&amp; j &gt; 0) {
+<a name="line270"></a>    if (compare(array1[i - 1], array2[j - 1])) {
+<a name="line271"></a>      result.unshift(collect(i - 1, j - 1));
+<a name="line272"></a>      i--;
+<a name="line273"></a>      j--;
+<a name="line274"></a>    } else {
+<a name="line275"></a>      if (arr[i - 1][j] &gt; arr[i][j - 1]) {
+<a name="line276"></a>        i--;
+<a name="line277"></a>      } else {
+<a name="line278"></a>        j--;
+<a name="line279"></a>      }
+<a name="line280"></a>    }
+<a name="line281"></a>  }
+<a name="line282"></a>
+<a name="line283"></a>  return result;
+<a name="line284"></a>};
+<a name="line285"></a>
+<a name="line286"></a>
+<a name="line287"></a>/**
+<a name="line288"></a> * Returns the sum of the arguments.
+<a name="line289"></a> * @param {...number} var_args Numbers to add.
+<a name="line290"></a> * @return {number} The sum of the arguments (0 if no arguments were provided,
+<a name="line291"></a> *     {@code NaN} if any of the arguments is not a valid number).
+<a name="line292"></a> */
+<a name="line293"></a>goog.math.sum = function(var_args) {
+<a name="line294"></a>  return /** @type {number} */ (goog.array.reduce(arguments,
+<a name="line295"></a>      function(sum, value) {
+<a name="line296"></a>        return sum + value;
+<a name="line297"></a>      }, 0));
+<a name="line298"></a>};
+<a name="line299"></a>
+<a name="line300"></a>
+<a name="line301"></a>/**
+<a name="line302"></a> * Returns the arithmetic mean of the arguments.
+<a name="line303"></a> * @param {...number} var_args Numbers to average.
+<a name="line304"></a> * @return {number} The average of the arguments ({@code NaN} if no arguments
+<a name="line305"></a> *     were provided or any of the arguments is not a valid number).
+<a name="line306"></a> */
+<a name="line307"></a>goog.math.average = function(var_args) {
+<a name="line308"></a>  return goog.math.sum.apply(null, arguments) / arguments.length;
+<a name="line309"></a>};
+<a name="line310"></a>
+<a name="line311"></a>
+<a name="line312"></a>/**
+<a name="line313"></a> * Returns the sample standard deviation of the arguments.  For a definition of
+<a name="line314"></a> * sample standard deviation, see e.g.
+<a name="line315"></a> * http://en.wikipedia.org/wiki/Standard_deviation
+<a name="line316"></a> * @param {...number} var_args Number samples to analyze.
+<a name="line317"></a> * @return {number} The sample standard deviation of the arguments (0 if fewer
+<a name="line318"></a> *     than two samples were provided, or {@code NaN} if any of the samples is
+<a name="line319"></a> *     not a valid number).
+<a name="line320"></a> */
+<a name="line321"></a>goog.math.standardDeviation = function(var_args) {
+<a name="line322"></a>  var sampleSize = arguments.length;
+<a name="line323"></a>  if (sampleSize &lt; 2) {
+<a name="line324"></a>    return 0;
+<a name="line325"></a>  }
+<a name="line326"></a>
+<a name="line327"></a>  var mean = goog.math.average.apply(null, arguments);
+<a name="line328"></a>  var variance = goog.math.sum.apply(null, goog.array.map(arguments,
+<a name="line329"></a>      function(val) {
+<a name="line330"></a>        return Math.pow(val - mean, 2);
+<a name="line331"></a>      })) / (sampleSize - 1);
+<a name="line332"></a>
+<a name="line333"></a>  return Math.sqrt(variance);
+<a name="line334"></a>};
+<a name="line335"></a>
+<a name="line336"></a>
+<a name="line337"></a>/**
+<a name="line338"></a> * Returns whether the supplied number represents an integer, i.e. that is has
+<a name="line339"></a> * no fractional component.  No range-checking is performed on the number.
+<a name="line340"></a> * @param {number} num The number to test.
+<a name="line341"></a> * @return {boolean} Whether {@code num} is an integer.
+<a name="line342"></a> */
+<a name="line343"></a>goog.math.isInt = function(num) {
+<a name="line344"></a>  return isFinite(num) &amp;&amp; num % 1 == 0;
+<a name="line345"></a>};
+<a name="line346"></a>
+<a name="line347"></a>
+<a name="line348"></a>/**
+<a name="line349"></a> * Returns whether the supplied number is finite and not NaN.
+<a name="line350"></a> * @param {number} num The number to test.
+<a name="line351"></a> * @return {boolean} Whether {@code num} is a finite number.
+<a name="line352"></a> */
+<a name="line353"></a>goog.math.isFiniteNumber = function(num) {
+<a name="line354"></a>  return isFinite(num) &amp;&amp; !isNaN(num);
+<a name="line355"></a>};
+</pre>
+
+
+</body>
+</html>

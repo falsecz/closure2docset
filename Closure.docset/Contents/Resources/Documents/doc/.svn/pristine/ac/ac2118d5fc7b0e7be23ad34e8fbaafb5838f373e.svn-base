@@ -1,0 +1,458 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>browserevent.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_events_browserevent.js.html">browserevent.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2005 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A patched, standardized event object for browser events.
+<a name="line17"></a> *
+<a name="line18"></a> * &lt;pre&gt;
+<a name="line19"></a> * The patched event object contains the following members:
+<a name="line20"></a> * - type           {string}    Event type, e.g. &#39;click&#39;
+<a name="line21"></a> * - timestamp      {Date}      A date object for when the event was fired
+<a name="line22"></a> * - target         {Object}    The element that actually triggered the event
+<a name="line23"></a> * - currentTarget  {Object}    The element the listener is attached to
+<a name="line24"></a> * - relatedTarget  {Object}    For mouseover and mouseout, the previous object
+<a name="line25"></a> * - offsetX        {number}    X-coordinate relative to target
+<a name="line26"></a> * - offsetY        {number}    Y-coordinate relative to target
+<a name="line27"></a> * - clientX        {number}    X-coordinate relative to viewport
+<a name="line28"></a> * - clientY        {number}    Y-coordinate relative to viewport
+<a name="line29"></a> * - screenX        {number}    X-coordinate relative to the edge of the screen
+<a name="line30"></a> * - screenY        {number}    Y-coordinate relative to the edge of the screen
+<a name="line31"></a> * - button         {number}    Mouse button. Use isButton() to test.
+<a name="line32"></a> * - keyCode        {number}    Key-code
+<a name="line33"></a> * - ctrlKey        {boolean}   Was ctrl key depressed
+<a name="line34"></a> * - altKey         {boolean}   Was alt key depressed
+<a name="line35"></a> * - shiftKey       {boolean}   Was shift key depressed
+<a name="line36"></a> * - metaKey        {boolean}   Was meta key depressed
+<a name="line37"></a> * - state          {Object}    History state object
+<a name="line38"></a> *
+<a name="line39"></a> * NOTE: The keyCode member contains the raw browser keyCode. For normalized
+<a name="line40"></a> * key and character code use {@link goog.events.KeyHandler}.
+<a name="line41"></a> * &lt;/pre&gt;
+<a name="line42"></a> *
+<a name="line43"></a> */
+<a name="line44"></a>
+<a name="line45"></a>goog.provide(&#39;goog.events.BrowserEvent&#39;);
+<a name="line46"></a>goog.provide(&#39;goog.events.BrowserEvent.MouseButton&#39;);
+<a name="line47"></a>
+<a name="line48"></a>goog.require(&#39;goog.events.BrowserFeature&#39;);
+<a name="line49"></a>goog.require(&#39;goog.events.Event&#39;);
+<a name="line50"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line51"></a>goog.require(&#39;goog.reflect&#39;);
+<a name="line52"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line53"></a>
+<a name="line54"></a>
+<a name="line55"></a>
+<a name="line56"></a>/**
+<a name="line57"></a> * Accepts a browser event object and creates a patched, cross browser event
+<a name="line58"></a> * object.
+<a name="line59"></a> * The content of this object will not be initialized if no event object is
+<a name="line60"></a> * provided. If this is the case, init() needs to be invoked separately.
+<a name="line61"></a> * @param {Event=} opt_e Browser event object.
+<a name="line62"></a> * @param {Node=} opt_currentTarget Current target for event.
+<a name="line63"></a> * @constructor
+<a name="line64"></a> * @extends {goog.events.Event}
+<a name="line65"></a> */
+<a name="line66"></a>goog.events.BrowserEvent = function(opt_e, opt_currentTarget) {
+<a name="line67"></a>  if (opt_e) {
+<a name="line68"></a>    this.init(opt_e, opt_currentTarget);
+<a name="line69"></a>  }
+<a name="line70"></a>};
+<a name="line71"></a>goog.inherits(goog.events.BrowserEvent, goog.events.Event);
+<a name="line72"></a>
+<a name="line73"></a>
+<a name="line74"></a>/**
+<a name="line75"></a> * Normalized button constants for the mouse.
+<a name="line76"></a> * @enum {number}
+<a name="line77"></a> */
+<a name="line78"></a>goog.events.BrowserEvent.MouseButton = {
+<a name="line79"></a>  LEFT: 0,
+<a name="line80"></a>  MIDDLE: 1,
+<a name="line81"></a>  RIGHT: 2
+<a name="line82"></a>};
+<a name="line83"></a>
+<a name="line84"></a>
+<a name="line85"></a>/**
+<a name="line86"></a> * Static data for mapping mouse buttons.
+<a name="line87"></a> * @type {Array.&lt;number&gt;}
+<a name="line88"></a> */
+<a name="line89"></a>goog.events.BrowserEvent.IEButtonMap = [
+<a name="line90"></a>  1, // LEFT
+<a name="line91"></a>  4, // MIDDLE
+<a name="line92"></a>  2  // RIGHT
+<a name="line93"></a>];
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * Target that fired the event.
+<a name="line98"></a> * @override
+<a name="line99"></a> * @type {Node}
+<a name="line100"></a> */
+<a name="line101"></a>goog.events.BrowserEvent.prototype.target = null;
+<a name="line102"></a>
+<a name="line103"></a>
+<a name="line104"></a>/**
+<a name="line105"></a> * Node that had the listener attached.
+<a name="line106"></a> * @override
+<a name="line107"></a> * @type {Node|undefined}
+<a name="line108"></a> */
+<a name="line109"></a>goog.events.BrowserEvent.prototype.currentTarget;
+<a name="line110"></a>
+<a name="line111"></a>
+<a name="line112"></a>/**
+<a name="line113"></a> * For mouseover and mouseout events, the related object for the event.
+<a name="line114"></a> * @type {Node}
+<a name="line115"></a> */
+<a name="line116"></a>goog.events.BrowserEvent.prototype.relatedTarget = null;
+<a name="line117"></a>
+<a name="line118"></a>
+<a name="line119"></a>/**
+<a name="line120"></a> * X-coordinate relative to target.
+<a name="line121"></a> * @type {number}
+<a name="line122"></a> */
+<a name="line123"></a>goog.events.BrowserEvent.prototype.offsetX = 0;
+<a name="line124"></a>
+<a name="line125"></a>
+<a name="line126"></a>/**
+<a name="line127"></a> * Y-coordinate relative to target.
+<a name="line128"></a> * @type {number}
+<a name="line129"></a> */
+<a name="line130"></a>goog.events.BrowserEvent.prototype.offsetY = 0;
+<a name="line131"></a>
+<a name="line132"></a>
+<a name="line133"></a>/**
+<a name="line134"></a> * X-coordinate relative to the window.
+<a name="line135"></a> * @type {number}
+<a name="line136"></a> */
+<a name="line137"></a>goog.events.BrowserEvent.prototype.clientX = 0;
+<a name="line138"></a>
+<a name="line139"></a>
+<a name="line140"></a>/**
+<a name="line141"></a> * Y-coordinate relative to the window.
+<a name="line142"></a> * @type {number}
+<a name="line143"></a> */
+<a name="line144"></a>goog.events.BrowserEvent.prototype.clientY = 0;
+<a name="line145"></a>
+<a name="line146"></a>
+<a name="line147"></a>/**
+<a name="line148"></a> * X-coordinate relative to the monitor.
+<a name="line149"></a> * @type {number}
+<a name="line150"></a> */
+<a name="line151"></a>goog.events.BrowserEvent.prototype.screenX = 0;
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * Y-coordinate relative to the monitor.
+<a name="line156"></a> * @type {number}
+<a name="line157"></a> */
+<a name="line158"></a>goog.events.BrowserEvent.prototype.screenY = 0;
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/**
+<a name="line162"></a> * Which mouse button was pressed.
+<a name="line163"></a> * @type {number}
+<a name="line164"></a> */
+<a name="line165"></a>goog.events.BrowserEvent.prototype.button = 0;
+<a name="line166"></a>
+<a name="line167"></a>
+<a name="line168"></a>/**
+<a name="line169"></a> * Keycode of key press.
+<a name="line170"></a> * @type {number}
+<a name="line171"></a> */
+<a name="line172"></a>goog.events.BrowserEvent.prototype.keyCode = 0;
+<a name="line173"></a>
+<a name="line174"></a>
+<a name="line175"></a>/**
+<a name="line176"></a> * Keycode of key press.
+<a name="line177"></a> * @type {number}
+<a name="line178"></a> */
+<a name="line179"></a>goog.events.BrowserEvent.prototype.charCode = 0;
+<a name="line180"></a>
+<a name="line181"></a>
+<a name="line182"></a>/**
+<a name="line183"></a> * Whether control was pressed at time of event.
+<a name="line184"></a> * @type {boolean}
+<a name="line185"></a> */
+<a name="line186"></a>goog.events.BrowserEvent.prototype.ctrlKey = false;
+<a name="line187"></a>
+<a name="line188"></a>
+<a name="line189"></a>/**
+<a name="line190"></a> * Whether alt was pressed at time of event.
+<a name="line191"></a> * @type {boolean}
+<a name="line192"></a> */
+<a name="line193"></a>goog.events.BrowserEvent.prototype.altKey = false;
+<a name="line194"></a>
+<a name="line195"></a>
+<a name="line196"></a>/**
+<a name="line197"></a> * Whether shift was pressed at time of event.
+<a name="line198"></a> * @type {boolean}
+<a name="line199"></a> */
+<a name="line200"></a>goog.events.BrowserEvent.prototype.shiftKey = false;
+<a name="line201"></a>
+<a name="line202"></a>
+<a name="line203"></a>/**
+<a name="line204"></a> * Whether the meta key was pressed at time of event.
+<a name="line205"></a> * @type {boolean}
+<a name="line206"></a> */
+<a name="line207"></a>goog.events.BrowserEvent.prototype.metaKey = false;
+<a name="line208"></a>
+<a name="line209"></a>
+<a name="line210"></a>/**
+<a name="line211"></a> * History state object, only set for PopState events where it&#39;s a copy of the
+<a name="line212"></a> * state object provided to pushState or replaceState.
+<a name="line213"></a> * @type {Object}
+<a name="line214"></a> */
+<a name="line215"></a>goog.events.BrowserEvent.prototype.state;
+<a name="line216"></a>
+<a name="line217"></a>
+<a name="line218"></a>/**
+<a name="line219"></a> * Whether the default platform modifier key was pressed at time of event.
+<a name="line220"></a> * (This is control for all platforms except Mac, where it&#39;s Meta.
+<a name="line221"></a> * @type {boolean}
+<a name="line222"></a> */
+<a name="line223"></a>goog.events.BrowserEvent.prototype.platformModifierKey = false;
+<a name="line224"></a>
+<a name="line225"></a>
+<a name="line226"></a>/**
+<a name="line227"></a> * The browser event object.
+<a name="line228"></a> * @type {Event}
+<a name="line229"></a> * @private
+<a name="line230"></a> */
+<a name="line231"></a>goog.events.BrowserEvent.prototype.event_ = null;
+<a name="line232"></a>
+<a name="line233"></a>
+<a name="line234"></a>/**
+<a name="line235"></a> * Accepts a browser event object and creates a patched, cross browser event
+<a name="line236"></a> * object.
+<a name="line237"></a> * @param {Event} e Browser event object.
+<a name="line238"></a> * @param {Node=} opt_currentTarget Current target for event.
+<a name="line239"></a> */
+<a name="line240"></a>goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
+<a name="line241"></a>  var type = this.type = e.type;
+<a name="line242"></a>  goog.events.Event.call(this, type);
+<a name="line243"></a>
+<a name="line244"></a>  // TODO(nicksantos): Change this.target to type EventTarget.
+<a name="line245"></a>  this.target = /** @type {Node} */ (e.target) || e.srcElement;
+<a name="line246"></a>
+<a name="line247"></a>  this.currentTarget = opt_currentTarget;
+<a name="line248"></a>
+<a name="line249"></a>  var relatedTarget = /** @type {Node} */ (e.relatedTarget);
+<a name="line250"></a>  if (relatedTarget) {
+<a name="line251"></a>    // There&#39;s a bug in FireFox where sometimes, relatedTarget will be a
+<a name="line252"></a>    // chrome element, and accessing any property of it will get a permission
+<a name="line253"></a>    // denied exception. See:
+<a name="line254"></a>    // https://bugzilla.mozilla.org/show_bug.cgi?id=497780
+<a name="line255"></a>    if (goog.userAgent.GECKO) {
+<a name="line256"></a>      if (!goog.reflect.canAccessProperty(relatedTarget, &#39;nodeName&#39;)) {
+<a name="line257"></a>        relatedTarget = null;
+<a name="line258"></a>      }
+<a name="line259"></a>    }
+<a name="line260"></a>    // TODO(user): Use goog.events.EventType when it has been refactored into its
+<a name="line261"></a>    // own file.
+<a name="line262"></a>  } else if (type == goog.events.EventType.MOUSEOVER) {
+<a name="line263"></a>    relatedTarget = e.fromElement;
+<a name="line264"></a>  } else if (type == goog.events.EventType.MOUSEOUT) {
+<a name="line265"></a>    relatedTarget = e.toElement;
+<a name="line266"></a>  }
+<a name="line267"></a>
+<a name="line268"></a>  this.relatedTarget = relatedTarget;
+<a name="line269"></a>
+<a name="line270"></a>  this.offsetX = e.offsetX !== undefined ? e.offsetX : e.layerX;
+<a name="line271"></a>  this.offsetY = e.offsetY !== undefined ? e.offsetY : e.layerY;
+<a name="line272"></a>  this.clientX = e.clientX !== undefined ? e.clientX : e.pageX;
+<a name="line273"></a>  this.clientY = e.clientY !== undefined ? e.clientY : e.pageY;
+<a name="line274"></a>  this.screenX = e.screenX || 0;
+<a name="line275"></a>  this.screenY = e.screenY || 0;
+<a name="line276"></a>
+<a name="line277"></a>  this.button = e.button;
+<a name="line278"></a>
+<a name="line279"></a>  this.keyCode = e.keyCode || 0;
+<a name="line280"></a>  this.charCode = e.charCode || (type == &#39;keypress&#39; ? e.keyCode : 0);
+<a name="line281"></a>  this.ctrlKey = e.ctrlKey;
+<a name="line282"></a>  this.altKey = e.altKey;
+<a name="line283"></a>  this.shiftKey = e.shiftKey;
+<a name="line284"></a>  this.metaKey = e.metaKey;
+<a name="line285"></a>  this.platformModifierKey = goog.userAgent.MAC ? e.metaKey : e.ctrlKey;
+<a name="line286"></a>  this.state = e.state;
+<a name="line287"></a>  this.event_ = e;
+<a name="line288"></a>  delete this.returnValue_;
+<a name="line289"></a>  delete this.propagationStopped_;
+<a name="line290"></a>};
+<a name="line291"></a>
+<a name="line292"></a>
+<a name="line293"></a>/**
+<a name="line294"></a> * Tests to see which button was pressed during the event. This is really only
+<a name="line295"></a> * useful in IE and Gecko browsers. And in IE, it&#39;s only useful for
+<a name="line296"></a> * mousedown/mouseup events, because click only fires for the left mouse button.
+<a name="line297"></a> *
+<a name="line298"></a> * Safari 2 only reports the left button being clicked, and uses the value &#39;1&#39;
+<a name="line299"></a> * instead of 0. Opera only reports a mousedown event for the middle button, and
+<a name="line300"></a> * no mouse events for the right button. Opera has default behavior for left and
+<a name="line301"></a> * middle click that can only be overridden via a configuration setting.
+<a name="line302"></a> *
+<a name="line303"></a> * There&#39;s a nice table of this mess at http://www.unixpapa.com/js/mouse.html.
+<a name="line304"></a> *
+<a name="line305"></a> * @param {goog.events.BrowserEvent.MouseButton} button The button
+<a name="line306"></a> *     to test for.
+<a name="line307"></a> * @return {boolean} True if button was pressed.
+<a name="line308"></a> */
+<a name="line309"></a>goog.events.BrowserEvent.prototype.isButton = function(button) {
+<a name="line310"></a>  if (!goog.events.BrowserFeature.HAS_W3C_BUTTON) {
+<a name="line311"></a>    if (this.type == &#39;click&#39;) {
+<a name="line312"></a>      return button == goog.events.BrowserEvent.MouseButton.LEFT;
+<a name="line313"></a>    } else {
+<a name="line314"></a>      return !!(this.event_.button &amp;
+<a name="line315"></a>          goog.events.BrowserEvent.IEButtonMap[button]);
+<a name="line316"></a>    }
+<a name="line317"></a>  } else {
+<a name="line318"></a>    return this.event_.button == button;
+<a name="line319"></a>  }
+<a name="line320"></a>};
+<a name="line321"></a>
+<a name="line322"></a>
+<a name="line323"></a>/**
+<a name="line324"></a> * Whether this has an &quot;action&quot;-producing mouse button.
+<a name="line325"></a> *
+<a name="line326"></a> * By definition, this includes left-click on windows/linux, and left-click
+<a name="line327"></a> * without the ctrl key on Macs.
+<a name="line328"></a> *
+<a name="line329"></a> * @return {boolean} The result.
+<a name="line330"></a> */
+<a name="line331"></a>goog.events.BrowserEvent.prototype.isMouseActionButton = function() {
+<a name="line332"></a>  // Webkit does not ctrl+click to be a right-click, so we
+<a name="line333"></a>  // normalize it to behave like Gecko and Opera.
+<a name="line334"></a>  return this.isButton(goog.events.BrowserEvent.MouseButton.LEFT) &amp;&amp;
+<a name="line335"></a>      !(goog.userAgent.WEBKIT &amp;&amp; goog.userAgent.MAC &amp;&amp; this.ctrlKey);
+<a name="line336"></a>};
+<a name="line337"></a>
+<a name="line338"></a>
+<a name="line339"></a>/**
+<a name="line340"></a> * @override
+<a name="line341"></a> */
+<a name="line342"></a>goog.events.BrowserEvent.prototype.stopPropagation = function() {
+<a name="line343"></a>  goog.events.BrowserEvent.superClass_.stopPropagation.call(this);
+<a name="line344"></a>  if (this.event_.stopPropagation) {
+<a name="line345"></a>    this.event_.stopPropagation();
+<a name="line346"></a>  } else {
+<a name="line347"></a>    this.event_.cancelBubble = true;
+<a name="line348"></a>  }
+<a name="line349"></a>};
+<a name="line350"></a>
+<a name="line351"></a>
+<a name="line352"></a>/**
+<a name="line353"></a> * @override
+<a name="line354"></a> */
+<a name="line355"></a>goog.events.BrowserEvent.prototype.preventDefault = function() {
+<a name="line356"></a>  goog.events.BrowserEvent.superClass_.preventDefault.call(this);
+<a name="line357"></a>  var be = this.event_;
+<a name="line358"></a>  if (!be.preventDefault) {
+<a name="line359"></a>    be.returnValue = false;
+<a name="line360"></a>    if (goog.events.BrowserFeature.SET_KEY_CODE_TO_PREVENT_DEFAULT) {
+<a name="line361"></a>      /** @preserveTry */
+<a name="line362"></a>      try {
+<a name="line363"></a>        // Most keys can be prevented using returnValue. Some special keys
+<a name="line364"></a>        // require setting the keyCode to -1 as well:
+<a name="line365"></a>        //
+<a name="line366"></a>        // In IE7:
+<a name="line367"></a>        // F3, F5, F10, F11, Ctrl+P, Crtl+O, Ctrl+F (these are taken from IE6)
+<a name="line368"></a>        //
+<a name="line369"></a>        // In IE8:
+<a name="line370"></a>        // Ctrl+P, Crtl+O, Ctrl+F (F1-F12 cannot be stopped through the event)
+<a name="line371"></a>        //
+<a name="line372"></a>        // We therefore do this for all function keys as well as when Ctrl key
+<a name="line373"></a>        // is pressed.
+<a name="line374"></a>        var VK_F1 = 112;
+<a name="line375"></a>        var VK_F12 = 123;
+<a name="line376"></a>        if (be.ctrlKey || be.keyCode &gt;= VK_F1 &amp;&amp; be.keyCode &lt;= VK_F12) {
+<a name="line377"></a>          be.keyCode = -1;
+<a name="line378"></a>        }
+<a name="line379"></a>      } catch (ex) {
+<a name="line380"></a>        // IE throws an &#39;access denied&#39; exception when trying to change
+<a name="line381"></a>        // keyCode in some situations (e.g. srcElement is input[type=file],
+<a name="line382"></a>        // or srcElement is an anchor tag rewritten by parent&#39;s innerHTML).
+<a name="line383"></a>        // Do nothing in this case.
+<a name="line384"></a>      }
+<a name="line385"></a>    }
+<a name="line386"></a>  } else {
+<a name="line387"></a>    be.preventDefault();
+<a name="line388"></a>  }
+<a name="line389"></a>};
+<a name="line390"></a>
+<a name="line391"></a>
+<a name="line392"></a>/**
+<a name="line393"></a> * @return {Event} The underlying browser event object.
+<a name="line394"></a> */
+<a name="line395"></a>goog.events.BrowserEvent.prototype.getBrowserEvent = function() {
+<a name="line396"></a>  return this.event_;
+<a name="line397"></a>};
+<a name="line398"></a>
+<a name="line399"></a>
+<a name="line400"></a>/** @override */
+<a name="line401"></a>goog.events.BrowserEvent.prototype.disposeInternal = function() {
+<a name="line402"></a>  goog.events.BrowserEvent.superClass_.disposeInternal.call(this);
+<a name="line403"></a>  this.event_ = null;
+<a name="line404"></a>  this.target = null;
+<a name="line405"></a>  this.currentTarget = null;
+<a name="line406"></a>  this.relatedTarget = null;
+<a name="line407"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>vec3.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_vec_vec3.js.html">vec3.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>
+<a name="line16"></a>/**
+<a name="line17"></a> * @fileoverview Supplies 3 element vectors that are compatible with WebGL.
+<a name="line18"></a> * Each element is a float32 since that is typically the desired size of a
+<a name="line19"></a> * 3-vector in the GPU.  The API is structured to avoid unnecessary memory
+<a name="line20"></a> * allocations.  The last parameter will typically be the output vector and
+<a name="line21"></a> * an object can be both an input and output parameter to all methods except
+<a name="line22"></a> * where noted.
+<a name="line23"></a> *
+<a name="line24"></a> */
+<a name="line25"></a>goog.provide(&#39;goog.vec.Vec3&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.vec&#39;);
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>/**
+<a name="line31"></a> * Type used when an argument can be either an array of numbers or a
+<a name="line32"></a> * typed float32 array. This allows using the class on normal js arrays too.
+<a name="line33"></a> * E.g. the following code is perfectly valid:
+<a name="line34"></a> * &lt;pre&gt;
+<a name="line35"></a> * var vecA = [1, 2, 3];
+<a name="line36"></a> * var vecB = goog.vec.Vec3.createFromArray([0, 1 ,2]);
+<a name="line37"></a> * goog.vec.Vec3.subtract(vecA, vecB, vecA);
+<a name="line38"></a> * &lt;/pre&gt;
+<a name="line39"></a> * Note that vecA is a double precision vector (doubles), while vecB is a
+<a name="line40"></a> * single precision vector (floats).
+<a name="line41"></a> * @typedef {goog.vec.ArrayType}
+<a name="line42"></a> */
+<a name="line43"></a>goog.vec.Vec3.Vec3Like;
+<a name="line44"></a>
+<a name="line45"></a>
+<a name="line46"></a>/**
+<a name="line47"></a> * @typedef {Float32Array}
+<a name="line48"></a> */
+<a name="line49"></a>goog.vec.Vec3.Type;
+<a name="line50"></a>
+<a name="line51"></a>
+<a name="line52"></a>/**
+<a name="line53"></a> * Creates a 3 element vector of Float32Array. The array is initialized to zero.
+<a name="line54"></a> *
+<a name="line55"></a> * @return {!goog.vec.Vec3.Type} The new 3 element array.
+<a name="line56"></a> */
+<a name="line57"></a>goog.vec.Vec3.create = function() {
+<a name="line58"></a>  return new Float32Array(3);
+<a name="line59"></a>};
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Creates a new 3 element vector initialized with the value from the given
+<a name="line64"></a> * array.
+<a name="line65"></a> *
+<a name="line66"></a> * @param {goog.vec.Vec3.Vec3Like} vec The source 3 element array.
+<a name="line67"></a> * @return {!goog.vec.Vec3.Type} The new 3 element array.
+<a name="line68"></a> */
+<a name="line69"></a>goog.vec.Vec3.createFromArray = function(vec) {
+<a name="line70"></a>  var newVec = goog.vec.Vec3.create();
+<a name="line71"></a>  goog.vec.Vec3.setFromArray(newVec, vec);
+<a name="line72"></a>  return newVec;
+<a name="line73"></a>};
+<a name="line74"></a>
+<a name="line75"></a>
+<a name="line76"></a>/**
+<a name="line77"></a> * Creates a new 3 element vector initialized with the supplied values.
+<a name="line78"></a> *
+<a name="line79"></a> * @param {number} v0 The value for element at index 0.
+<a name="line80"></a> * @param {number} v1 The value for element at index 1.
+<a name="line81"></a> * @param {number} v2 The value for element at index 2.
+<a name="line82"></a> * @return {!goog.vec.Vec3.Type} The new vector.
+<a name="line83"></a> */
+<a name="line84"></a>goog.vec.Vec3.createFromValues = function(v0, v1, v2) {
+<a name="line85"></a>  var vec = goog.vec.Vec3.create();
+<a name="line86"></a>  goog.vec.Vec3.setFromValues(vec, v0, v1, v2);
+<a name="line87"></a>  return vec;
+<a name="line88"></a>};
+<a name="line89"></a>
+<a name="line90"></a>
+<a name="line91"></a>/**
+<a name="line92"></a> * Creates a clone of the given 3 element vector.
+<a name="line93"></a> *
+<a name="line94"></a> * @param {goog.vec.Vec3.Vec3Like} vec The source 3 element vector.
+<a name="line95"></a> * @return {!goog.vec.Vec3.Type} The new cloned vector.
+<a name="line96"></a> */
+<a name="line97"></a>goog.vec.Vec3.clone = goog.vec.Vec3.createFromArray;
+<a name="line98"></a>
+<a name="line99"></a>
+<a name="line100"></a>/**
+<a name="line101"></a> * Initializes the vector with the given values.
+<a name="line102"></a> *
+<a name="line103"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector to receive the values.
+<a name="line104"></a> * @param {number} v0 The value for element at index 0.
+<a name="line105"></a> * @param {number} v1 The value for element at index 1.
+<a name="line106"></a> * @param {number} v2 The value for element at index 2.
+<a name="line107"></a> */
+<a name="line108"></a>goog.vec.Vec3.setFromValues = function(vec, v0, v1, v2) {
+<a name="line109"></a>  vec[0] = v0;
+<a name="line110"></a>  vec[1] = v1;
+<a name="line111"></a>  vec[2] = v2;
+<a name="line112"></a>};
+<a name="line113"></a>
+<a name="line114"></a>
+<a name="line115"></a>/**
+<a name="line116"></a> * Initializes the vector with the given array of values.
+<a name="line117"></a> *
+<a name="line118"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector to receive the
+<a name="line119"></a> *     values.
+<a name="line120"></a> * @param {goog.vec.Vec3.Vec3Like} values The array of values.
+<a name="line121"></a> */
+<a name="line122"></a>goog.vec.Vec3.setFromArray = function(vec, values) {
+<a name="line123"></a>  vec[0] = values[0];
+<a name="line124"></a>  vec[1] = values[1];
+<a name="line125"></a>  vec[2] = values[2];
+<a name="line126"></a>};
+<a name="line127"></a>
+<a name="line128"></a>
+<a name="line129"></a>/**
+<a name="line130"></a> * Performs a component-wise addition of vec0 and vec1 together storing the
+<a name="line131"></a> * result into resultVec.
+<a name="line132"></a> *
+<a name="line133"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The first addend.
+<a name="line134"></a> * @param {goog.vec.Vec3.Vec3Like} vec1 The second addend.
+<a name="line135"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to
+<a name="line136"></a> *     receive the result. May be vec0 or vec1.
+<a name="line137"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line138"></a> *     chained together.
+<a name="line139"></a> */
+<a name="line140"></a>goog.vec.Vec3.add = function(vec0, vec1, resultVec) {
+<a name="line141"></a>  resultVec[0] = vec0[0] + vec1[0];
+<a name="line142"></a>  resultVec[1] = vec0[1] + vec1[1];
+<a name="line143"></a>  resultVec[2] = vec0[2] + vec1[2];
+<a name="line144"></a>  return resultVec;
+<a name="line145"></a>};
+<a name="line146"></a>
+<a name="line147"></a>
+<a name="line148"></a>/**
+<a name="line149"></a> * Performs a component-wise subtraction of vec1 from vec0 storing the
+<a name="line150"></a> * result into resultVec.
+<a name="line151"></a> *
+<a name="line152"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The minuend.
+<a name="line153"></a> * @param {goog.vec.Vec3.Vec3Like} vec1 The subtrahend.
+<a name="line154"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to
+<a name="line155"></a> *     receive the result. May be vec0 or vec1.
+<a name="line156"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line157"></a> *     chained together.
+<a name="line158"></a> */
+<a name="line159"></a>goog.vec.Vec3.subtract = function(vec0, vec1, resultVec) {
+<a name="line160"></a>  resultVec[0] = vec0[0] - vec1[0];
+<a name="line161"></a>  resultVec[1] = vec0[1] - vec1[1];
+<a name="line162"></a>  resultVec[2] = vec0[2] - vec1[2];
+<a name="line163"></a>  return resultVec;
+<a name="line164"></a>};
+<a name="line165"></a>
+<a name="line166"></a>
+<a name="line167"></a>/**
+<a name="line168"></a> * Negates vec0, storing the result into resultVec.
+<a name="line169"></a> *
+<a name="line170"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The vector to negate.
+<a name="line171"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to
+<a name="line172"></a> *     receive the result. May be vec0.
+<a name="line173"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line174"></a> *     chained together.
+<a name="line175"></a> */
+<a name="line176"></a>goog.vec.Vec3.negate = function(vec0, resultVec) {
+<a name="line177"></a>  resultVec[0] = -vec0[0];
+<a name="line178"></a>  resultVec[1] = -vec0[1];
+<a name="line179"></a>  resultVec[2] = -vec0[2];
+<a name="line180"></a>  return resultVec;
+<a name="line181"></a>};
+<a name="line182"></a>
+<a name="line183"></a>
+<a name="line184"></a>/**
+<a name="line185"></a> * Multiplies each component of vec0 with scalar storing the product into
+<a name="line186"></a> * resultVec.
+<a name="line187"></a> *
+<a name="line188"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The source vector.
+<a name="line189"></a> * @param {number} scalar The value to multiply with each component of vec0.
+<a name="line190"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to
+<a name="line191"></a> *     receive the result. May be vec0.
+<a name="line192"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line193"></a> *     chained together.
+<a name="line194"></a> */
+<a name="line195"></a>goog.vec.Vec3.scale = function(vec0, scalar, resultVec) {
+<a name="line196"></a>  resultVec[0] = vec0[0] * scalar;
+<a name="line197"></a>  resultVec[1] = vec0[1] * scalar;
+<a name="line198"></a>  resultVec[2] = vec0[2] * scalar;
+<a name="line199"></a>  return resultVec;
+<a name="line200"></a>};
+<a name="line201"></a>
+<a name="line202"></a>
+<a name="line203"></a>/**
+<a name="line204"></a> * Returns the magnitudeSquared of the given vector.
+<a name="line205"></a> *
+<a name="line206"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The vector.
+<a name="line207"></a> * @return {number} The magnitude of the vector.
+<a name="line208"></a> */
+<a name="line209"></a>goog.vec.Vec3.magnitudeSquared = function(vec0) {
+<a name="line210"></a>  var x = vec0[0], y = vec0[1], z = vec0[2];
+<a name="line211"></a>  return x * x + y * y + z * z;
+<a name="line212"></a>};
+<a name="line213"></a>
+<a name="line214"></a>
+<a name="line215"></a>/**
+<a name="line216"></a> * Returns the magnitude of the given vector.
+<a name="line217"></a> *
+<a name="line218"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The vector.
+<a name="line219"></a> * @return {number} The magnitude of the vector.
+<a name="line220"></a> */
+<a name="line221"></a>goog.vec.Vec3.magnitude = function(vec0) {
+<a name="line222"></a>  var x = vec0[0], y = vec0[1], z = vec0[2];
+<a name="line223"></a>  return Math.sqrt(x * x + y * y + z * z);
+<a name="line224"></a>};
+<a name="line225"></a>
+<a name="line226"></a>
+<a name="line227"></a>/**
+<a name="line228"></a> * Normalizes the given vector storing the result into resultVec.
+<a name="line229"></a> *
+<a name="line230"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The vector to normalize.
+<a name="line231"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to
+<a name="line232"></a> *     receive the result. May be vec0.
+<a name="line233"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line234"></a> *     chained together.
+<a name="line235"></a> */
+<a name="line236"></a>goog.vec.Vec3.normalize = function(vec0, resultVec) {
+<a name="line237"></a>  var ilen = 1 / goog.vec.Vec3.magnitude(vec0);
+<a name="line238"></a>  resultVec[0] = vec0[0] * ilen;
+<a name="line239"></a>  resultVec[1] = vec0[1] * ilen;
+<a name="line240"></a>  resultVec[2] = vec0[2] * ilen;
+<a name="line241"></a>  return resultVec;
+<a name="line242"></a>};
+<a name="line243"></a>
+<a name="line244"></a>
+<a name="line245"></a>/**
+<a name="line246"></a> * Returns the scalar product of vectors v0 and v1.
+<a name="line247"></a> *
+<a name="line248"></a> * @param {goog.vec.Vec3.Vec3Like} v0 The first vector.
+<a name="line249"></a> * @param {goog.vec.Vec3.Vec3Like} v1 The second vector.
+<a name="line250"></a> * @return {number} The scalar product.
+<a name="line251"></a> */
+<a name="line252"></a>goog.vec.Vec3.dot = function(v0, v1) {
+<a name="line253"></a>  return v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2];
+<a name="line254"></a>};
+<a name="line255"></a>
+<a name="line256"></a>
+<a name="line257"></a>/**
+<a name="line258"></a> * Computes the vector (cross) product of v0 and v1 storing the result into
+<a name="line259"></a> * resultVec.
+<a name="line260"></a> *
+<a name="line261"></a> * @param {goog.vec.Vec3.Vec3Like} v0 The first vector.
+<a name="line262"></a> * @param {goog.vec.Vec3.Vec3Like} v1 The second vector.
+<a name="line263"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to receive the
+<a name="line264"></a> *     results. May be either v0 or v1.
+<a name="line265"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line266"></a> *     chained together.
+<a name="line267"></a> */
+<a name="line268"></a>goog.vec.Vec3.cross = function(v0, v1, resultVec) {
+<a name="line269"></a>  var x0 = v0[0], y0 = v0[1], z0 = v0[2];
+<a name="line270"></a>  var x1 = v1[0], y1 = v1[1], z1 = v1[2];
+<a name="line271"></a>  resultVec[0] = y0 * z1 - z0 * y1;
+<a name="line272"></a>  resultVec[1] = z0 * x1 - x0 * z1;
+<a name="line273"></a>  resultVec[2] = x0 * y1 - y0 * x1;
+<a name="line274"></a>  return resultVec;
+<a name="line275"></a>};
+<a name="line276"></a>
+<a name="line277"></a>
+<a name="line278"></a>/**
+<a name="line279"></a> * Linearly interpolate from v0 to v1 according to f. The value of f should be
+<a name="line280"></a> * in the range [0..1] otherwise the results are undefined.
+<a name="line281"></a> *
+<a name="line282"></a> * @param {goog.vec.Vec3.Vec3Like} v0 The first vector.
+<a name="line283"></a> * @param {goog.vec.Vec3.Vec3Like} v1 The second vector.
+<a name="line284"></a> * @param {number} f The interpolation factor.
+<a name="line285"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to receive the
+<a name="line286"></a> *     results (may be v0 or v1).
+<a name="line287"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line288"></a> *     chained together.
+<a name="line289"></a> */
+<a name="line290"></a>goog.vec.Vec3.lerp = function(v0, v1, f, resultVec) {
+<a name="line291"></a>  var x = v0[0], y = v0[1], z = v0[2];
+<a name="line292"></a>  resultVec[0] = (v1[0] - x) * f + x;
+<a name="line293"></a>  resultVec[1] = (v1[1] - y) * f + y;
+<a name="line294"></a>  resultVec[2] = (v1[2] - z) * f + z;
+<a name="line295"></a>  return resultVec;
+<a name="line296"></a>};
+<a name="line297"></a>
+<a name="line298"></a>
+<a name="line299"></a>/**
+<a name="line300"></a> * Returns true if the components of v0 are equal to the components of v1.
+<a name="line301"></a> *
+<a name="line302"></a> * @param {goog.vec.Vec3.Vec3Like} v0 The first vector.
+<a name="line303"></a> * @param {goog.vec.Vec3.Vec3Like} v1 The second vector.
+<a name="line304"></a> * @return {boolean} True if the vectors are equal, false otherwise.
+<a name="line305"></a> */
+<a name="line306"></a>goog.vec.Vec3.equals = function(v0, v1) {
+<a name="line307"></a>  return v0.length == v1.length &amp;&amp;
+<a name="line308"></a>      v0[0] == v1[0] &amp;&amp; v0[1] == v1[1] &amp;&amp; v0[2] == v1[2];
+<a name="line309"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>eventtarget.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_events_eventtarget.js.html">eventtarget.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2005 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Implementation of EventTarget as defined by W3C DOM 2/3.
+<a name="line17"></a> *
+<a name="line18"></a> * @see ../demos/eventtarget.html
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>
+<a name="line22"></a>/**
+<a name="line23"></a> * Namespace for events
+<a name="line24"></a> */
+<a name="line25"></a>goog.provide(&#39;goog.events.EventTarget&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events&#39;);
+<a name="line29"></a>
+<a name="line30"></a>
+<a name="line31"></a>
+<a name="line32"></a>/**
+<a name="line33"></a> * Inherit from this class to give your object the ability to dispatch events.
+<a name="line34"></a> * Note that this class provides event &lt;em&gt;sending&lt;/em&gt; behaviour, not event
+<a name="line35"></a> * receiving behaviour: your object will be able to broadcast events, and other
+<a name="line36"></a> * objects will be able to listen for those events using goog.events.listen().
+<a name="line37"></a> *
+<a name="line38"></a> * &lt;p&gt;The name &quot;EventTarget&quot; reflects the fact that this class implements the
+<a name="line39"></a> * &lt;a href=&quot;http://www.w3.org/TR/DOM-Level-2-Events/events.html&quot;&gt;
+<a name="line40"></a> * EventTarget interface&lt;/a&gt; as defined by W3C DOM 2/3, with a few differences:
+<a name="line41"></a> * &lt;ul&gt;
+<a name="line42"></a> * &lt;li&gt;Event objects do not have to implement the Event interface. An object
+<a name="line43"></a> *     is treated as an event object if it has a &#39;type&#39; property.
+<a name="line44"></a> * &lt;li&gt;You can use a plain string instead of an event object; an event-like
+<a name="line45"></a> *     object will be created with the &#39;type&#39; set to the string value.
+<a name="line46"></a> * &lt;/ul&gt;
+<a name="line47"></a> *
+<a name="line48"></a> * &lt;p&gt;Unless propagation is stopped, an event dispatched by an EventTarget
+<a name="line49"></a> * will bubble to the parent returned by &lt;code&gt;getParentEventTarget&lt;/code&gt;.
+<a name="line50"></a> * To set the parent, call &lt;code&gt;setParentEventTarget&lt;/code&gt; or override
+<a name="line51"></a> * &lt;code&gt;getParentEventTarget&lt;/code&gt; in a subclass.  Subclasses that don&#39;t
+<a name="line52"></a> * support changing the parent should override the setter to throw an error.
+<a name="line53"></a> *
+<a name="line54"></a> * &lt;p&gt;Example usage:
+<a name="line55"></a> * &lt;pre&gt;
+<a name="line56"></a> *   var source = new goog.events.EventTarget();
+<a name="line57"></a> *   function handleEvent(event) {
+<a name="line58"></a> *     alert(&#39;Type: &#39; + e.type + &#39;\nTarget: &#39; + e.target);
+<a name="line59"></a> *   }
+<a name="line60"></a> *   goog.events.listen(source, &#39;foo&#39;, handleEvent);
+<a name="line61"></a> *   ...
+<a name="line62"></a> *   source.dispatchEvent({type: &#39;foo&#39;}); // will call handleEvent
+<a name="line63"></a> *   // or source.dispatchEvent(&#39;foo&#39;);
+<a name="line64"></a> *   ...
+<a name="line65"></a> *   goog.events.unlisten(source, &#39;foo&#39;, handleEvent);
+<a name="line66"></a> *
+<a name="line67"></a> *   // You can also use the Listener interface:
+<a name="line68"></a> *   var listener = {
+<a name="line69"></a> *     handleEvent: function(event) {
+<a name="line70"></a> *       ...
+<a name="line71"></a> *     }
+<a name="line72"></a> *   };
+<a name="line73"></a> *   goog.events.listen(source, &#39;bar&#39;, listener);
+<a name="line74"></a> * &lt;/pre&gt;
+<a name="line75"></a> *
+<a name="line76"></a> * @constructor
+<a name="line77"></a> * @extends {goog.Disposable}
+<a name="line78"></a> */
+<a name="line79"></a>goog.events.EventTarget = function() {
+<a name="line80"></a>  goog.Disposable.call(this);
+<a name="line81"></a>};
+<a name="line82"></a>goog.inherits(goog.events.EventTarget, goog.Disposable);
+<a name="line83"></a>
+<a name="line84"></a>
+<a name="line85"></a>/**
+<a name="line86"></a> * Used to tell if an event is a real event in goog.events.listen() so we don&#39;t
+<a name="line87"></a> * get listen() calling addEventListener() and vice-versa.
+<a name="line88"></a> * @type {boolean}
+<a name="line89"></a> * @private
+<a name="line90"></a> */
+<a name="line91"></a>goog.events.EventTarget.prototype.customEvent_ = true;
+<a name="line92"></a>
+<a name="line93"></a>
+<a name="line94"></a>/**
+<a name="line95"></a> * Parent event target, used during event bubbling.
+<a name="line96"></a> * @type {goog.events.EventTarget?}
+<a name="line97"></a> * @private
+<a name="line98"></a> */
+<a name="line99"></a>goog.events.EventTarget.prototype.parentEventTarget_ = null;
+<a name="line100"></a>
+<a name="line101"></a>
+<a name="line102"></a>/**
+<a name="line103"></a> * Returns the parent of this event target to use for bubbling.
+<a name="line104"></a> *
+<a name="line105"></a> * @return {goog.events.EventTarget} The parent EventTarget or null if there
+<a name="line106"></a> * is no parent.
+<a name="line107"></a> */
+<a name="line108"></a>goog.events.EventTarget.prototype.getParentEventTarget = function() {
+<a name="line109"></a>  return this.parentEventTarget_;
+<a name="line110"></a>};
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/**
+<a name="line114"></a> * Sets the parent of this event target to use for bubbling.
+<a name="line115"></a> *
+<a name="line116"></a> * @param {goog.events.EventTarget?} parent Parent EventTarget (null if none).
+<a name="line117"></a> */
+<a name="line118"></a>goog.events.EventTarget.prototype.setParentEventTarget = function(parent) {
+<a name="line119"></a>  this.parentEventTarget_ = parent;
+<a name="line120"></a>};
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>/**
+<a name="line124"></a> * Adds an event listener to the event target. The same handler can only be
+<a name="line125"></a> * added once per the type. Even if you add the same handler multiple times
+<a name="line126"></a> * using the same type then it will only be called once when the event is
+<a name="line127"></a> * dispatched.
+<a name="line128"></a> *
+<a name="line129"></a> * Supported for legacy but use goog.events.listen(src, type, handler) instead.
+<a name="line130"></a> *
+<a name="line131"></a> * @param {string} type The type of the event to listen for.
+<a name="line132"></a> * @param {Function|Object} handler The function to handle the event. The
+<a name="line133"></a> *     handler can also be an object that implements the handleEvent method
+<a name="line134"></a> *     which takes the event object as argument.
+<a name="line135"></a> * @param {boolean=} opt_capture In DOM-compliant browsers, this determines
+<a name="line136"></a> *     whether the listener is fired during the capture or bubble phase
+<a name="line137"></a> *     of the event.
+<a name="line138"></a> * @param {Object=} opt_handlerScope Object in whose scope to call the listener.
+<a name="line139"></a> */
+<a name="line140"></a>goog.events.EventTarget.prototype.addEventListener = function(
+<a name="line141"></a>    type, handler, opt_capture, opt_handlerScope) {
+<a name="line142"></a>  goog.events.listen(this, type, handler, opt_capture, opt_handlerScope);
+<a name="line143"></a>};
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * Removes an event listener from the event target. The handler must be the
+<a name="line148"></a> * same object as the one added. If the handler has not been added then
+<a name="line149"></a> * nothing is done.
+<a name="line150"></a> * @param {string} type The type of the event to listen for.
+<a name="line151"></a> * @param {Function|Object} handler The function to handle the event. The
+<a name="line152"></a> *     handler can also be an object that implements the handleEvent method
+<a name="line153"></a> *     which takes the event object as argument.
+<a name="line154"></a> * @param {boolean=} opt_capture In DOM-compliant browsers, this determines
+<a name="line155"></a> *     whether the listener is fired during the capture or bubble phase
+<a name="line156"></a> *     of the event.
+<a name="line157"></a> * @param {Object=} opt_handlerScope Object in whose scope to call the listener.
+<a name="line158"></a> */
+<a name="line159"></a>goog.events.EventTarget.prototype.removeEventListener = function(
+<a name="line160"></a>    type, handler, opt_capture, opt_handlerScope) {
+<a name="line161"></a>  goog.events.unlisten(this, type, handler, opt_capture, opt_handlerScope);
+<a name="line162"></a>};
+<a name="line163"></a>
+<a name="line164"></a>
+<a name="line165"></a>/**
+<a name="line166"></a> * Dispatches an event (or event like object) and calls all listeners
+<a name="line167"></a> * listening for events of this type. The type of the event is decided by the
+<a name="line168"></a> * type property on the event object.
+<a name="line169"></a> *
+<a name="line170"></a> * If any of the listeners returns false OR calls preventDefault then this
+<a name="line171"></a> * function will return false.  If one of the capture listeners calls
+<a name="line172"></a> * stopPropagation, then the bubble listeners won&#39;t fire.
+<a name="line173"></a> *
+<a name="line174"></a> * @param {string|Object|goog.events.Event} e Event object.
+<a name="line175"></a> * @return {boolean} If anyone called preventDefault on the event object (or
+<a name="line176"></a> *     if any of the handlers returns false this will also return false.
+<a name="line177"></a> */
+<a name="line178"></a>goog.events.EventTarget.prototype.dispatchEvent = function(e) {
+<a name="line179"></a>  return goog.events.dispatchEvent(this, e);
+<a name="line180"></a>};
+<a name="line181"></a>
+<a name="line182"></a>
+<a name="line183"></a>/**
+<a name="line184"></a> * Unattach listeners from this object.  Classes that extend EventTarget may
+<a name="line185"></a> * need to override this method in order to remove references to DOM Elements
+<a name="line186"></a> * and additional listeners, it should be something like this:
+<a name="line187"></a> * &lt;pre&gt;
+<a name="line188"></a> * MyClass.prototype.disposeInternal = function() {
+<a name="line189"></a> *   MyClass.superClass_.disposeInternal.call(this);
+<a name="line190"></a> *   // Dispose logic for MyClass
+<a name="line191"></a> * };
+<a name="line192"></a> * &lt;/pre&gt;
+<a name="line193"></a> * @override
+<a name="line194"></a> * @protected
+<a name="line195"></a> */
+<a name="line196"></a>goog.events.EventTarget.prototype.disposeInternal = function() {
+<a name="line197"></a>  goog.events.EventTarget.superClass_.disposeInternal.call(this);
+<a name="line198"></a>  goog.events.removeAll(this);
+<a name="line199"></a>  this.parentEventTarget_ = null;
+<a name="line200"></a>};
+</pre>
+
+
+</body>
+</html>

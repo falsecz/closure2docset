@@ -1,0 +1,274 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>equationeditor.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_equation_equationeditor.js.html">equationeditor.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>goog.provide(&#39;goog.ui.equation.EquationEditor&#39;);
+<a name="line16"></a>
+<a name="line17"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line18"></a>goog.require(&#39;goog.events&#39;);
+<a name="line19"></a>goog.require(&#39;goog.ui.Component&#39;);
+<a name="line20"></a>goog.require(&#39;goog.ui.Tab&#39;);
+<a name="line21"></a>goog.require(&#39;goog.ui.TabBar&#39;);
+<a name="line22"></a>goog.require(&#39;goog.ui.equation.EditorPane&#39;);
+<a name="line23"></a>goog.require(&#39;goog.ui.equation.ImageRenderer&#39;);
+<a name="line24"></a>goog.require(&#39;goog.ui.equation.TexPane&#39;);
+<a name="line25"></a>
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>/**
+<a name="line29"></a> * User interface for equation editor plugin.
+<a name="line30"></a> * @constructor
+<a name="line31"></a> * @param {Object} context The context that this equation editor runs in.
+<a name="line32"></a> * @param {goog.dom.DomHelper=} opt_domHelper DomHelper to use.
+<a name="line33"></a> * @param {string=} opt_helpUrl Help document URL to use in the &quot;Learn more&quot;
+<a name="line34"></a> *     link.
+<a name="line35"></a> * @extends {goog.ui.Component}
+<a name="line36"></a> */
+<a name="line37"></a>goog.ui.equation.EquationEditor = function(context, opt_domHelper,
+<a name="line38"></a>    opt_helpUrl) {
+<a name="line39"></a>  goog.base(this, opt_domHelper);
+<a name="line40"></a>
+<a name="line41"></a>  /**
+<a name="line42"></a>   * The context this editor runs in.
+<a name="line43"></a>   * @type {Object}
+<a name="line44"></a>   * @private
+<a name="line45"></a>   */
+<a name="line46"></a>  this.context_ = context;
+<a name="line47"></a>
+<a name="line48"></a>  /**
+<a name="line49"></a>   * Help document URL to use in the &quot;Learn more&quot; link.
+<a name="line50"></a>   * @type {string}
+<a name="line51"></a>   * @private
+<a name="line52"></a>   */
+<a name="line53"></a>  this.helpUrl_ = opt_helpUrl || &#39;&#39;;
+<a name="line54"></a>};
+<a name="line55"></a>goog.inherits(goog.ui.equation.EquationEditor, goog.ui.Component);
+<a name="line56"></a>
+<a name="line57"></a>
+<a name="line58"></a>/**
+<a name="line59"></a> * Constants for event names.
+<a name="line60"></a> * @enum {string}
+<a name="line61"></a> */
+<a name="line62"></a>goog.ui.equation.EquationEditor.EventType = {
+<a name="line63"></a>  /**
+<a name="line64"></a>   * Dispatched when equation changes.
+<a name="line65"></a>   */
+<a name="line66"></a>  CHANGE: &#39;change&#39;
+<a name="line67"></a>};
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/**
+<a name="line71"></a> * The index of the last active tab. Zero means first tab.
+<a name="line72"></a> * @type {number}
+<a name="line73"></a> * @private
+<a name="line74"></a> */
+<a name="line75"></a>goog.ui.equation.EquationEditor.prototype.activeTabIndex_ = 0;
+<a name="line76"></a>
+<a name="line77"></a>
+<a name="line78"></a>/** @override */
+<a name="line79"></a>goog.ui.equation.EquationEditor.prototype.createDom = function() {
+<a name="line80"></a>  goog.base(this, &#39;createDom&#39;);
+<a name="line81"></a>  this.createDom_();
+<a name="line82"></a>};
+<a name="line83"></a>
+<a name="line84"></a>
+<a name="line85"></a>/**
+<a name="line86"></a> * Creates main editor contents.
+<a name="line87"></a> * @private
+<a name="line88"></a> */
+<a name="line89"></a>goog.ui.equation.EquationEditor.prototype.createDom_ = function() {
+<a name="line90"></a>  var contentElement = this.getElement();
+<a name="line91"></a>
+<a name="line92"></a>  /** @desc Title of the visual equation editor tab. */
+<a name="line93"></a>  var MSG_VISUAL_EDITOR = goog.getMsg(&#39;Editor&#39;);
+<a name="line94"></a>
+<a name="line95"></a>  /** @desc Title of the TeX equation editor tab. */
+<a name="line96"></a>  var MSG_TEX_EDITOR = goog.getMsg(&#39;TeX&#39;);
+<a name="line97"></a>
+<a name="line98"></a>  // Create the main tabs
+<a name="line99"></a>  var dom = this.dom_;
+<a name="line100"></a>  var tabTop = dom.createDom(&#39;div&#39;,
+<a name="line101"></a>      {&#39;class&#39;: &#39;goog-tab-bar goog-tab-bar-top&#39;},
+<a name="line102"></a>      dom.createDom(&#39;div&#39;,
+<a name="line103"></a>          {&#39;class&#39;: &#39;goog-tab goog-tab-selected&#39;}, MSG_VISUAL_EDITOR),
+<a name="line104"></a>      dom.createDom(&#39;div&#39;, {&#39;class&#39;: &#39;goog-tab&#39;}, MSG_TEX_EDITOR));
+<a name="line105"></a>  var tabClear = dom.createDom(&#39;div&#39;, {&#39;class&#39;: &#39;goog-tab-bar-clear&#39;});
+<a name="line106"></a>  var tabContent = dom.createDom(&#39;div&#39;, {&#39;class&#39;: &#39;ee-content&#39;});
+<a name="line107"></a>  dom.appendChild(contentElement, tabTop);
+<a name="line108"></a>  dom.appendChild(contentElement, tabClear);
+<a name="line109"></a>  dom.appendChild(contentElement, tabContent);
+<a name="line110"></a>
+<a name="line111"></a>  var tabBar = new goog.ui.TabBar();
+<a name="line112"></a>  tabBar.decorate(tabTop);
+<a name="line113"></a>
+<a name="line114"></a>  /**
+<a name="line115"></a>   * The tab bar.
+<a name="line116"></a>   * @type {!goog.ui.TabBar}
+<a name="line117"></a>   * @private
+<a name="line118"></a>   */
+<a name="line119"></a>  this.tabBar_ = tabBar;
+<a name="line120"></a>
+<a name="line121"></a>  goog.events.listen(tabBar, goog.ui.Component.EventType.SELECT,
+<a name="line122"></a>      goog.bind(this.handleTabSelect_, this));
+<a name="line123"></a>
+<a name="line124"></a>  var texEditor = new goog.ui.equation.TexPane(this.context_,
+<a name="line125"></a>      this.helpUrl_, this.dom_);
+<a name="line126"></a>  this.addChild(texEditor);
+<a name="line127"></a>  texEditor.render(tabContent);
+<a name="line128"></a>
+<a name="line129"></a>  this.setVisibleTab_(0); // Make first tab visible
+<a name="line130"></a>};
+<a name="line131"></a>
+<a name="line132"></a>
+<a name="line133"></a>/**
+<a name="line134"></a> * Sets the visibility of the editor.
+<a name="line135"></a> * @param {boolean} visible Whether the editor should be visible.
+<a name="line136"></a> */
+<a name="line137"></a>goog.ui.equation.EquationEditor.prototype.setVisible = function(visible) {
+<a name="line138"></a>  // Show active tab if visible, or none if not
+<a name="line139"></a>  this.setVisibleTab_(visible ? this.activeTabIndex_ : -1);
+<a name="line140"></a>};
+<a name="line141"></a>
+<a name="line142"></a>
+<a name="line143"></a>/**
+<a name="line144"></a> * Sets the tab at the selected index as visible and all the rest as not
+<a name="line145"></a> * visible.
+<a name="line146"></a> * @param {number} tabIndex The tab index that is visible. -1 means no
+<a name="line147"></a> *     tab is visible.
+<a name="line148"></a> * @private
+<a name="line149"></a> */
+<a name="line150"></a>goog.ui.equation.EquationEditor.prototype.setVisibleTab_ = function(tabIndex) {
+<a name="line151"></a>  for (var i = 0; i &lt; this.getChildCount(); i++) {
+<a name="line152"></a>    this.getChildAt(i).setVisible(i == tabIndex);
+<a name="line153"></a>  }
+<a name="line154"></a>};
+<a name="line155"></a>
+<a name="line156"></a>
+<a name="line157"></a>/** @override */
+<a name="line158"></a>goog.ui.equation.EquationEditor.prototype.decorateInternal = function(element) {
+<a name="line159"></a>  this.setElementInternal(element);
+<a name="line160"></a>  this.createDom_();
+<a name="line161"></a>};
+<a name="line162"></a>
+<a name="line163"></a>
+<a name="line164"></a>/**
+<a name="line165"></a> * Returns the encoded equation.
+<a name="line166"></a> * @return {string} The encoded equation.
+<a name="line167"></a> */
+<a name="line168"></a>goog.ui.equation.EquationEditor.prototype.getEquation = function() {
+<a name="line169"></a>  var sel = this.tabBar_.getSelectedTabIndex();
+<a name="line170"></a>  return this.getChildAt(sel).getEquation();
+<a name="line171"></a>};
+<a name="line172"></a>
+<a name="line173"></a>
+<a name="line174"></a>/**
+<a name="line175"></a> * @return {string} The html code to embed in the document.
+<a name="line176"></a> */
+<a name="line177"></a>goog.ui.equation.EquationEditor.prototype.getHtml = function() {
+<a name="line178"></a>  return goog.ui.equation.ImageRenderer.getHtml(this.getEquation());
+<a name="line179"></a>};
+<a name="line180"></a>
+<a name="line181"></a>
+<a name="line182"></a>/**
+<a name="line183"></a> * Checks whether the current equation is valid and can be used in a document.
+<a name="line184"></a> * @return {boolean} Whether the equation is valid.
+<a name="line185"></a> */
+<a name="line186"></a>goog.ui.equation.EquationEditor.prototype.isValid = function() {
+<a name="line187"></a>  return goog.ui.equation.ImageRenderer.isEquationTooLong(
+<a name="line188"></a>      this.getEquation());
+<a name="line189"></a>};
+<a name="line190"></a>
+<a name="line191"></a>
+<a name="line192"></a>/**
+<a name="line193"></a> * Handles a tab selection by the user.
+<a name="line194"></a> * @param {goog.events.Event} e The event.
+<a name="line195"></a> * @private
+<a name="line196"></a> */
+<a name="line197"></a>goog.ui.equation.EquationEditor.prototype.handleTabSelect_ = function(e) {
+<a name="line198"></a>  var sel = this.tabBar_.getSelectedTabIndex();
+<a name="line199"></a>  if (sel != this.activeTabIndex_) {
+<a name="line200"></a>    this.activeTabIndex_ = sel;
+<a name="line201"></a>    this.setVisibleTab_(sel);
+<a name="line202"></a>  }
+<a name="line203"></a>
+<a name="line204"></a>  // TODO(user) Pass equation from the tab to the other is modified
+<a name="line205"></a>};
+<a name="line206"></a>
+<a name="line207"></a>
+<a name="line208"></a>/**
+<a name="line209"></a> * Parse an equation and draw it.
+<a name="line210"></a> * Clears any previous displayed equation.
+<a name="line211"></a> * @param {string} equation The equation text to parse.
+<a name="line212"></a> */
+<a name="line213"></a>goog.ui.equation.EquationEditor.prototype.setEquation = function(equation) {
+<a name="line214"></a>  var sel = this.tabBar_.getSelectedTabIndex();
+<a name="line215"></a>  this.getChildAt(sel).setEquation(equation);
+<a name="line216"></a>};
+<a name="line217"></a>
+<a name="line218"></a>
+<a name="line219"></a>/** @override */
+<a name="line220"></a>goog.ui.equation.EquationEditor.prototype.disposeInternal = function() {
+<a name="line221"></a>  this.context_ = null;
+<a name="line222"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line223"></a>};
+</pre>
+
+
+</body>
+</html>

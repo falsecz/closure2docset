@@ -1,0 +1,357 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>dispatcher.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">dispatcher.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    The jsaction dispatcher.
+ Serves as the registry with which clients register jsaction handlers.
+ When EventContract finds a jsaction to be invoked for an event, it
+ calls the dispatcher, which then looks up the corresponding handler
+ function and invokes it.
+
+ A fully qualified jsaction name consists of a namespace and an action
+ name separated by a dot: "namespace.action.
+ Hierarchichal namespaces are not supported. Namespace and action names
+ should only consist of alphanumeric characters and underscores.
+
+ Usage:
+
+ The dispatcher first needs to be hooked up to an instance of
+ goog.jsaction.EventContract.
+
+ var dispatcher = new goog.jsaction.Dispatcher;
+ eventContract.setDispatcher(dispatcher);
+
+ Clients can register handlers for the jsactions they use in their
+ markup. For example, the code to add the action handler for element
+ <div>Do stuff</div>
+ would look like this:
+
+ var fooBarHandler = function(context) {
+ // Do stuff.
+ };
+ dispatcher.registerHandlers(&amp;#39;foo&amp;#39;, {&amp;#39;bar&amp;#39;: fooBarHandler});
+
+ If a &amp;#39;jsaction&amp;#39; attribute doesn&amp;#39;t specify a fully qualified jsaction name,
+ the dispatcher will search for an ancestor with a &amp;#39;jsnamespace&amp;#39; attribute.
+ Example markup using the same names as above:
+ <div>
+ <div>Do Stuff</div>
+ </div>
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_goog_jsaction_dispatcher.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/jsaction/dispatcher.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">jsaction/dispatcher.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_jsaction_Dispatcher.html">
+          goog.jsaction.Dispatcher</a><br/>
+        <div class="class-details">Creates jsaction dispatcher that serves as registry for
+action handlers and dispatches actions to appropriate handlers.</div>
+ </div>
+      
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.Dispatcher.assertValidAction_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.Dispatcher.</span><span class="entryName">assertValidAction_<span class="args">(<span class="arg">action</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Asserts the validity of fully qualified action name.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">action</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The action name to validate.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_dispatcher.js.source.html#line254">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.jsaction.Dispatcher.getNamespace_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.Dispatcher.</span><span class="entryName">getNamespace_<span class="args">(<span class="arg">action</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Extracts and returns the namespace from a fully qualified jsaction
+of the form "namespace.actionname".
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">action</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The action.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>&nbsp;
+            The namespace.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_dispatcher.js.source.html#line244">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+  <h2>Global Properties</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.jsaction.Dispatcher.ATTRIBUTE_NAME_JSNAMESPACE_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.jsaction.Dispatcher.</span><span class="entryName">ATTRIBUTE_NAME_JSNAMESPACE_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Constant for the name of the 'jsnamespace'-attribute.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_jsaction_dispatcher.js.source.html#line110">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory jsaction</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="jsaction/dispatcher.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

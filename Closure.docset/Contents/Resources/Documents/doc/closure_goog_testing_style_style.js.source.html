@@ -1,0 +1,137 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>style.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_style_style.js.html">style.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities for inspecting page layout. This is a port of
+<a name="line17"></a> *     http://go/layoutbot.java
+<a name="line18"></a> *     See {@link http://go/layouttesting}.
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.testing.style&#39;);
+<a name="line22"></a>
+<a name="line23"></a>goog.require(&#39;goog.math.Rect&#39;);
+<a name="line24"></a>goog.require(&#39;goog.style&#39;);
+<a name="line25"></a>
+<a name="line26"></a>
+<a name="line27"></a>/**
+<a name="line28"></a> * Determines whether the bounding rectangles of the given elements intersect.
+<a name="line29"></a> * @param {Element} element The first element.
+<a name="line30"></a> * @param {Element} otherElement The second element.
+<a name="line31"></a> * @return {boolean} Whether the bounding rectangles of the given elements
+<a name="line32"></a> *     intersect.
+<a name="line33"></a> */
+<a name="line34"></a>goog.testing.style.intersects = function(element, otherElement) {
+<a name="line35"></a>  var elementRect = goog.style.getBounds(element);
+<a name="line36"></a>  var otherElementRect = goog.style.getBounds(otherElement);
+<a name="line37"></a>  return goog.math.Rect.intersects(elementRect, otherElementRect);
+<a name="line38"></a>};
+<a name="line39"></a>
+<a name="line40"></a>
+<a name="line41"></a>/**
+<a name="line42"></a> * Determines whether the element has visible dimensions, i.e. x &gt; 0 &amp;&amp; y &gt; 0.
+<a name="line43"></a> * @param {Element} element The element to check.
+<a name="line44"></a> * @return {boolean} Whether the element has visible dimensions.
+<a name="line45"></a> */
+<a name="line46"></a>goog.testing.style.hasVisibleDimensions = function(element) {
+<a name="line47"></a>  var elSize = goog.style.getSize(element);
+<a name="line48"></a>  var shortest = elSize.getShortest();
+<a name="line49"></a>  if (shortest &lt;= 0) {
+<a name="line50"></a>    return false;
+<a name="line51"></a>  }
+<a name="line52"></a>
+<a name="line53"></a>  return true;
+<a name="line54"></a>};
+<a name="line55"></a>
+<a name="line56"></a>
+<a name="line57"></a>/**
+<a name="line58"></a> * Determines whether the CSS style of the element renders it visible.
+<a name="line59"></a> * @param {!Element} element The element to check.
+<a name="line60"></a> * @return {boolean} Whether the CSS style of the element renders it visible.
+<a name="line61"></a> */
+<a name="line62"></a>goog.testing.style.isVisible = function(element) {
+<a name="line63"></a>  var visibilityStyle =
+<a name="line64"></a>      goog.testing.style.getAvailableStyle_(element, &#39;visibility&#39;);
+<a name="line65"></a>  var displayStyle =
+<a name="line66"></a>      goog.testing.style.getAvailableStyle_(element, &#39;display&#39;);
+<a name="line67"></a>
+<a name="line68"></a>  return (visibilityStyle != &#39;hidden&#39; &amp;&amp; displayStyle != &#39;none&#39;);
+<a name="line69"></a>};
+<a name="line70"></a>
+<a name="line71"></a>
+<a name="line72"></a>/**
+<a name="line73"></a> * This is essentially goog.style.getStyle_. goog.style.getStyle_ is private
+<a name="line74"></a> * and is not a recommended way for general purpose style extractor. For the
+<a name="line75"></a> * purposes of layout testing, we only use this function for retrieving
+<a name="line76"></a> * &#39;visiblity&#39; and &#39;display&#39; style.
+<a name="line77"></a> * @param {!Element} element The element to retrieve the style from.
+<a name="line78"></a> * @param {string} style Style property name.
+<a name="line79"></a> * @return {string} Style value.
+<a name="line80"></a> * @private
+<a name="line81"></a> */
+<a name="line82"></a>goog.testing.style.getAvailableStyle_ = function(element, style) {
+<a name="line83"></a>  return goog.style.getComputedStyle(element, style) ||
+<a name="line84"></a>      goog.style.getCascadedStyle(element, style) ||
+<a name="line85"></a>      goog.style.getStyle(element, style);
+<a name="line86"></a>};
+</pre>
+
+
+</body>
+</html>

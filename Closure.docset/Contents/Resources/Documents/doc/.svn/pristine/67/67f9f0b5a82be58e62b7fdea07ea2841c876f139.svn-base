@@ -1,0 +1,777 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>mat3.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_vec_mat3.js.html">mat3.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Implements 3x3 matrices and their related functions which are
+<a name="line17"></a> * compatible with WebGL. The API is structured to avoid unnecessary memory
+<a name="line18"></a> * allocations.  The last parameter will typically be the output vector and
+<a name="line19"></a> * an object can be both an input and output parameter to all methods except
+<a name="line20"></a> * where noted. Matrix operations follow the mathematical form when multiplying
+<a name="line21"></a> * vectors as follows: resultVec = matrix * vec.
+<a name="line22"></a> *
+<a name="line23"></a> */
+<a name="line24"></a>goog.provide(&#39;goog.vec.Mat3&#39;);
+<a name="line25"></a>
+<a name="line26"></a>goog.require(&#39;goog.vec&#39;);
+<a name="line27"></a>goog.require(&#39;goog.vec.Vec3&#39;);
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>/**
+<a name="line31"></a> * Type used when an argument can be either an array of numbers or a
+<a name="line32"></a> * typed float32 array. This allows using the class on normal js arrays too.
+<a name="line33"></a> * E.g. the following code is perfectly valid:
+<a name="line34"></a> * &lt;pre&gt;
+<a name="line35"></a> * var matA = new Array(9);
+<a name="line36"></a> * var matB = goog.vec.Mat3.create();
+<a name="line37"></a> * goog.vec.Mat3.makeIdentity(matA);
+<a name="line38"></a> * goog.vec.Mat3.makeIdentity(matB);
+<a name="line39"></a> * goog.vec.Mat3.multMat(matA, matB, matA);
+<a name="line40"></a> * &lt;/pre&gt;
+<a name="line41"></a> * Note that matA is a double precision matrix (doubles), while matB is a
+<a name="line42"></a> * single precision matrix (floats).
+<a name="line43"></a> * @typedef {goog.vec.ArrayType}
+<a name="line44"></a> */
+<a name="line45"></a>goog.vec.Mat3.Mat3Like;
+<a name="line46"></a>
+<a name="line47"></a>
+<a name="line48"></a>/**
+<a name="line49"></a> * @typedef {Float32Array}
+<a name="line50"></a> */
+<a name="line51"></a>goog.vec.Mat3.Type;
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>/**
+<a name="line55"></a> * Creates the array representation of a 3x3 matrix. The use of the array
+<a name="line56"></a> * directly instead of a class reduces overhead.
+<a name="line57"></a> * The returned matrix is cleared to all zeros.
+<a name="line58"></a> *
+<a name="line59"></a> * @return {!goog.vec.Mat3.Type} The new, nine element array.
+<a name="line60"></a> */
+<a name="line61"></a>goog.vec.Mat3.create = function() {
+<a name="line62"></a>  return new Float32Array(9);
+<a name="line63"></a>};
+<a name="line64"></a>
+<a name="line65"></a>
+<a name="line66"></a>/**
+<a name="line67"></a> * Creates the array representation of a 3x3 matrix. The use of the array
+<a name="line68"></a> * directly eliminates any overhead associated with the class representation
+<a name="line69"></a> * defined above. The returned matrix is initialized with the identity.
+<a name="line70"></a> *
+<a name="line71"></a> * @return {!goog.vec.Mat3.Type} The new, nine element array.
+<a name="line72"></a> */
+<a name="line73"></a>goog.vec.Mat3.createIdentity = function() {
+<a name="line74"></a>  var mat = goog.vec.Mat3.create();
+<a name="line75"></a>  mat[0] = mat[4] = mat[8] = 1;
+<a name="line76"></a>  return mat;
+<a name="line77"></a>};
+<a name="line78"></a>
+<a name="line79"></a>
+<a name="line80"></a>/**
+<a name="line81"></a> * Creates a 3x3 matrix initialized from the given array.
+<a name="line82"></a> *
+<a name="line83"></a> * @param {goog.vec.Mat3.Mat3Like} matrix The array containing the
+<a name="line84"></a> *     matrix values in column major order.
+<a name="line85"></a> * @return {!goog.vec.Mat3.Type} The new, nine element array.
+<a name="line86"></a> */
+<a name="line87"></a>goog.vec.Mat3.createFromArray = function(matrix) {
+<a name="line88"></a>  var newMatrix = goog.vec.Mat3.create();
+<a name="line89"></a>  goog.vec.Mat3.setFromArray(newMatrix, matrix);
+<a name="line90"></a>  return newMatrix;
+<a name="line91"></a>};
+<a name="line92"></a>
+<a name="line93"></a>
+<a name="line94"></a>/**
+<a name="line95"></a> * Creates a 3x3 matrix initialized from the given values.
+<a name="line96"></a> *
+<a name="line97"></a> * @param {number} v00 The values at (0, 0).
+<a name="line98"></a> * @param {number} v10 The values at (1, 0).
+<a name="line99"></a> * @param {number} v20 The values at (2, 0).
+<a name="line100"></a> * @param {number} v01 The values at (0, 1).
+<a name="line101"></a> * @param {number} v11 The values at (1, 1).
+<a name="line102"></a> * @param {number} v21 The values at (2, 1).
+<a name="line103"></a> * @param {number} v02 The values at (0, 2).
+<a name="line104"></a> * @param {number} v12 The values at (1, 2).
+<a name="line105"></a> * @param {number} v22 The values at (2, 2).
+<a name="line106"></a> * @return {!goog.vec.Mat3.Type} The new, nine element array.
+<a name="line107"></a> */
+<a name="line108"></a>goog.vec.Mat3.createFromValues = function(
+<a name="line109"></a>    v00, v10, v20, v01, v11, v21, v02, v12, v22) {
+<a name="line110"></a>  var newMatrix = goog.vec.Mat3.create();
+<a name="line111"></a>  goog.vec.Mat3.setFromValues(
+<a name="line112"></a>      newMatrix, v00, v10, v20, v01, v11, v21, v02, v12, v22);
+<a name="line113"></a>  return newMatrix;
+<a name="line114"></a>};
+<a name="line115"></a>
+<a name="line116"></a>
+<a name="line117"></a>/**
+<a name="line118"></a> * Creates a clone of a 3x3 matrix.
+<a name="line119"></a> *
+<a name="line120"></a> * @param {goog.vec.Mat3.Mat3Like} matrix The source 3x3 matrix.
+<a name="line121"></a> * @return {!goog.vec.Mat3.Type} The new 3x3 element matrix.
+<a name="line122"></a> */
+<a name="line123"></a>goog.vec.Mat3.clone = goog.vec.Mat3.createFromArray;
+<a name="line124"></a>
+<a name="line125"></a>
+<a name="line126"></a>/**
+<a name="line127"></a> * Retrieves the element at the requested row and column.
+<a name="line128"></a> *
+<a name="line129"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix containing the value to
+<a name="line130"></a> *     retrieve.
+<a name="line131"></a> * @param {number} row The row index.
+<a name="line132"></a> * @param {number} column The column index.
+<a name="line133"></a> * @return {number} The element value at the requested row, column indices.
+<a name="line134"></a> */
+<a name="line135"></a>goog.vec.Mat3.getElement = function(mat, row, column) {
+<a name="line136"></a>  return mat[row + column * 3];
+<a name="line137"></a>};
+<a name="line138"></a>
+<a name="line139"></a>
+<a name="line140"></a>/**
+<a name="line141"></a> * Sets the element at the requested row and column.
+<a name="line142"></a> *
+<a name="line143"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix containing the value to
+<a name="line144"></a> *     retrieve.
+<a name="line145"></a> * @param {number} row The row index.
+<a name="line146"></a> * @param {number} column The column index.
+<a name="line147"></a> * @param {number} value The value to set at the requested row, column.
+<a name="line148"></a> */
+<a name="line149"></a>goog.vec.Mat3.setElement = function(mat, row, column, value) {
+<a name="line150"></a>  mat[row + column * 3] = value;
+<a name="line151"></a>};
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * Initializes the matrix from the set of values. Note the values supplied are
+<a name="line156"></a> * in column major order.
+<a name="line157"></a> *
+<a name="line158"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the
+<a name="line159"></a> *     values.
+<a name="line160"></a> * @param {number} v00 The values at (0, 0).
+<a name="line161"></a> * @param {number} v10 The values at (1, 0).
+<a name="line162"></a> * @param {number} v20 The values at (2, 0).
+<a name="line163"></a> * @param {number} v01 The values at (0, 1).
+<a name="line164"></a> * @param {number} v11 The values at (1, 1).
+<a name="line165"></a> * @param {number} v21 The values at (2, 1).
+<a name="line166"></a> * @param {number} v02 The values at (0, 2).
+<a name="line167"></a> * @param {number} v12 The values at (1, 2).
+<a name="line168"></a> * @param {number} v22 The values at (2, 2).
+<a name="line169"></a> */
+<a name="line170"></a>goog.vec.Mat3.setFromValues = function(
+<a name="line171"></a>    mat, v00, v10, v20, v01, v11, v21, v02, v12, v22) {
+<a name="line172"></a>  mat[0] = v00;
+<a name="line173"></a>  mat[1] = v10;
+<a name="line174"></a>  mat[2] = v20;
+<a name="line175"></a>  mat[3] = v01;
+<a name="line176"></a>  mat[4] = v11;
+<a name="line177"></a>  mat[5] = v21;
+<a name="line178"></a>  mat[6] = v02;
+<a name="line179"></a>  mat[7] = v12;
+<a name="line180"></a>  mat[8] = v22;
+<a name="line181"></a>};
+<a name="line182"></a>
+<a name="line183"></a>
+<a name="line184"></a>/**
+<a name="line185"></a> * Sets the matrix from the array of values stored in column major order.
+<a name="line186"></a> *
+<a name="line187"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line188"></a> * @param {goog.vec.Mat3.Mat3Like} values The column major ordered
+<a name="line189"></a> *     array of values to store in the matrix.
+<a name="line190"></a> */
+<a name="line191"></a>goog.vec.Mat3.setFromArray = function(mat, values) {
+<a name="line192"></a>  mat[0] = values[0];
+<a name="line193"></a>  mat[1] = values[1];
+<a name="line194"></a>  mat[2] = values[2];
+<a name="line195"></a>  mat[3] = values[3];
+<a name="line196"></a>  mat[4] = values[4];
+<a name="line197"></a>  mat[5] = values[5];
+<a name="line198"></a>  mat[6] = values[6];
+<a name="line199"></a>  mat[7] = values[7];
+<a name="line200"></a>  mat[8] = values[8];
+<a name="line201"></a>};
+<a name="line202"></a>
+<a name="line203"></a>
+<a name="line204"></a>/**
+<a name="line205"></a> * Sets the matrix from the array of values stored in row major order.
+<a name="line206"></a> *
+<a name="line207"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line208"></a> * @param {goog.vec.Mat3.Mat3Like} values The row major ordered array
+<a name="line209"></a> *     of values to store in the matrix.
+<a name="line210"></a> */
+<a name="line211"></a>goog.vec.Mat3.setFromRowMajorArray = function(mat, values) {
+<a name="line212"></a>  mat[0] = values[0];
+<a name="line213"></a>  mat[1] = values[3];
+<a name="line214"></a>  mat[2] = values[6];
+<a name="line215"></a>  mat[3] = values[1];
+<a name="line216"></a>  mat[4] = values[4];
+<a name="line217"></a>  mat[5] = values[7];
+<a name="line218"></a>  mat[6] = values[2];
+<a name="line219"></a>  mat[7] = values[5];
+<a name="line220"></a>  mat[8] = values[8];
+<a name="line221"></a>};
+<a name="line222"></a>
+<a name="line223"></a>
+<a name="line224"></a>/**
+<a name="line225"></a> * Sets the diagonal values of the matrix from the given values.
+<a name="line226"></a> *
+<a name="line227"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line228"></a> * @param {number} v00 The values for (0, 0).
+<a name="line229"></a> * @param {number} v11 The values for (1, 1).
+<a name="line230"></a> * @param {number} v22 The values for (2, 2).
+<a name="line231"></a> */
+<a name="line232"></a>goog.vec.Mat3.setDiagonalValues = function(mat, v00, v11, v22) {
+<a name="line233"></a>  mat[0] = v00;
+<a name="line234"></a>  mat[4] = v11;
+<a name="line235"></a>  mat[8] = v22;
+<a name="line236"></a>};
+<a name="line237"></a>
+<a name="line238"></a>
+<a name="line239"></a>/**
+<a name="line240"></a> * Sets the diagonal values of the matrix from the given vector.
+<a name="line241"></a> *
+<a name="line242"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line243"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector containing the values.
+<a name="line244"></a> */
+<a name="line245"></a>goog.vec.Mat3.setDiagonal = function(mat, vec) {
+<a name="line246"></a>  mat[0] = vec[0];
+<a name="line247"></a>  mat[4] = vec[1];
+<a name="line248"></a>  mat[8] = vec[2];
+<a name="line249"></a>};
+<a name="line250"></a>
+<a name="line251"></a>
+<a name="line252"></a>/**
+<a name="line253"></a> * Sets the specified column with the supplied values.
+<a name="line254"></a> *
+<a name="line255"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to recieve the values.
+<a name="line256"></a> * @param {number} column The column index to set the values on.
+<a name="line257"></a> * @param {number} v0 The value for row 0.
+<a name="line258"></a> * @param {number} v1 The value for row 1.
+<a name="line259"></a> * @param {number} v2 The value for row 2.
+<a name="line260"></a> */
+<a name="line261"></a>goog.vec.Mat3.setColumnValues = function(mat, column, v0, v1, v2) {
+<a name="line262"></a>  var i = column * 3;
+<a name="line263"></a>  mat[i] = v0;
+<a name="line264"></a>  mat[i + 1] = v1;
+<a name="line265"></a>  mat[i + 2] = v2;
+<a name="line266"></a>};
+<a name="line267"></a>
+<a name="line268"></a>
+<a name="line269"></a>/**
+<a name="line270"></a> * Sets the specified column with the value from the supplied array.
+<a name="line271"></a> *
+<a name="line272"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line273"></a> * @param {number} column The column index to set the values on.
+<a name="line274"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector elements for the column.
+<a name="line275"></a> */
+<a name="line276"></a>goog.vec.Mat3.setColumn = function(mat, column, vec) {
+<a name="line277"></a>  var i = column * 3;
+<a name="line278"></a>  mat[i] = vec[0];
+<a name="line279"></a>  mat[i + 1] = vec[1];
+<a name="line280"></a>  mat[i + 2] = vec[2];
+<a name="line281"></a>};
+<a name="line282"></a>
+<a name="line283"></a>
+<a name="line284"></a>/**
+<a name="line285"></a> * Retrieves the specified column from the matrix into the given vector
+<a name="line286"></a> * array.
+<a name="line287"></a> *
+<a name="line288"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix supplying the values.
+<a name="line289"></a> * @param {number} column The column to get the values from.
+<a name="line290"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector elements to receive the
+<a name="line291"></a> *     column.
+<a name="line292"></a> */
+<a name="line293"></a>goog.vec.Mat3.getColumn = function(mat, column, vec) {
+<a name="line294"></a>  var i = column * 3;
+<a name="line295"></a>  vec[0] = mat[i];
+<a name="line296"></a>  vec[1] = mat[i + 1];
+<a name="line297"></a>  vec[2] = mat[i + 2];
+<a name="line298"></a>};
+<a name="line299"></a>
+<a name="line300"></a>
+<a name="line301"></a>/**
+<a name="line302"></a> * Sets the columns of the matrix from the set of vector elements.
+<a name="line303"></a> *
+<a name="line304"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line305"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The values for column 0.
+<a name="line306"></a> * @param {goog.vec.Vec3.Vec3Like} vec1 The values for column 1.
+<a name="line307"></a> * @param {goog.vec.Vec3.Vec3Like} vec2 The values for column 2.
+<a name="line308"></a> */
+<a name="line309"></a>goog.vec.Mat3.setColumns = function(mat, vec0, vec1, vec2) {
+<a name="line310"></a>  goog.vec.Mat3.setColumn(mat, 0, vec0);
+<a name="line311"></a>  goog.vec.Mat3.setColumn(mat, 1, vec1);
+<a name="line312"></a>  goog.vec.Mat3.setColumn(mat, 2, vec2);
+<a name="line313"></a>};
+<a name="line314"></a>
+<a name="line315"></a>
+<a name="line316"></a>/**
+<a name="line317"></a> * Retrieves the column values from the given matrix into the given vector
+<a name="line318"></a> * elements.
+<a name="line319"></a> *
+<a name="line320"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix supplying the columns.
+<a name="line321"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The vector to receive column 0.
+<a name="line322"></a> * @param {goog.vec.Vec3.Vec3Like} vec1 The vector to receive column 1.
+<a name="line323"></a> * @param {goog.vec.Vec3.Vec3Like} vec2 The vector to receive column 2.
+<a name="line324"></a> */
+<a name="line325"></a>goog.vec.Mat3.getColumns = function(mat, vec0, vec1, vec2) {
+<a name="line326"></a>  goog.vec.Mat3.getColumn(mat, 0, vec0);
+<a name="line327"></a>  goog.vec.Mat3.getColumn(mat, 1, vec1);
+<a name="line328"></a>  goog.vec.Mat3.getColumn(mat, 2, vec2);
+<a name="line329"></a>};
+<a name="line330"></a>
+<a name="line331"></a>
+<a name="line332"></a>/**
+<a name="line333"></a> * Sets the row values from the supplied values.
+<a name="line334"></a> *
+<a name="line335"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line336"></a> * @param {number} row The index of the row to receive the values.
+<a name="line337"></a> * @param {number} v0 The value for column 0.
+<a name="line338"></a> * @param {number} v1 The value for column 1.
+<a name="line339"></a> * @param {number} v2 The value for column 2.
+<a name="line340"></a> */
+<a name="line341"></a>goog.vec.Mat3.setRowValues = function(mat, row, v0, v1, v2) {
+<a name="line342"></a>  mat[row] = v0;
+<a name="line343"></a>  mat[row + 3] = v1;
+<a name="line344"></a>  mat[row + 6] = v2;
+<a name="line345"></a>};
+<a name="line346"></a>
+<a name="line347"></a>
+<a name="line348"></a>/**
+<a name="line349"></a> * Sets the row values from the supplied vector.
+<a name="line350"></a> *
+<a name="line351"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the row values.
+<a name="line352"></a> * @param {number} row The index of the row.
+<a name="line353"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector containing the values.
+<a name="line354"></a> */
+<a name="line355"></a>goog.vec.Mat3.setRow = function(mat, row, vec) {
+<a name="line356"></a>  mat[row] = vec[0];
+<a name="line357"></a>  mat[row + 3] = vec[1];
+<a name="line358"></a>  mat[row + 6] = vec[2];
+<a name="line359"></a>};
+<a name="line360"></a>
+<a name="line361"></a>
+<a name="line362"></a>/**
+<a name="line363"></a> * Retrieves the row values into the given vector.
+<a name="line364"></a> *
+<a name="line365"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix supplying the values.
+<a name="line366"></a> * @param {number} row The index of the row supplying the values.
+<a name="line367"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector to receive the row.
+<a name="line368"></a> */
+<a name="line369"></a>goog.vec.Mat3.getRow = function(mat, row, vec) {
+<a name="line370"></a>  vec[0] = mat[row];
+<a name="line371"></a>  vec[1] = mat[row + 3];
+<a name="line372"></a>  vec[2] = mat[row + 6];
+<a name="line373"></a>};
+<a name="line374"></a>
+<a name="line375"></a>
+<a name="line376"></a>/**
+<a name="line377"></a> * Sets the rows of the matrix from the supplied vectors.
+<a name="line378"></a> *
+<a name="line379"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to receive the values.
+<a name="line380"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The values for row 0.
+<a name="line381"></a> * @param {goog.vec.Vec3.Vec3Like} vec1 The values for row 1.
+<a name="line382"></a> * @param {goog.vec.Vec3.Vec3Like} vec2 The values for row 2.
+<a name="line383"></a> */
+<a name="line384"></a>goog.vec.Mat3.setRows = function(mat, vec0, vec1, vec2) {
+<a name="line385"></a>  goog.vec.Mat3.setRow(mat, 0, vec0);
+<a name="line386"></a>  goog.vec.Mat3.setRow(mat, 1, vec1);
+<a name="line387"></a>  goog.vec.Mat3.setRow(mat, 2, vec2);
+<a name="line388"></a>};
+<a name="line389"></a>
+<a name="line390"></a>
+<a name="line391"></a>/**
+<a name="line392"></a> * Retrieves the rows of the matrix into the supplied vectors.
+<a name="line393"></a> *
+<a name="line394"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to supplying the values.
+<a name="line395"></a> * @param {goog.vec.Vec3.Vec3Like} vec0 The vector to receive row 0.
+<a name="line396"></a> * @param {goog.vec.Vec3.Vec3Like} vec1 The vector to receive row 1.
+<a name="line397"></a> * @param {goog.vec.Vec3.Vec3Like} vec2 The vector to receive row 2.
+<a name="line398"></a> */
+<a name="line399"></a>goog.vec.Mat3.getRows = function(mat, vec0, vec1, vec2) {
+<a name="line400"></a>  goog.vec.Mat3.getRow(mat, 0, vec0);
+<a name="line401"></a>  goog.vec.Mat3.getRow(mat, 1, vec1);
+<a name="line402"></a>  goog.vec.Mat3.getRow(mat, 2, vec2);
+<a name="line403"></a>};
+<a name="line404"></a>
+<a name="line405"></a>
+<a name="line406"></a>/**
+<a name="line407"></a> * Makes the given 3x3 matrix the zero matrix.
+<a name="line408"></a> *
+<a name="line409"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix.
+<a name="line410"></a> * @return {!goog.vec.Mat3.Mat3Like} return mat so operations can be chained.
+<a name="line411"></a> */
+<a name="line412"></a>goog.vec.Mat3.makeZero = function(mat) {
+<a name="line413"></a>  mat[0] = 0;
+<a name="line414"></a>  mat[1] = 0;
+<a name="line415"></a>  mat[2] = 0;
+<a name="line416"></a>  mat[3] = 0;
+<a name="line417"></a>  mat[4] = 0;
+<a name="line418"></a>  mat[5] = 0;
+<a name="line419"></a>  mat[6] = 0;
+<a name="line420"></a>  mat[7] = 0;
+<a name="line421"></a>  mat[8] = 0;
+<a name="line422"></a>  return mat;
+<a name="line423"></a>};
+<a name="line424"></a>
+<a name="line425"></a>
+<a name="line426"></a>/**
+<a name="line427"></a> * Makes the given 3x3 matrix the identity matrix.
+<a name="line428"></a> *
+<a name="line429"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix.
+<a name="line430"></a> * @return {!goog.vec.Mat3.Mat3Like} return mat so operations can be chained.
+<a name="line431"></a> */
+<a name="line432"></a>goog.vec.Mat3.makeIdentity = function(mat) {
+<a name="line433"></a>  mat[0] = 1;
+<a name="line434"></a>  mat[1] = 0;
+<a name="line435"></a>  mat[2] = 0;
+<a name="line436"></a>  mat[3] = 0;
+<a name="line437"></a>  mat[4] = 1;
+<a name="line438"></a>  mat[5] = 0;
+<a name="line439"></a>  mat[6] = 0;
+<a name="line440"></a>  mat[7] = 0;
+<a name="line441"></a>  mat[8] = 1;
+<a name="line442"></a>  return mat;
+<a name="line443"></a>};
+<a name="line444"></a>
+<a name="line445"></a>
+<a name="line446"></a>/**
+<a name="line447"></a> * Performs a per-component addition of the matrices mat0 and mat1, storing
+<a name="line448"></a> * the result into resultMat.
+<a name="line449"></a> *
+<a name="line450"></a> * @param {goog.vec.Mat3.Mat3Like} mat0 The first addend.
+<a name="line451"></a> * @param {goog.vec.Mat3.Mat3Like} mat1 The second addend.
+<a name="line452"></a> * @param {goog.vec.Mat3.Mat3Like} resultMat The matrix to
+<a name="line453"></a> *     receive the results (may be either mat0 or mat1).
+<a name="line454"></a> * @return {!goog.vec.Mat3.Mat3Like} return resultMat so that operations can be
+<a name="line455"></a> *     chained together.
+<a name="line456"></a> */
+<a name="line457"></a>goog.vec.Mat3.addMat = function(mat0, mat1, resultMat) {
+<a name="line458"></a>  resultMat[0] = mat0[0] + mat1[0];
+<a name="line459"></a>  resultMat[1] = mat0[1] + mat1[1];
+<a name="line460"></a>  resultMat[2] = mat0[2] + mat1[2];
+<a name="line461"></a>  resultMat[3] = mat0[3] + mat1[3];
+<a name="line462"></a>  resultMat[4] = mat0[4] + mat1[4];
+<a name="line463"></a>  resultMat[5] = mat0[5] + mat1[5];
+<a name="line464"></a>  resultMat[6] = mat0[6] + mat1[6];
+<a name="line465"></a>  resultMat[7] = mat0[7] + mat1[7];
+<a name="line466"></a>  resultMat[8] = mat0[8] + mat1[8];
+<a name="line467"></a>  return resultMat;
+<a name="line468"></a>};
+<a name="line469"></a>
+<a name="line470"></a>
+<a name="line471"></a>/**
+<a name="line472"></a> * Performs a per-component subtraction of the matrices mat0 and mat1,
+<a name="line473"></a> * storing the result into resultMat.
+<a name="line474"></a> *
+<a name="line475"></a> * @param {goog.vec.Mat3.Mat3Like} mat0 The minuend.
+<a name="line476"></a> * @param {goog.vec.Mat3.Mat3Like} mat1 The subtrahend.
+<a name="line477"></a> * @param {goog.vec.Mat3.Mat3Like} resultMat The matrix to receive
+<a name="line478"></a> *     the results (may be either mat0 or mat1).
+<a name="line479"></a> * @return {!goog.vec.Mat3.Mat3Like} return resultMat so that operations can be
+<a name="line480"></a> *     chained together.
+<a name="line481"></a> */
+<a name="line482"></a>goog.vec.Mat3.subMat = function(mat0, mat1, resultMat) {
+<a name="line483"></a>  resultMat[0] = mat0[0] - mat1[0];
+<a name="line484"></a>  resultMat[1] = mat0[1] - mat1[1];
+<a name="line485"></a>  resultMat[2] = mat0[2] - mat1[2];
+<a name="line486"></a>  resultMat[3] = mat0[3] - mat1[3];
+<a name="line487"></a>  resultMat[4] = mat0[4] - mat1[4];
+<a name="line488"></a>  resultMat[5] = mat0[5] - mat1[5];
+<a name="line489"></a>  resultMat[6] = mat0[6] - mat1[6];
+<a name="line490"></a>  resultMat[7] = mat0[7] - mat1[7];
+<a name="line491"></a>  resultMat[8] = mat0[8] - mat1[8];
+<a name="line492"></a>  return resultMat;
+<a name="line493"></a>};
+<a name="line494"></a>
+<a name="line495"></a>
+<a name="line496"></a>/**
+<a name="line497"></a> * Multiplies matrix mat0 with the given scalar, storing the result
+<a name="line498"></a> * into resultMat.
+<a name="line499"></a> *
+<a name="line500"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix.
+<a name="line501"></a> * @param {number} scalar The scalar value to multiple to each element of mat.
+<a name="line502"></a> * @param {goog.vec.Mat3.Mat3Like} resultMat The matrix to receive
+<a name="line503"></a> *     the results (may be mat).
+<a name="line504"></a> * @return {!goog.vec.Mat3.Mat3Like} return resultMat so that operations can be
+<a name="line505"></a> *     chained together.
+<a name="line506"></a> */
+<a name="line507"></a>goog.vec.Mat3.multScalar = function(mat, scalar, resultMat) {
+<a name="line508"></a>  resultMat[0] = mat[0] * scalar;
+<a name="line509"></a>  resultMat[1] = mat[1] * scalar;
+<a name="line510"></a>  resultMat[2] = mat[2] * scalar;
+<a name="line511"></a>  resultMat[3] = mat[3] * scalar;
+<a name="line512"></a>  resultMat[4] = mat[4] * scalar;
+<a name="line513"></a>  resultMat[5] = mat[5] * scalar;
+<a name="line514"></a>  resultMat[6] = mat[6] * scalar;
+<a name="line515"></a>  resultMat[7] = mat[7] * scalar;
+<a name="line516"></a>  resultMat[8] = mat[8] * scalar;
+<a name="line517"></a>  return resultMat;
+<a name="line518"></a>};
+<a name="line519"></a>
+<a name="line520"></a>
+<a name="line521"></a>/**
+<a name="line522"></a> * Multiplies the two matrices mat0 and mat1 using matrix multiplication,
+<a name="line523"></a> * storing the result into resultMat.
+<a name="line524"></a> *
+<a name="line525"></a> * @param {goog.vec.Mat3.Mat3Like} mat0 The first (left hand) matrix.
+<a name="line526"></a> * @param {goog.vec.Mat3.Mat3Like} mat1 The second (right hand) matrix.
+<a name="line527"></a> * @param {goog.vec.Mat3.Mat3Like} resultMat The matrix to receive
+<a name="line528"></a> *     the results (may be either mat0 or mat1).
+<a name="line529"></a> * @return {!goog.vec.Mat3.Mat3Like} return resultMat so that operations can be
+<a name="line530"></a> *     chained together.
+<a name="line531"></a> */
+<a name="line532"></a>goog.vec.Mat3.multMat = function(mat0, mat1, resultMat) {
+<a name="line533"></a>  var a00 = mat0[0], a10 = mat0[1], a20 = mat0[2];
+<a name="line534"></a>  var a01 = mat0[3], a11 = mat0[4], a21 = mat0[5];
+<a name="line535"></a>  var a02 = mat0[6], a12 = mat0[7], a22 = mat0[8];
+<a name="line536"></a>
+<a name="line537"></a>  var b00 = mat1[0], b10 = mat1[1], b20 = mat1[2];
+<a name="line538"></a>  var b01 = mat1[3], b11 = mat1[4], b21 = mat1[5];
+<a name="line539"></a>  var b02 = mat1[6], b12 = mat1[7], b22 = mat1[8];
+<a name="line540"></a>
+<a name="line541"></a>  resultMat[0] = a00 * b00 + a01 * b10 + a02 * b20;
+<a name="line542"></a>  resultMat[1] = a10 * b00 + a11 * b10 + a12 * b20;
+<a name="line543"></a>  resultMat[2] = a20 * b00 + a21 * b10 + a22 * b20;
+<a name="line544"></a>  resultMat[3] = a00 * b01 + a01 * b11 + a02 * b21;
+<a name="line545"></a>  resultMat[4] = a10 * b01 + a11 * b11 + a12 * b21;
+<a name="line546"></a>  resultMat[5] = a20 * b01 + a21 * b11 + a22 * b21;
+<a name="line547"></a>  resultMat[6] = a00 * b02 + a01 * b12 + a02 * b22;
+<a name="line548"></a>  resultMat[7] = a10 * b02 + a11 * b12 + a12 * b22;
+<a name="line549"></a>  resultMat[8] = a20 * b02 + a21 * b12 + a22 * b22;
+<a name="line550"></a>  return resultMat;
+<a name="line551"></a>};
+<a name="line552"></a>
+<a name="line553"></a>
+<a name="line554"></a>/**
+<a name="line555"></a> * Transposes the given matrix mat storing the result into resultMat.
+<a name="line556"></a> *
+<a name="line557"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix to transpose.
+<a name="line558"></a> * @param {goog.vec.Mat3.Mat3Like} resultMat The matrix to receive
+<a name="line559"></a> *     the results (may be mat).
+<a name="line560"></a> * @return {!goog.vec.Mat3.Mat3Like} return resultMat so that operations can be
+<a name="line561"></a> *     chained together.
+<a name="line562"></a> */
+<a name="line563"></a>goog.vec.Mat3.transpose = function(mat, resultMat) {
+<a name="line564"></a>  if (resultMat == mat) {
+<a name="line565"></a>    var a10 = mat[1], a20 = mat[2], a21 = mat[5];
+<a name="line566"></a>    resultMat[1] = mat[3];
+<a name="line567"></a>    resultMat[2] = mat[6];
+<a name="line568"></a>    resultMat[3] = a10;
+<a name="line569"></a>    resultMat[5] = mat[7];
+<a name="line570"></a>    resultMat[6] = a20;
+<a name="line571"></a>    resultMat[7] = a21;
+<a name="line572"></a>  } else {
+<a name="line573"></a>    resultMat[0] = mat[0];
+<a name="line574"></a>    resultMat[1] = mat[3];
+<a name="line575"></a>    resultMat[2] = mat[6];
+<a name="line576"></a>    resultMat[3] = mat[1];
+<a name="line577"></a>    resultMat[4] = mat[4];
+<a name="line578"></a>    resultMat[5] = mat[7];
+<a name="line579"></a>    resultMat[6] = mat[2];
+<a name="line580"></a>    resultMat[7] = mat[5];
+<a name="line581"></a>    resultMat[8] = mat[8];
+<a name="line582"></a>  }
+<a name="line583"></a>  return resultMat;
+<a name="line584"></a>};
+<a name="line585"></a>
+<a name="line586"></a>
+<a name="line587"></a>/**
+<a name="line588"></a> * Computes the inverse of mat0 storing the result into resultMat. If the
+<a name="line589"></a> * inverse is defined, this function returns true, false otherwise.
+<a name="line590"></a> *
+<a name="line591"></a> * @param {goog.vec.Mat3.Mat3Like} mat0 The matrix to invert.
+<a name="line592"></a> * @param {goog.vec.Mat3.Mat3Like} resultMat The matrix to receive
+<a name="line593"></a> *     the result (may be mat0).
+<a name="line594"></a> * @return {boolean} True if the inverse is defined. If false is returned,
+<a name="line595"></a> *     resultMat is not modified.
+<a name="line596"></a> */
+<a name="line597"></a>goog.vec.Mat3.invert = function(mat0, resultMat) {
+<a name="line598"></a>  var a00 = mat0[0], a10 = mat0[1], a20 = mat0[2];
+<a name="line599"></a>  var a01 = mat0[3], a11 = mat0[4], a21 = mat0[5];
+<a name="line600"></a>  var a02 = mat0[6], a12 = mat0[7], a22 = mat0[8];
+<a name="line601"></a>
+<a name="line602"></a>  var t00 = a11 * a22 - a12 * a21;
+<a name="line603"></a>  var t10 = a12 * a20 - a10 * a22;
+<a name="line604"></a>  var t20 = a10 * a21 - a11 * a20;
+<a name="line605"></a>  var det = a00 * t00 + a01 * t10 + a02 * t20;
+<a name="line606"></a>  if (det == 0) {
+<a name="line607"></a>    return false;
+<a name="line608"></a>  }
+<a name="line609"></a>
+<a name="line610"></a>  var idet = 1 / det;
+<a name="line611"></a>  resultMat[0] = t00 * idet;
+<a name="line612"></a>  resultMat[3] = (a02 * a21 - a01 * a22) * idet;
+<a name="line613"></a>  resultMat[6] = (a01 * a12 - a02 * a11) * idet;
+<a name="line614"></a>
+<a name="line615"></a>  resultMat[1] = t10 * idet;
+<a name="line616"></a>  resultMat[4] = (a00 * a22 - a02 * a20) * idet;
+<a name="line617"></a>  resultMat[7] = (a02 * a10 - a00 * a12) * idet;
+<a name="line618"></a>
+<a name="line619"></a>  resultMat[2] = t20 * idet;
+<a name="line620"></a>  resultMat[5] = (a01 * a20 - a00 * a21) * idet;
+<a name="line621"></a>  resultMat[8] = (a00 * a11 - a01 * a10) * idet;
+<a name="line622"></a>  return true;
+<a name="line623"></a>};
+<a name="line624"></a>
+<a name="line625"></a>
+<a name="line626"></a>/**
+<a name="line627"></a> * Returns true if the components of mat0 are equal to the components of mat1.
+<a name="line628"></a> *
+<a name="line629"></a> * @param {goog.vec.Mat3.Mat3Like} mat0 The first matrix.
+<a name="line630"></a> * @param {goog.vec.Mat3.Mat3Like} mat1 The second matrix.
+<a name="line631"></a> * @return {boolean} True if the the two matrices are equivalent.
+<a name="line632"></a> */
+<a name="line633"></a>goog.vec.Mat3.equals = function(mat0, mat1) {
+<a name="line634"></a>  return mat0.length == mat1.length &amp;&amp;
+<a name="line635"></a>      mat0[0] == mat1[0] &amp;&amp; mat0[1] == mat1[1] &amp;&amp; mat0[2] == mat1[2] &amp;&amp;
+<a name="line636"></a>      mat0[3] == mat1[3] &amp;&amp; mat0[4] == mat1[4] &amp;&amp; mat0[5] == mat1[5] &amp;&amp;
+<a name="line637"></a>      mat0[6] == mat1[6] &amp;&amp; mat0[7] == mat1[7] &amp;&amp; mat0[8] == mat1[8];
+<a name="line638"></a>};
+<a name="line639"></a>
+<a name="line640"></a>
+<a name="line641"></a>/**
+<a name="line642"></a> * Transforms the given vector with the given matrix storing the resulting,
+<a name="line643"></a> * transformed matrix into resultVec.
+<a name="line644"></a> *
+<a name="line645"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix supplying the transformation.
+<a name="line646"></a> * @param {goog.vec.Vec3.Vec3Like} vec The vector to transform.
+<a name="line647"></a> * @param {goog.vec.Vec3.Vec3Like} resultVec The vector to
+<a name="line648"></a> *     receive the results (may be vec).
+<a name="line649"></a> * @return {!goog.vec.Vec3.Vec3Like} return resultVec so that operations can be
+<a name="line650"></a> *     chained together.
+<a name="line651"></a> */
+<a name="line652"></a>goog.vec.Mat3.multVec3 = function(mat, vec, resultVec) {
+<a name="line653"></a>  var x = vec[0], y = vec[1], z = vec[2];
+<a name="line654"></a>  resultVec[0] = x * mat[0] + y * mat[3] + z * mat[6];
+<a name="line655"></a>  resultVec[1] = x * mat[1] + y * mat[4] + z * mat[7];
+<a name="line656"></a>  resultVec[2] = x * mat[2] + y * mat[5] + z * mat[8];
+<a name="line657"></a>  return resultVec;
+<a name="line658"></a>};
+<a name="line659"></a>
+<a name="line660"></a>
+<a name="line661"></a>/**
+<a name="line662"></a> * Makes the given 3x3 matrix a translation matrix with x and y
+<a name="line663"></a> * translation values.
+<a name="line664"></a> *
+<a name="line665"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix.
+<a name="line666"></a> * @param {number} x The translation along the x axis.
+<a name="line667"></a> * @param {number} y The translation along the y axis.
+<a name="line668"></a> * @return {!goog.vec.Mat3.Mat3Like} return mat so that operations can be
+<a name="line669"></a> *     chained.
+<a name="line670"></a> */
+<a name="line671"></a>goog.vec.Mat3.makeTranslate = function(mat, x, y) {
+<a name="line672"></a>  goog.vec.Mat3.makeIdentity(mat);
+<a name="line673"></a>  goog.vec.Mat3.setColumnValues(mat, 2, x, y, 1);
+<a name="line674"></a>  return /** @type {!goog.vec.Mat3.Mat3Like} */ (mat);
+<a name="line675"></a>};
+<a name="line676"></a>
+<a name="line677"></a>
+<a name="line678"></a>/**
+<a name="line679"></a> * Makes the given 3x3 matrix a scale matrix with x, y, and z scale factors.
+<a name="line680"></a> *
+<a name="line681"></a> * @param {goog.vec.Mat3.Mat3Like} mat The 3x3 (9-element) matrix
+<a name="line682"></a> *     array to receive the new scale matrix.
+<a name="line683"></a> * @param {number} x The scale along the x axis.
+<a name="line684"></a> * @param {number} y The scale along the y axis.
+<a name="line685"></a> * @param {number} z The scale along the z axis.
+<a name="line686"></a> * @return {!goog.vec.Mat3.Mat3Like} return mat so that operations can be
+<a name="line687"></a> *     chained.
+<a name="line688"></a> */
+<a name="line689"></a>goog.vec.Mat3.makeScale = function(mat, x, y, z) {
+<a name="line690"></a>  goog.vec.Mat3.makeIdentity(mat);
+<a name="line691"></a>  goog.vec.Mat3.setDiagonalValues(mat, x, y, z);
+<a name="line692"></a>  return /** @type {!goog.vec.Mat3.Mat3Like} */ (mat);
+<a name="line693"></a>};
+<a name="line694"></a>
+<a name="line695"></a>
+<a name="line696"></a>/**
+<a name="line697"></a> * Makes the given 3x3 matrix a rotation matrix with the given rotation
+<a name="line698"></a> * angle about the axis defined by the vector (ax, ay, az).
+<a name="line699"></a> *
+<a name="line700"></a> * @param {goog.vec.Mat3.Mat3Like} mat The matrix.
+<a name="line701"></a> * @param {number} angle The rotation angle in radians.
+<a name="line702"></a> * @param {number} ax The x component of the rotation axis.
+<a name="line703"></a> * @param {number} ay The y component of the rotation axis.
+<a name="line704"></a> * @param {number} az The z component of the rotation axis.
+<a name="line705"></a> * @return {!goog.vec.Mat3.Mat3Like} return mat so that operations can be
+<a name="line706"></a> *     chained.
+<a name="line707"></a> */
+<a name="line708"></a>goog.vec.Mat3.makeRotate = function(mat, angle, ax, ay, az) {
+<a name="line709"></a>  var c = Math.cos(angle);
+<a name="line710"></a>  var d = 1 - c;
+<a name="line711"></a>  var s = Math.sin(angle);
+<a name="line712"></a>
+<a name="line713"></a>  goog.vec.Mat3.setFromValues(mat,
+<a name="line714"></a>      ax * ax * d + c,
+<a name="line715"></a>      ax * ay * d + az * s,
+<a name="line716"></a>      ax * az * d - ay * s,
+<a name="line717"></a>
+<a name="line718"></a>      ax * ay * d - az * s,
+<a name="line719"></a>      ay * ay * d + c,
+<a name="line720"></a>      ay * az * d + ax * s,
+<a name="line721"></a>
+<a name="line722"></a>      ax * az * d + ay * s,
+<a name="line723"></a>      ay * az * d - ax * s,
+<a name="line724"></a>      az * az * d + c);
+<a name="line725"></a>  return /** @type {!goog.vec.Mat3.Mat3Like} */ (mat);
+<a name="line726"></a>};
+</pre>
+
+
+</body>
+</html>

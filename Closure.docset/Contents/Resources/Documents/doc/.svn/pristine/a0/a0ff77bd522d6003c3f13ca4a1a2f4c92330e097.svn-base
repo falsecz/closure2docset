@@ -1,0 +1,486 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>devcss.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_debug_devcss_devcss.js.html">devcss.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>
+<a name="line16"></a>goog.provide(&#39;goog.debug.DevCss&#39;);
+<a name="line17"></a>goog.provide(&#39;goog.debug.DevCss.UserAgent&#39;);
+<a name="line18"></a>
+<a name="line19"></a>goog.require(&#39;goog.cssom&#39;);
+<a name="line20"></a>goog.require(&#39;goog.dom.classes&#39;);
+<a name="line21"></a>goog.require(&#39;goog.events&#39;);
+<a name="line22"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line23"></a>goog.require(&#39;goog.string&#39;);
+<a name="line24"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line25"></a>
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>/**
+<a name="line29"></a> * A class for solving development CSS issues/emulating the CSS Compiler.
+<a name="line30"></a> * @param {goog.debug.DevCss.UserAgent=} opt_userAgent The user agent, if not
+<a name="line31"></a> *     passed in, will be determined using goog.userAgent.
+<a name="line32"></a> * @param {number|string=} opt_userAgentVersion The user agent&#39;s version.
+<a name="line33"></a> *     If not passed in, will be determined using goog.userAgent.
+<a name="line34"></a> * @throws {Error} When userAgent detection fails.
+<a name="line35"></a> * @constructor
+<a name="line36"></a> */
+<a name="line37"></a>goog.debug.DevCss = function(opt_userAgent, opt_userAgentVersion) {
+<a name="line38"></a>  if (!opt_userAgent) {
+<a name="line39"></a>    // Walks through the known goog.userAgents.
+<a name="line40"></a>    if (goog.userAgent.IE) {
+<a name="line41"></a>      opt_userAgent = goog.debug.DevCss.UserAgent.IE;
+<a name="line42"></a>    } else if (goog.userAgent.GECKO) {
+<a name="line43"></a>      opt_userAgent = goog.debug.DevCss.UserAgent.GECKO;
+<a name="line44"></a>    } else if (goog.userAgent.WEBKIT) {
+<a name="line45"></a>      opt_userAgent = goog.debug.DevCss.UserAgent.WEBKIT;
+<a name="line46"></a>    } else if (goog.userAgent.MOBILE) {
+<a name="line47"></a>      opt_userAgent = goog.debug.DevCss.UserAgent.MOBILE;
+<a name="line48"></a>    } else if (goog.userAgent.OPERA) {
+<a name="line49"></a>      opt_userAgent = goog.debug.DevCss.UserAgent.OPERA;
+<a name="line50"></a>    }
+<a name="line51"></a>  }
+<a name="line52"></a>  switch (opt_userAgent) {
+<a name="line53"></a>    case goog.debug.DevCss.UserAgent.OPERA:
+<a name="line54"></a>    case goog.debug.DevCss.UserAgent.IE:
+<a name="line55"></a>    case goog.debug.DevCss.UserAgent.GECKO:
+<a name="line56"></a>    case goog.debug.DevCss.UserAgent.FIREFOX:
+<a name="line57"></a>    case goog.debug.DevCss.UserAgent.WEBKIT:
+<a name="line58"></a>    case goog.debug.DevCss.UserAgent.SAFARI:
+<a name="line59"></a>    case goog.debug.DevCss.UserAgent.MOBILE:
+<a name="line60"></a>      break;
+<a name="line61"></a>    default:
+<a name="line62"></a>      throw Error(&#39;Could not determine the user agent from known UserAgents&#39;);
+<a name="line63"></a>  }
+<a name="line64"></a>
+<a name="line65"></a>  /**
+<a name="line66"></a>   * One of goog.debug.DevCss.UserAgent.
+<a name="line67"></a>   * @type {string}
+<a name="line68"></a>   * @private
+<a name="line69"></a>   */
+<a name="line70"></a>  this.userAgent_ = opt_userAgent;
+<a name="line71"></a>
+<a name="line72"></a>  /**
+<a name="line73"></a>   * @type {number|string}
+<a name="line74"></a>   * @private
+<a name="line75"></a>   */
+<a name="line76"></a>  this.userAgentVersion_ = opt_userAgentVersion || goog.userAgent.VERSION;
+<a name="line77"></a>  this.generateUserAgentTokens_();
+<a name="line78"></a>
+<a name="line79"></a>  /**
+<a name="line80"></a>   * @type {boolean}
+<a name="line81"></a>   * @private
+<a name="line82"></a>   */
+<a name="line83"></a>  this.isIe6OrLess_ = this.userAgent_ == goog.debug.DevCss.UserAgent.IE &amp;&amp;
+<a name="line84"></a>      goog.string.compareVersions(&#39;7&#39;, this.userAgentVersion_) &gt; 0;
+<a name="line85"></a>
+<a name="line86"></a>  if (this.isIe6OrLess_) {
+<a name="line87"></a>    /**
+<a name="line88"></a>     * @type {Array.&lt;{classNames,combinedClassName,els}&gt;}
+<a name="line89"></a>     * @private
+<a name="line90"></a>     */
+<a name="line91"></a>    this.ie6CombinedMatches_ = [];
+<a name="line92"></a>  }
+<a name="line93"></a>};
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * Rewrites the CSSOM as needed to activate any useragent-specific selectors.
+<a name="line98"></a> * @param {boolean=} opt_enableIe6ReadyHandler If true(the default), and the
+<a name="line99"></a> *     userAgent is ie6, we set a document &quot;ready&quot; event handler to walk the DOM
+<a name="line100"></a> *     and make combined selector className changes. Having this parameter also
+<a name="line101"></a> *     aids unit testing.
+<a name="line102"></a> */
+<a name="line103"></a>goog.debug.DevCss.prototype.activateBrowserSpecificCssRules = function(
+<a name="line104"></a>    opt_enableIe6ReadyHandler) {
+<a name="line105"></a>  var enableIe6EventHandler = goog.isDef(opt_enableIe6ReadyHandler) ?
+<a name="line106"></a>      opt_enableIe6ReadyHandler : true;
+<a name="line107"></a>  var cssRules = goog.cssom.getAllCssStyleRules();
+<a name="line108"></a>
+<a name="line109"></a>  for (var i = 0, cssRule; cssRule = cssRules[i]; i++) {
+<a name="line110"></a>    this.replaceBrowserSpecificClassNames_(cssRule);
+<a name="line111"></a>  }
+<a name="line112"></a>
+<a name="line113"></a>  // Since we may have manipulated the rules above, we&#39;ll have to do a
+<a name="line114"></a>  // complete sweep again if we&#39;re in IE6. Luckily performance doesn&#39;t
+<a name="line115"></a>  // matter for this tool.
+<a name="line116"></a>  if (this.isIe6OrLess_) {
+<a name="line117"></a>    cssRules = goog.cssom.getAllCssStyleRules();
+<a name="line118"></a>    for (var i = 0, cssRule; cssRule = cssRules[i]; i++) {
+<a name="line119"></a>      this.replaceIe6CombinedSelectors_(cssRule);
+<a name="line120"></a>    }
+<a name="line121"></a>  }
+<a name="line122"></a>
+<a name="line123"></a>  // Add an event listener for document ready to rewrite any necessary
+<a name="line124"></a>  // combined classnames in IE6.
+<a name="line125"></a>  if (this.isIe6OrLess_ &amp;&amp; enableIe6EventHandler) {
+<a name="line126"></a>    goog.events.listen(document, goog.events.EventType.LOAD, goog.bind(
+<a name="line127"></a>        this.addIe6CombinedClassNames_, this));
+<a name="line128"></a>  }
+<a name="line129"></a>};
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * @type {Object}
+<a name="line134"></a> * @private
+<a name="line135"></a> */
+<a name="line136"></a>goog.debug.DevCss.prototype.userAgentTokens_ = {};
+<a name="line137"></a>
+<a name="line138"></a>
+<a name="line139"></a>/**
+<a name="line140"></a> * A list of possible user agent strings.
+<a name="line141"></a> * @enum {string}
+<a name="line142"></a> */
+<a name="line143"></a>goog.debug.DevCss.UserAgent = {
+<a name="line144"></a>  OPERA: &#39;OPERA&#39;,
+<a name="line145"></a>  IE: &#39;IE&#39;,
+<a name="line146"></a>  GECKO: &#39;GECKO&#39;,
+<a name="line147"></a>  FIREFOX: &#39;GECKO&#39;,
+<a name="line148"></a>  WEBKIT: &#39;WEBKIT&#39;,
+<a name="line149"></a>  SAFARI: &#39;WEBKIT&#39;,
+<a name="line150"></a>  MOBILE: &#39;MOBILE&#39;
+<a name="line151"></a>};
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * A list of strings that may be used for matching in CSS files/development.
+<a name="line156"></a> * @enum {string}
+<a name="line157"></a> * @private
+<a name="line158"></a> */
+<a name="line159"></a>goog.debug.DevCss.CssToken_ = {
+<a name="line160"></a>  USERAGENT: &#39;USERAGENT&#39;,
+<a name="line161"></a>  SEPARATOR: &#39;-&#39;,
+<a name="line162"></a>  LESS_THAN: &#39;LT&#39;,
+<a name="line163"></a>  GREATER_THAN: &#39;GT&#39;,
+<a name="line164"></a>  LESS_THAN_OR_EQUAL: &#39;LTE&#39;,
+<a name="line165"></a>  GREATER_THAN_OR_EQUAL: &#39;GTE&#39;,
+<a name="line166"></a>  IE6_SELECTOR_TEXT: &#39;goog-ie6-selector&#39;,
+<a name="line167"></a>  IE6_COMBINED_GLUE: &#39;_&#39;
+<a name="line168"></a>};
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/**
+<a name="line172"></a> * Generates user agent token match strings with comparison and version bits.
+<a name="line173"></a> * For example:
+<a name="line174"></a> *   userAgentTokens_.ANY will be like &#39;GECKO&#39;
+<a name="line175"></a> *   userAgentTokens_.LESS_THAN will be like &#39;GECKO-LT3&#39; etc...
+<a name="line176"></a> * @private
+<a name="line177"></a> */
+<a name="line178"></a>goog.debug.DevCss.prototype.generateUserAgentTokens_ = function() {
+<a name="line179"></a>  this.userAgentTokens_.ANY = goog.debug.DevCss.CssToken_.USERAGENT +
+<a name="line180"></a>      goog.debug.DevCss.CssToken_.SEPARATOR + this.userAgent_;
+<a name="line181"></a>  this.userAgentTokens_.EQUALS = this.userAgentTokens_.ANY +
+<a name="line182"></a>      goog.debug.DevCss.CssToken_.SEPARATOR;
+<a name="line183"></a>  this.userAgentTokens_.LESS_THAN = this.userAgentTokens_.ANY +
+<a name="line184"></a>      goog.debug.DevCss.CssToken_.SEPARATOR +
+<a name="line185"></a>      goog.debug.DevCss.CssToken_.LESS_THAN;
+<a name="line186"></a>  this.userAgentTokens_.LESS_THAN_OR_EQUAL = this.userAgentTokens_.ANY +
+<a name="line187"></a>      goog.debug.DevCss.CssToken_.SEPARATOR +
+<a name="line188"></a>      goog.debug.DevCss.CssToken_.LESS_THAN_OR_EQUAL;
+<a name="line189"></a>  this.userAgentTokens_.GREATER_THAN = this.userAgentTokens_.ANY +
+<a name="line190"></a>      goog.debug.DevCss.CssToken_.SEPARATOR +
+<a name="line191"></a>      goog.debug.DevCss.CssToken_.GREATER_THAN;
+<a name="line192"></a>  this.userAgentTokens_.GREATER_THAN_OR_EQUAL = this.userAgentTokens_.ANY +
+<a name="line193"></a>      goog.debug.DevCss.CssToken_.SEPARATOR +
+<a name="line194"></a>      goog.debug.DevCss.CssToken_.GREATER_THAN_OR_EQUAL;
+<a name="line195"></a>};
+<a name="line196"></a>
+<a name="line197"></a>
+<a name="line198"></a>/**
+<a name="line199"></a> * Gets the version number bit from a selector matching userAgentToken.
+<a name="line200"></a> * @param {string} selectorText The selector text of a CSS rule.
+<a name="line201"></a> * @param {string} userAgentToken Includes the LTE/GTE bit to see if it matches.
+<a name="line202"></a> * @return {string|undefined} The version number.
+<a name="line203"></a> * @private
+<a name="line204"></a> */
+<a name="line205"></a>goog.debug.DevCss.prototype.getVersionNumberFromSelectorText_ = function(
+<a name="line206"></a>    selectorText, userAgentToken) {
+<a name="line207"></a>  var regex = new RegExp(userAgentToken + &#39;([\\d\\.]+)&#39;);
+<a name="line208"></a>  var matches = regex.exec(selectorText);
+<a name="line209"></a>  if (matches &amp;&amp; matches.length == 2) {
+<a name="line210"></a>    return matches[1];
+<a name="line211"></a>  }
+<a name="line212"></a>};
+<a name="line213"></a>
+<a name="line214"></a>
+<a name="line215"></a>/**
+<a name="line216"></a> * Extracts a rule version from the selector text, and if it finds one, calls
+<a name="line217"></a> * compareVersions against it and the passed in token string to provide the
+<a name="line218"></a> * value needed to determine if we have a match or not.
+<a name="line219"></a> * @param {CSSRule} cssRule The rule to test against.
+<a name="line220"></a> * @param {string} token The match token to test against the rule.
+<a name="line221"></a> * @return {Array|undefined} A tuple with the result of the compareVersions call
+<a name="line222"></a> *     and the matched ruleVersion.
+<a name="line223"></a> * @private
+<a name="line224"></a> */
+<a name="line225"></a>goog.debug.DevCss.prototype.getRuleVersionAndCompare_ = function(cssRule,
+<a name="line226"></a>    token) {
+<a name="line227"></a>  if (!cssRule.selectorText.match(token)) {
+<a name="line228"></a>    return;
+<a name="line229"></a>  }
+<a name="line230"></a>  var ruleVersion = this.getVersionNumberFromSelectorText_(
+<a name="line231"></a>      cssRule.selectorText, token);
+<a name="line232"></a>  if (!ruleVersion) {
+<a name="line233"></a>    return;
+<a name="line234"></a>  }
+<a name="line235"></a>
+<a name="line236"></a>  var comparison = goog.string.compareVersions(this.userAgentVersion_,
+<a name="line237"></a>      ruleVersion);
+<a name="line238"></a>  return [comparison, ruleVersion];
+<a name="line239"></a>};
+<a name="line240"></a>
+<a name="line241"></a>
+<a name="line242"></a>/**
+<a name="line243"></a> * Replaces a CSS selector if we have matches based on our useragent/version.
+<a name="line244"></a> * Example: With a selector like &quot;.USERAGENT-IE-LTE6 .class { prop: value }&quot; if
+<a name="line245"></a> * we are running IE6 we&#39;ll end up with &quot;.class { prop: value }&quot;, thereby
+<a name="line246"></a> * &quot;activating&quot; the selector.
+<a name="line247"></a> * @param {CSSRule} cssRule The cssRule to potentially replace.
+<a name="line248"></a> * @private
+<a name="line249"></a> */
+<a name="line250"></a>goog.debug.DevCss.prototype.replaceBrowserSpecificClassNames_ = function(
+<a name="line251"></a>    cssRule) {
+<a name="line252"></a>
+<a name="line253"></a>  // If we don&#39;t match the browser token, we can stop now.
+<a name="line254"></a>  if (!cssRule.selectorText.match(this.userAgentTokens_.ANY)) {
+<a name="line255"></a>    return;
+<a name="line256"></a>  }
+<a name="line257"></a>
+<a name="line258"></a>  // We know it will begin as a classname.
+<a name="line259"></a>  var additionalRegexString;
+<a name="line260"></a>
+<a name="line261"></a>  // Tests &quot;Less than or equals&quot;.
+<a name="line262"></a>  var compared = this.getRuleVersionAndCompare_(cssRule,
+<a name="line263"></a>      this.userAgentTokens_.LESS_THAN_OR_EQUAL);
+<a name="line264"></a>  if (compared &amp;&amp; compared.length) {
+<a name="line265"></a>    if (compared[0] &gt; 0) {
+<a name="line266"></a>      return;
+<a name="line267"></a>    }
+<a name="line268"></a>    additionalRegexString = this.userAgentTokens_.LESS_THAN_OR_EQUAL +
+<a name="line269"></a>        compared[1];
+<a name="line270"></a>  }
+<a name="line271"></a>
+<a name="line272"></a>  // Tests &quot;Less than&quot;.
+<a name="line273"></a>  compared = this.getRuleVersionAndCompare_(cssRule,
+<a name="line274"></a>      this.userAgentTokens_.LESS_THAN);
+<a name="line275"></a>  if (compared &amp;&amp; compared.length) {
+<a name="line276"></a>    if (compared[0] &gt; -1) {
+<a name="line277"></a>      return;
+<a name="line278"></a>    }
+<a name="line279"></a>    additionalRegexString = this.userAgentTokens_.LESS_THAN + compared[1];
+<a name="line280"></a>  }
+<a name="line281"></a>
+<a name="line282"></a>  // Tests &quot;Greater than or equals&quot;.
+<a name="line283"></a>  compared = this.getRuleVersionAndCompare_(cssRule,
+<a name="line284"></a>      this.userAgentTokens_.GREATER_THAN_OR_EQUAL);
+<a name="line285"></a>  if (compared &amp;&amp; compared.length) {
+<a name="line286"></a>    if (compared[0] &lt; 0) {
+<a name="line287"></a>      return;
+<a name="line288"></a>    }
+<a name="line289"></a>    additionalRegexString = this.userAgentTokens_.GREATER_THAN_OR_EQUAL +
+<a name="line290"></a>        compared[1];
+<a name="line291"></a>  }
+<a name="line292"></a>
+<a name="line293"></a>  // Tests &quot;Greater than&quot;.
+<a name="line294"></a>  compared = this.getRuleVersionAndCompare_(cssRule,
+<a name="line295"></a>      this.userAgentTokens_.GREATER_THAN);
+<a name="line296"></a>  if (compared &amp;&amp; compared.length) {
+<a name="line297"></a>    if (compared[0] &lt; 1) {
+<a name="line298"></a>      return;
+<a name="line299"></a>    }
+<a name="line300"></a>    additionalRegexString = this.userAgentTokens_.GREATER_THAN + compared[1];
+<a name="line301"></a>  }
+<a name="line302"></a>
+<a name="line303"></a>  // Tests &quot;Equals&quot;.
+<a name="line304"></a>  compared = this.getRuleVersionAndCompare_(cssRule,
+<a name="line305"></a>      this.userAgentTokens_.EQUALS);
+<a name="line306"></a>  if (compared &amp;&amp; compared.length) {
+<a name="line307"></a>    if (compared[0] != 0) {
+<a name="line308"></a>      return;
+<a name="line309"></a>    }
+<a name="line310"></a>    additionalRegexString = this.userAgentTokens_.EQUALS + compared[1];
+<a name="line311"></a>  }
+<a name="line312"></a>
+<a name="line313"></a>  // If we got to here without generating the additionalRegexString, then
+<a name="line314"></a>  // we did not match any of our comparison token strings, and we want a
+<a name="line315"></a>  // general browser token replacement.
+<a name="line316"></a>  if (!additionalRegexString) {
+<a name="line317"></a>    additionalRegexString = this.userAgentTokens_.ANY;
+<a name="line318"></a>  }
+<a name="line319"></a>
+<a name="line320"></a>  // We need to match at least a single whitespace character to know that
+<a name="line321"></a>  // we are matching the entire useragent string token.
+<a name="line322"></a>  var regexString = &#39;\\.&#39; + additionalRegexString + &#39;\\s+&#39;;
+<a name="line323"></a>  var re = new RegExp(regexString, &#39;g&#39;);
+<a name="line324"></a>
+<a name="line325"></a>  var currentCssText = goog.cssom.getCssTextFromCssRule(cssRule);
+<a name="line326"></a>
+<a name="line327"></a>  // Replacing the token with &#39;&#39; activates the selector for this useragent.
+<a name="line328"></a>  var newCssText = currentCssText.replace(re, &#39;&#39;);
+<a name="line329"></a>
+<a name="line330"></a>  if (newCssText != currentCssText) {
+<a name="line331"></a>    goog.cssom.replaceCssRule(cssRule, newCssText);
+<a name="line332"></a>  }
+<a name="line333"></a>};
+<a name="line334"></a>
+<a name="line335"></a>
+<a name="line336"></a>/**
+<a name="line337"></a> * Replaces IE6 combined selector rules with a workable development alternative.
+<a name="line338"></a> * IE6 actually parses .class1.class2 {} to simply .class2 {} which is nasty.
+<a name="line339"></a> * To fully support combined selectors in IE6 this function needs to be paired
+<a name="line340"></a> * with a call to replace the relevant DOM elements classNames as well.
+<a name="line341"></a> * @see {this.addIe6CombinedClassNames_}
+<a name="line342"></a> * @param {CSSRule} cssRule The rule to potentially fix.
+<a name="line343"></a> * @private
+<a name="line344"></a> */
+<a name="line345"></a>goog.debug.DevCss.prototype.replaceIe6CombinedSelectors_ = function(cssRule) {
+<a name="line346"></a>  // This match only ever works in IE because other UA&#39;s won&#39;t have our
+<a name="line347"></a>  // IE6_SELECTOR_TEXT in the cssText property.
+<a name="line348"></a>  if (cssRule.style.cssText &amp;&amp;
+<a name="line349"></a>      cssRule.style.cssText.match(
+<a name="line350"></a>          goog.debug.DevCss.CssToken_.IE6_SELECTOR_TEXT)) {
+<a name="line351"></a>    var cssText = goog.cssom.getCssTextFromCssRule(cssRule);
+<a name="line352"></a>    var combinedSelectorText = this.getIe6CombinedSelectorText_(cssText);
+<a name="line353"></a>    if (combinedSelectorText) {
+<a name="line354"></a>      var newCssText = combinedSelectorText + &#39;{&#39; + cssRule.style.cssText + &#39;}&#39;;
+<a name="line355"></a>      goog.cssom.replaceCssRule(cssRule, newCssText);
+<a name="line356"></a>    }
+<a name="line357"></a>  }
+<a name="line358"></a>};
+<a name="line359"></a>
+<a name="line360"></a>
+<a name="line361"></a>/**
+<a name="line362"></a> * Gets the appropriate new combined selector text for IE6.
+<a name="line363"></a> * Also adds an entry onto ie6CombinedMatches_ with relevant info for the
+<a name="line364"></a> * likely following call to walk the DOM and rewrite the class attribute.
+<a name="line365"></a> * Example: With a selector like
+<a name="line366"></a> *     &quot;.class2 { -goog-ie6-selector: .class1.class2; prop: value }&quot;.
+<a name="line367"></a> * this function will return:
+<a name="line368"></a> *     &quot;.class1_class2 { prop: value }&quot;.
+<a name="line369"></a> * @param {string} cssText The CSS selector text and css rule text combined.
+<a name="line370"></a> * @return {?string} The rewritten css rule text.
+<a name="line371"></a> * @private
+<a name="line372"></a> */
+<a name="line373"></a>goog.debug.DevCss.prototype.getIe6CombinedSelectorText_ = function(cssText) {
+<a name="line374"></a>  var regex = new RegExp(goog.debug.DevCss.CssToken_.IE6_SELECTOR_TEXT +
+<a name="line375"></a>      &#39;\\s*:\\s*\\&quot;([^\\&quot;]+)\\&quot;&#39;, &#39;gi&#39;);
+<a name="line376"></a>  var matches = regex.exec(cssText);
+<a name="line377"></a>  if (matches) {
+<a name="line378"></a>    var combinedSelectorText = matches[1];
+<a name="line379"></a>    // To aid in later fixing the DOM, we need to split up the possible
+<a name="line380"></a>    // selector groups by commas.
+<a name="line381"></a>    var groupedSelectors = combinedSelectorText.split(/\s*\,\s*/);
+<a name="line382"></a>    for (var i = 0, selector; selector = groupedSelectors[i]; i++) {
+<a name="line383"></a>      // Strips off the leading &quot;.&quot;.
+<a name="line384"></a>      var combinedClassName = selector.substr(1);
+<a name="line385"></a>      var classNames = combinedClassName.split(
+<a name="line386"></a>          goog.debug.DevCss.CssToken_.IE6_COMBINED_GLUE);
+<a name="line387"></a>      var entry = {
+<a name="line388"></a>        classNames: classNames,
+<a name="line389"></a>        combinedClassName: combinedClassName,
+<a name="line390"></a>        els: []
+<a name="line391"></a>      };
+<a name="line392"></a>      this.ie6CombinedMatches_.push(entry);
+<a name="line393"></a>    }
+<a name="line394"></a>    return combinedSelectorText;
+<a name="line395"></a>  }
+<a name="line396"></a>  return null;
+<a name="line397"></a>};
+<a name="line398"></a>
+<a name="line399"></a>
+<a name="line400"></a>/**
+<a name="line401"></a> * Adds combined selectors with underscores to make them &quot;work&quot; in IE6.
+<a name="line402"></a> * @see {this.replaceIe6CombinedSelectors_}
+<a name="line403"></a> * @private
+<a name="line404"></a> */
+<a name="line405"></a>goog.debug.DevCss.prototype.addIe6CombinedClassNames_ = function() {
+<a name="line406"></a>  if (!this.ie6CombinedMatches_.length) {
+<a name="line407"></a>    return;
+<a name="line408"></a>  }
+<a name="line409"></a>  var allEls = document.getElementsByTagName(&#39;*&#39;);
+<a name="line410"></a>  var matches = [];
+<a name="line411"></a>  // Match nodes for all classNames.
+<a name="line412"></a>  for (var i = 0, classNameEntry; classNameEntry =
+<a name="line413"></a>      this.ie6CombinedMatches_[i]; i++) {
+<a name="line414"></a>    for (var j = 0, el; el = allEls[j]; j++) {
+<a name="line415"></a>      var classNamesLength = classNameEntry.classNames.length;
+<a name="line416"></a>      for (var k = 0, className; className = classNameEntry.classNames[k];
+<a name="line417"></a>          k++) {
+<a name="line418"></a>        if (!goog.dom.classes.has(el, className)) {
+<a name="line419"></a>          break;
+<a name="line420"></a>        }
+<a name="line421"></a>        if (k == classNamesLength - 1) {
+<a name="line422"></a>          classNameEntry.els.push(el);
+<a name="line423"></a>        }
+<a name="line424"></a>      }
+<a name="line425"></a>    }
+<a name="line426"></a>    // Walks over our matching nodes and fixes them.
+<a name="line427"></a>    if (classNameEntry.els.length) {
+<a name="line428"></a>      for (var j = 0, el; el = classNameEntry.els[j]; j++) {
+<a name="line429"></a>        if (!goog.dom.classes.has(el, classNameEntry.combinedClassName)) {
+<a name="line430"></a>          goog.dom.classes.add(el, classNameEntry.combinedClassName);
+<a name="line431"></a>        }
+<a name="line432"></a>      }
+<a name="line433"></a>    }
+<a name="line434"></a>  }
+<a name="line435"></a>};
+</pre>
+
+
+</body>
+</html>

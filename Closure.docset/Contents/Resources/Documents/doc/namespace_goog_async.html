@@ -1,0 +1,153 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>async (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">async</span>
+</div>
+
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_async_ConditionalDelay.html">
+          goog.async.ConditionalDelay</a><br/>
+        <div class="class-details">A ConditionalDelay object invokes the associated function after a specified
+interval delay and checks its return value. If the function returns
+<code>true</code> the conditional delay is cancelled and #onSuccess
+is called. Otherwise this object keeps to invoke the deferred function until
+either it returns <code>true</code> or the timeout is exceeded. In the latter case
+the #onFailure method will be called.
+
+The interval duration and timeout can be specified each time the delay is
+started. Calling start on an active delay will reset the timer.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_async_Deferred.html">
+          goog.async.Deferred</a><br/>
+        <div class="class-details">Represents the results of an asynchronous operation. A Deferred object
+starts with no result, and then gets a result at some point in the future.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_async_DeferredList.html">
+          goog.async.DeferredList</a><br/>
+        <div class="class-details">Constructs an object that waits on the results of multiple asynchronous
+operations and marshals the results. It is itself a <code>Deferred</code>,
+and sends results to its registered callback chain. Each instance is single
+use and may only fire once.
+
+Unless overridden by one of the options below, the <code>DeferredList</code>
+will wait for a result from every input <code>Deferred</code>. The results
+are stored in a list of two-element arrays as <code>[success, result]</code>,
+where <code>success</code> is whether that result was from a callback or
+errback. Once all results are available, the <code>DeferredList</code>'s
+callback chain is invoked with the full result list.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_async_Delay.html">
+          goog.async.Delay</a><br/>
+        <div class="class-details">A Delay object invokes the associated function after a specified delay. The
+interval duration can be specified once in the constructor, or can be defined
+each time the delay is started. Calling start on an active delay will reset
+the timer.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_async_Throttle.html">
+          goog.async.Throttle</a><br/>
+        <div class="class-details">Throttle will perform an action that is passed in no more than once
+per interval (specified in milliseconds). If it gets multiple signals
+to perform the action while it is waiting, it will only perform the action
+once at the end of the interval.</div>
+ </div>
+   
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package async</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="async"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

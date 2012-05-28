@@ -1,0 +1,531 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>animation.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_fx_animation.js.html">animation.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Classes for doing animations and visual effects.
+<a name="line17"></a> *
+<a name="line18"></a> * (Based loosly on my animation code for 13thparallel.org, with extra
+<a name="line19"></a> * inspiration from the DojoToolkit&#39;s modifications to my code)
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.fx.Animation&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.fx.Animation.EventType&#39;);
+<a name="line24"></a>goog.provide(&#39;goog.fx.Animation.State&#39;);
+<a name="line25"></a>goog.provide(&#39;goog.fx.AnimationEvent&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.array&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events.Event&#39;);
+<a name="line29"></a>goog.require(&#39;goog.fx.Transition&#39;);  // Unreferenced: interface
+<a name="line30"></a>goog.require(&#39;goog.fx.Transition.EventType&#39;);
+<a name="line31"></a>goog.require(&#39;goog.fx.TransitionBase.State&#39;);
+<a name="line32"></a>goog.require(&#39;goog.fx.anim&#39;);
+<a name="line33"></a>goog.require(&#39;goog.fx.anim.Animated&#39;);  // Unreferenced: interface
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>/**
+<a name="line38"></a> * Constructor for an animation object.
+<a name="line39"></a> * @param {Array.&lt;number&gt;} start Array for start coordinates.
+<a name="line40"></a> * @param {Array.&lt;number&gt;} end Array for end coordinates.
+<a name="line41"></a> * @param {number} duration Length of animation in milliseconds.
+<a name="line42"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line43"></a> * @constructor
+<a name="line44"></a> * @implements {goog.fx.anim.Animated}
+<a name="line45"></a> * @implements {goog.fx.Transition}
+<a name="line46"></a> * @extends {goog.fx.TransitionBase}
+<a name="line47"></a> */
+<a name="line48"></a>goog.fx.Animation = function(start, end, duration, opt_acc) {
+<a name="line49"></a>  goog.base(this);
+<a name="line50"></a>
+<a name="line51"></a>  if (!goog.isArray(start) || !goog.isArray(end)) {
+<a name="line52"></a>    throw Error(&#39;Start and end parameters must be arrays&#39;);
+<a name="line53"></a>  }
+<a name="line54"></a>
+<a name="line55"></a>  if (start.length != end.length) {
+<a name="line56"></a>    throw Error(&#39;Start and end points must be the same length&#39;);
+<a name="line57"></a>  }
+<a name="line58"></a>
+<a name="line59"></a>  /**
+<a name="line60"></a>   * Start point.
+<a name="line61"></a>   * @type {Array.&lt;number&gt;}
+<a name="line62"></a>   * @protected
+<a name="line63"></a>   */
+<a name="line64"></a>  this.startPoint = start;
+<a name="line65"></a>
+<a name="line66"></a>  /**
+<a name="line67"></a>   * End point.
+<a name="line68"></a>   * @type {Array.&lt;number&gt;}
+<a name="line69"></a>   * @protected
+<a name="line70"></a>   */
+<a name="line71"></a>  this.endPoint = end;
+<a name="line72"></a>
+<a name="line73"></a>  /**
+<a name="line74"></a>   * Duration of animation in milliseconds.
+<a name="line75"></a>   * @type {number}
+<a name="line76"></a>   * @protected
+<a name="line77"></a>   */
+<a name="line78"></a>  this.duration = duration;
+<a name="line79"></a>
+<a name="line80"></a>  /**
+<a name="line81"></a>   * Acceleration function, which must return a number between 0 and 1 for
+<a name="line82"></a>   * inputs between 0 and 1.
+<a name="line83"></a>   * @type {Function|undefined}
+<a name="line84"></a>   * @private
+<a name="line85"></a>   */
+<a name="line86"></a>  this.accel_ = opt_acc;
+<a name="line87"></a>
+<a name="line88"></a>  /**
+<a name="line89"></a>   * Current coordinate for animation.
+<a name="line90"></a>   * @type {Array.&lt;number&gt;}
+<a name="line91"></a>   * @protected
+<a name="line92"></a>   */
+<a name="line93"></a>  this.coords = [];
+<a name="line94"></a>};
+<a name="line95"></a>goog.inherits(goog.fx.Animation, goog.fx.TransitionBase);
+<a name="line96"></a>
+<a name="line97"></a>
+<a name="line98"></a>/**
+<a name="line99"></a> * Events fired by the animation.
+<a name="line100"></a> * @enum {string}
+<a name="line101"></a> */
+<a name="line102"></a>goog.fx.Animation.EventType = {
+<a name="line103"></a>  /**
+<a name="line104"></a>   * Dispatched when played for the first time OR when it is resumed.
+<a name="line105"></a>   * @deprecated Use goog.fx.Transition.EventType.PLAY.
+<a name="line106"></a>   */
+<a name="line107"></a>  PLAY: goog.fx.Transition.EventType.PLAY,
+<a name="line108"></a>
+<a name="line109"></a>  /**
+<a name="line110"></a>   * Dispatched only when the animation starts from the beginning.
+<a name="line111"></a>   * @deprecated Use goog.fx.Transition.EventType.BEGIN.
+<a name="line112"></a>   */
+<a name="line113"></a>  BEGIN: goog.fx.Transition.EventType.BEGIN,
+<a name="line114"></a>
+<a name="line115"></a>  /**
+<a name="line116"></a>   * Dispatched only when animation is restarted after a pause.
+<a name="line117"></a>   * @deprecated Use goog.fx.Transition.EventType.RESUME.
+<a name="line118"></a>   */
+<a name="line119"></a>  RESUME: goog.fx.Transition.EventType.RESUME,
+<a name="line120"></a>
+<a name="line121"></a>  /**
+<a name="line122"></a>   * Dispatched when animation comes to the end of its duration OR stop
+<a name="line123"></a>   * is called.
+<a name="line124"></a>   * @deprecated Use goog.fx.Transition.EventType.END.
+<a name="line125"></a>   */
+<a name="line126"></a>  END: goog.fx.Transition.EventType.END,
+<a name="line127"></a>
+<a name="line128"></a>  /**
+<a name="line129"></a>   * Dispatched only when stop is called.
+<a name="line130"></a>   * @deprecated Use goog.fx.Transition.EventType.STOP.
+<a name="line131"></a>   */
+<a name="line132"></a>  STOP: goog.fx.Transition.EventType.STOP,
+<a name="line133"></a>
+<a name="line134"></a>  /**
+<a name="line135"></a>   * Dispatched only when animation comes to its end naturally.
+<a name="line136"></a>   * @deprecated Use goog.fx.Transition.EventType.FINISH.
+<a name="line137"></a>   */
+<a name="line138"></a>  FINISH: goog.fx.Transition.EventType.FINISH,
+<a name="line139"></a>
+<a name="line140"></a>  /**
+<a name="line141"></a>   * Dispatched when an animation is paused.
+<a name="line142"></a>   * @deprecated Use goog.fx.Transition.EventType.PAUSE.
+<a name="line143"></a>   */
+<a name="line144"></a>  PAUSE: goog.fx.Transition.EventType.PAUSE,
+<a name="line145"></a>
+<a name="line146"></a>  /**
+<a name="line147"></a>   * Dispatched each frame of the animation.  This is where the actual animator
+<a name="line148"></a>   * will listen.
+<a name="line149"></a>   */
+<a name="line150"></a>  ANIMATE: &#39;animate&#39;,
+<a name="line151"></a>
+<a name="line152"></a>  /**
+<a name="line153"></a>   * Dispatched when the animation is destroyed.
+<a name="line154"></a>   */
+<a name="line155"></a>  DESTROY: &#39;destroy&#39;
+<a name="line156"></a>};
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/**
+<a name="line160"></a> * @deprecated Use goog.fx.anim.TIMEOUT.
+<a name="line161"></a> */
+<a name="line162"></a>goog.fx.Animation.TIMEOUT = goog.fx.anim.TIMEOUT;
+<a name="line163"></a>
+<a name="line164"></a>
+<a name="line165"></a>/**
+<a name="line166"></a> * Enum for the possible states of an animation.
+<a name="line167"></a> * @deprecated Use goog.fx.Transition.State instead.
+<a name="line168"></a> * @enum {number}
+<a name="line169"></a> */
+<a name="line170"></a>goog.fx.Animation.State = goog.fx.TransitionBase.State;
+<a name="line171"></a>
+<a name="line172"></a>
+<a name="line173"></a>/**
+<a name="line174"></a> * @deprecated Use goog.fx.anim.setAnimationWindow.
+<a name="line175"></a> * @param {Window} animationWindow The window in which to animate elements.
+<a name="line176"></a> */
+<a name="line177"></a>goog.fx.Animation.setAnimationWindow = function(animationWindow) {
+<a name="line178"></a>  goog.fx.anim.setAnimationWindow(animationWindow);
+<a name="line179"></a>};
+<a name="line180"></a>
+<a name="line181"></a>
+<a name="line182"></a>/**
+<a name="line183"></a> * Current frame rate.
+<a name="line184"></a> * @type {number}
+<a name="line185"></a> * @private
+<a name="line186"></a> */
+<a name="line187"></a>goog.fx.Animation.prototype.fps_ = 0;
+<a name="line188"></a>
+<a name="line189"></a>
+<a name="line190"></a>/**
+<a name="line191"></a> * Percent of the way through the animation.
+<a name="line192"></a> * @type {number}
+<a name="line193"></a> * @protected
+<a name="line194"></a> */
+<a name="line195"></a>goog.fx.Animation.prototype.progress = 0;
+<a name="line196"></a>
+<a name="line197"></a>
+<a name="line198"></a>/**
+<a name="line199"></a> * Timestamp for when last frame was run.
+<a name="line200"></a> * @type {?number}
+<a name="line201"></a> * @protected
+<a name="line202"></a> */
+<a name="line203"></a>goog.fx.Animation.prototype.lastFrame = null;
+<a name="line204"></a>
+<a name="line205"></a>
+<a name="line206"></a>/**
+<a name="line207"></a> * Starts or resumes an animation.
+<a name="line208"></a> * @param {boolean=} opt_restart Whether to restart the
+<a name="line209"></a> *     animation from the beginning if it has been paused.
+<a name="line210"></a> * @return {boolean} Whether animation was started.
+<a name="line211"></a> */
+<a name="line212"></a>goog.fx.Animation.prototype.play = function(opt_restart) {
+<a name="line213"></a>  if (opt_restart || this.isStopped()) {
+<a name="line214"></a>    this.progress = 0;
+<a name="line215"></a>    this.coords = this.startPoint;
+<a name="line216"></a>  } else if (this.isPlaying()) {
+<a name="line217"></a>    return false;
+<a name="line218"></a>  }
+<a name="line219"></a>
+<a name="line220"></a>  goog.fx.anim.unregisterAnimation(this);
+<a name="line221"></a>
+<a name="line222"></a>  var now = /** @type {number} */ (goog.now());
+<a name="line223"></a>
+<a name="line224"></a>  this.startTime = now;
+<a name="line225"></a>  if (this.isPaused()) {
+<a name="line226"></a>    this.startTime -= this.duration * this.progress;
+<a name="line227"></a>  }
+<a name="line228"></a>
+<a name="line229"></a>  this.endTime = this.startTime + this.duration;
+<a name="line230"></a>  this.lastFrame = this.startTime;
+<a name="line231"></a>
+<a name="line232"></a>  if (!this.progress) {
+<a name="line233"></a>    this.onBegin();
+<a name="line234"></a>  }
+<a name="line235"></a>
+<a name="line236"></a>  this.onPlay();
+<a name="line237"></a>
+<a name="line238"></a>  if (this.isPaused()) {
+<a name="line239"></a>    this.onResume();
+<a name="line240"></a>  }
+<a name="line241"></a>
+<a name="line242"></a>  this.setStatePlaying();
+<a name="line243"></a>
+<a name="line244"></a>  goog.fx.anim.registerAnimation(this);
+<a name="line245"></a>  this.cycle(now);
+<a name="line246"></a>
+<a name="line247"></a>  return true;
+<a name="line248"></a>};
+<a name="line249"></a>
+<a name="line250"></a>
+<a name="line251"></a>/**
+<a name="line252"></a> * Stops the animation.
+<a name="line253"></a> * @param {boolean} gotoEnd If true the animation will move to the end coords.
+<a name="line254"></a> */
+<a name="line255"></a>goog.fx.Animation.prototype.stop = function(gotoEnd) {
+<a name="line256"></a>  goog.fx.anim.unregisterAnimation(this);
+<a name="line257"></a>  this.setStateStopped();
+<a name="line258"></a>
+<a name="line259"></a>  if (gotoEnd) {
+<a name="line260"></a>    this.progress = 1;
+<a name="line261"></a>  }
+<a name="line262"></a>
+<a name="line263"></a>  this.updateCoords_(this.progress);
+<a name="line264"></a>
+<a name="line265"></a>  this.onStop();
+<a name="line266"></a>  this.onEnd();
+<a name="line267"></a>};
+<a name="line268"></a>
+<a name="line269"></a>
+<a name="line270"></a>/**
+<a name="line271"></a> * Pauses the animation (iff it&#39;s playing).
+<a name="line272"></a> */
+<a name="line273"></a>goog.fx.Animation.prototype.pause = function() {
+<a name="line274"></a>  if (this.isPlaying()) {
+<a name="line275"></a>    goog.fx.anim.unregisterAnimation(this);
+<a name="line276"></a>    this.setStatePaused();
+<a name="line277"></a>    this.onPause();
+<a name="line278"></a>  }
+<a name="line279"></a>};
+<a name="line280"></a>
+<a name="line281"></a>
+<a name="line282"></a>/**
+<a name="line283"></a> * Sets the progress of the animation.
+<a name="line284"></a> * @param {number} progress The new progress of the animation.
+<a name="line285"></a> */
+<a name="line286"></a>goog.fx.Animation.prototype.setProgress = function(progress) {
+<a name="line287"></a>  this.progress = progress;
+<a name="line288"></a>  if (this.isPlaying()) {
+<a name="line289"></a>    var now = goog.now();
+<a name="line290"></a>    // If the animation is already playing, we recompute startTime and endTime
+<a name="line291"></a>    // such that the animation plays consistently, that is:
+<a name="line292"></a>    // now = startTime + progress * duration.
+<a name="line293"></a>    this.startTime = now - this.duration * this.progress;
+<a name="line294"></a>    this.endTime = this.startTime + this.duration;
+<a name="line295"></a>  }
+<a name="line296"></a>};
+<a name="line297"></a>
+<a name="line298"></a>
+<a name="line299"></a>/**
+<a name="line300"></a> * Disposes of the animation.  Stops an animation, fires a &#39;destroy&#39; event and
+<a name="line301"></a> * then removes all the event handlers to clean up memory.
+<a name="line302"></a> * @override
+<a name="line303"></a> * @protected
+<a name="line304"></a> */
+<a name="line305"></a>goog.fx.Animation.prototype.disposeInternal = function() {
+<a name="line306"></a>  if (!this.isStopped()) {
+<a name="line307"></a>    this.stop(false);
+<a name="line308"></a>  }
+<a name="line309"></a>  this.onDestroy();
+<a name="line310"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line311"></a>};
+<a name="line312"></a>
+<a name="line313"></a>
+<a name="line314"></a>/**
+<a name="line315"></a> * Stops an animation, fires a &#39;destroy&#39; event and then removes all the event
+<a name="line316"></a> * handlers to clean up memory.
+<a name="line317"></a> * @deprecated Use dispose() instead.
+<a name="line318"></a> */
+<a name="line319"></a>goog.fx.Animation.prototype.destroy = function() {
+<a name="line320"></a>  this.dispose();
+<a name="line321"></a>};
+<a name="line322"></a>
+<a name="line323"></a>
+<a name="line324"></a>/** @inheritDoc */
+<a name="line325"></a>goog.fx.Animation.prototype.onAnimationFrame = function(now) {
+<a name="line326"></a>  this.cycle(now);
+<a name="line327"></a>};
+<a name="line328"></a>
+<a name="line329"></a>
+<a name="line330"></a>/**
+<a name="line331"></a> * Handles the actual iteration of the animation in a timeout
+<a name="line332"></a> * @param {number} now The current time.
+<a name="line333"></a> */
+<a name="line334"></a>goog.fx.Animation.prototype.cycle = function(now) {
+<a name="line335"></a>  this.progress = (now - this.startTime) / (this.endTime - this.startTime);
+<a name="line336"></a>
+<a name="line337"></a>  if (this.progress &gt;= 1) {
+<a name="line338"></a>    this.progress = 1;
+<a name="line339"></a>  }
+<a name="line340"></a>
+<a name="line341"></a>  this.fps_ = 1000 / (now - this.lastFrame);
+<a name="line342"></a>  this.lastFrame = now;
+<a name="line343"></a>
+<a name="line344"></a>  this.updateCoords_(this.progress);
+<a name="line345"></a>
+<a name="line346"></a>  // Animation has finished.
+<a name="line347"></a>  if (this.progress == 1) {
+<a name="line348"></a>    this.setStateStopped();
+<a name="line349"></a>    goog.fx.anim.unregisterAnimation(this);
+<a name="line350"></a>
+<a name="line351"></a>    this.onFinish();
+<a name="line352"></a>    this.onEnd();
+<a name="line353"></a>
+<a name="line354"></a>  // Animation is still under way.
+<a name="line355"></a>  } else if (this.isPlaying()) {
+<a name="line356"></a>    this.onAnimate();
+<a name="line357"></a>  }
+<a name="line358"></a>};
+<a name="line359"></a>
+<a name="line360"></a>
+<a name="line361"></a>/**
+<a name="line362"></a> * Calculates current coordinates, based on the current state.  Applies
+<a name="line363"></a> * the accelleration function if it exists.
+<a name="line364"></a> * @param {number} t Percentage of the way through the animation as a decimal.
+<a name="line365"></a> * @private
+<a name="line366"></a> */
+<a name="line367"></a>goog.fx.Animation.prototype.updateCoords_ = function(t) {
+<a name="line368"></a>  if (goog.isFunction(this.accel_)) {
+<a name="line369"></a>    t = this.accel_(t);
+<a name="line370"></a>  }
+<a name="line371"></a>  this.coords = new Array(this.startPoint.length);
+<a name="line372"></a>  for (var i = 0; i &lt; this.startPoint.length; i++) {
+<a name="line373"></a>    this.coords[i] = (this.endPoint[i] - this.startPoint[i]) * t +
+<a name="line374"></a>        this.startPoint[i];
+<a name="line375"></a>  }
+<a name="line376"></a>};
+<a name="line377"></a>
+<a name="line378"></a>
+<a name="line379"></a>/**
+<a name="line380"></a> * Dispatches the ANIMATE event. Sub classes should override this instead
+<a name="line381"></a> * of listening to the event.
+<a name="line382"></a> * @protected
+<a name="line383"></a> */
+<a name="line384"></a>goog.fx.Animation.prototype.onAnimate = function() {
+<a name="line385"></a>  this.dispatchAnimationEvent(goog.fx.Animation.EventType.ANIMATE);
+<a name="line386"></a>};
+<a name="line387"></a>
+<a name="line388"></a>
+<a name="line389"></a>/**
+<a name="line390"></a> * Dispatches the DESTROY event. Sub classes should override this instead
+<a name="line391"></a> * of listening to the event.
+<a name="line392"></a> * @protected
+<a name="line393"></a> */
+<a name="line394"></a>goog.fx.Animation.prototype.onDestroy = function() {
+<a name="line395"></a>  this.dispatchAnimationEvent(goog.fx.Animation.EventType.DESTROY);
+<a name="line396"></a>};
+<a name="line397"></a>
+<a name="line398"></a>
+<a name="line399"></a>/** @override */
+<a name="line400"></a>goog.fx.Animation.prototype.dispatchAnimationEvent = function(type) {
+<a name="line401"></a>  this.dispatchEvent(new goog.fx.AnimationEvent(type, this));
+<a name="line402"></a>};
+<a name="line403"></a>
+<a name="line404"></a>
+<a name="line405"></a>
+<a name="line406"></a>/**
+<a name="line407"></a> * Class for an animation event object.
+<a name="line408"></a> * @param {string} type Event type.
+<a name="line409"></a> * @param {goog.fx.Animation} anim An animation object.
+<a name="line410"></a> * @constructor
+<a name="line411"></a> * @extends {goog.events.Event}
+<a name="line412"></a> */
+<a name="line413"></a>goog.fx.AnimationEvent = function(type, anim) {
+<a name="line414"></a>  goog.base(this, type);
+<a name="line415"></a>
+<a name="line416"></a>  /**
+<a name="line417"></a>   * The current coordinates.
+<a name="line418"></a>   * @type {Array.&lt;number&gt;}
+<a name="line419"></a>   */
+<a name="line420"></a>  this.coords = anim.coords;
+<a name="line421"></a>
+<a name="line422"></a>  /**
+<a name="line423"></a>   * The x coordinate.
+<a name="line424"></a>   * @type {number}
+<a name="line425"></a>   */
+<a name="line426"></a>  this.x = anim.coords[0];
+<a name="line427"></a>
+<a name="line428"></a>  /**
+<a name="line429"></a>   * The y coordinate.
+<a name="line430"></a>   * @type {number}
+<a name="line431"></a>   */
+<a name="line432"></a>  this.y = anim.coords[1];
+<a name="line433"></a>
+<a name="line434"></a>  /**
+<a name="line435"></a>   * The z coordinate.
+<a name="line436"></a>   * @type {number}
+<a name="line437"></a>   */
+<a name="line438"></a>  this.z = anim.coords[2];
+<a name="line439"></a>
+<a name="line440"></a>  /**
+<a name="line441"></a>   * The current duration.
+<a name="line442"></a>   * @type {number}
+<a name="line443"></a>   */
+<a name="line444"></a>  this.duration = anim.duration;
+<a name="line445"></a>
+<a name="line446"></a>  /**
+<a name="line447"></a>   * The current progress.
+<a name="line448"></a>   * @type {number}
+<a name="line449"></a>   */
+<a name="line450"></a>  this.progress = anim.progress;
+<a name="line451"></a>
+<a name="line452"></a>  /**
+<a name="line453"></a>   * Frames per second so far.
+<a name="line454"></a>   */
+<a name="line455"></a>  this.fps = anim.fps_;
+<a name="line456"></a>
+<a name="line457"></a>  /**
+<a name="line458"></a>   * The state of the animation.
+<a name="line459"></a>   * @type {number}
+<a name="line460"></a>   */
+<a name="line461"></a>  this.state = anim.getStateInternal();
+<a name="line462"></a>
+<a name="line463"></a>  /**
+<a name="line464"></a>   * The animation object.
+<a name="line465"></a>   * @type {goog.fx.Animation}
+<a name="line466"></a>   */
+<a name="line467"></a>  // TODO(user): This can be removed as this is the same as the target
+<a name="line468"></a>  this.anim = anim;
+<a name="line469"></a>};
+<a name="line470"></a>goog.inherits(goog.fx.AnimationEvent, goog.events.Event);
+<a name="line471"></a>
+<a name="line472"></a>
+<a name="line473"></a>/**
+<a name="line474"></a> * Returns the coordinates as integers (rounded to nearest integer).
+<a name="line475"></a> * @return {Array.&lt;number&gt;} An array of the coordinates rounded to
+<a name="line476"></a> *     the nearest integer.
+<a name="line477"></a> */
+<a name="line478"></a>goog.fx.AnimationEvent.prototype.coordsAsInts = function() {
+<a name="line479"></a>  return goog.array.map(this.coords, Math.round);
+<a name="line480"></a>};
+</pre>
+
+
+</body>
+</html>

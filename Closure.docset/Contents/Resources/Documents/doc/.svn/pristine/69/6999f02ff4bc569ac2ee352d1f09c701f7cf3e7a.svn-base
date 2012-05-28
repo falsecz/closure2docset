@@ -1,0 +1,179 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>jsprops.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_jsaction_jsprops.js.html">jsprops.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Functions to access/set properties serialized into
+<a name="line17"></a> * an attribute on DOM nodes. Their main purpose is to provide a mechanism
+<a name="line18"></a> * to pass parameters to jsaction handlers. However, these functions are
+<a name="line19"></a> * standalone and might be useful for other purposes as well.
+<a name="line20"></a> *
+<a name="line21"></a> * We use attribute &#39;jsprops&#39; to store these properties. It contains a
+<a name="line22"></a> * dictionary from property name to value (serialized as JSON). Hence, data
+<a name="line23"></a> * that needs to made available to jsaction handler can be embeded in the
+<a name="line24"></a> * markup at rendering time. The handler then can use
+<a name="line25"></a> * goog.jsaction.jsprops.get and goog.jsaction.jsprops.set to retrieve
+<a name="line26"></a> * and modify properties.
+<a name="line27"></a> *
+<a name="line28"></a> * Example:
+<a name="line29"></a> *
+<a name="line30"></a> * &lt;a jsaction=&quot;lightbox.showPhoto&quot; jsprops=&quot;{id:&#39;93kcgn9w7&#39;}&quot;&gt;Show pic&lt;/a&gt;
+<a name="line31"></a> *
+<a name="line32"></a> * Then, the corresponding action can retrieve the value like this:
+<a name="line33"></a> *
+<a name="line34"></a> * function(context) {
+<a name="line35"></a> *   var photoId = goog.jsaction.jsprops.get(context.getElement(), &#39;id&#39;);
+<a name="line36"></a> *   // Proceed to actually show image...
+<a name="line37"></a> * }
+<a name="line38"></a> *
+<a name="line39"></a> */
+<a name="line40"></a>
+<a name="line41"></a>
+<a name="line42"></a>goog.provide(&#39;goog.jsaction.jsprops&#39;);
+<a name="line43"></a>
+<a name="line44"></a>goog.require(&#39;goog.json&#39;);
+<a name="line45"></a>
+<a name="line46"></a>
+<a name="line47"></a>/**
+<a name="line48"></a> * Constant for name of the &#39;jsprops&#39;-attribute.
+<a name="line49"></a> * @type {string}
+<a name="line50"></a> * @private
+<a name="line51"></a> */
+<a name="line52"></a>goog.jsaction.jsprops.ATTRIBUTE_NAME_JSPROPS_ = &#39;jsprops&#39;;
+<a name="line53"></a>
+<a name="line54"></a>
+<a name="line55"></a>/**
+<a name="line56"></a> * Constant for the name of the property attached to DOM nodes which
+<a name="line57"></a> * contains an object holding properties. This serves as cache to avoid
+<a name="line58"></a> * repeatedly accessing the DOM attribute and parsing its content.
+<a name="line59"></a> * @type {string}
+<a name="line60"></a> * @private
+<a name="line61"></a> */
+<a name="line62"></a>goog.jsaction.jsprops.PROPERTY_KEY_JSPROPS_ = &#39;__jsprops&#39;;
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * Retrieves a property from an element.
+<a name="line67"></a> * @param {!Element} elem The element.
+<a name="line68"></a> * @param {string} name The property name.
+<a name="line69"></a> * @return {*} The property value.
+<a name="line70"></a> */
+<a name="line71"></a>goog.jsaction.jsprops.get = function(elem, name) {
+<a name="line72"></a>  return goog.jsaction.jsprops.getPropertiesObject_(elem)[name];
+<a name="line73"></a>};
+<a name="line74"></a>
+<a name="line75"></a>
+<a name="line76"></a>/**
+<a name="line77"></a> * Stores a property on an element.
+<a name="line78"></a> * @param {!Element} elem The element.
+<a name="line79"></a> * @param {string} name The property name.
+<a name="line80"></a> * @param {*} value The value to set. Objects must be JSON serializable if
+<a name="line81"></a> *     they are to be reflected back into the &#39;jsprops&#39; attribute.
+<a name="line82"></a> * @param {boolean=} opt_updateAttribute Whether to update the attribute value
+<a name="line83"></a> *     (see updateAttribute() for details). Default is false.
+<a name="line84"></a> */
+<a name="line85"></a>goog.jsaction.jsprops.set = function(elem, name, value, opt_updateAttribute) {
+<a name="line86"></a>  goog.jsaction.jsprops.getPropertiesObject_(elem)[name] = value;
+<a name="line87"></a>  if (opt_updateAttribute) {
+<a name="line88"></a>    goog.jsaction.jsprops.updateAttribute(elem);
+<a name="line89"></a>  }
+<a name="line90"></a>};
+<a name="line91"></a>
+<a name="line92"></a>
+<a name="line93"></a>/**
+<a name="line94"></a> * Writes all properties back into the &#39;jsprops&#39; attribute. Call this method
+<a name="line95"></a> * if you need values to persist when the element is subsequently cloned,
+<a name="line96"></a> * as attributes are copied when cloning an element, but properties added to
+<a name="line97"></a> * the corresponding JS object are not.
+<a name="line98"></a> * @param {!Element} elem The element.
+<a name="line99"></a> */
+<a name="line100"></a>goog.jsaction.jsprops.updateAttribute = function(elem) {
+<a name="line101"></a>  elem.setAttribute(
+<a name="line102"></a>      goog.jsaction.jsprops.ATTRIBUTE_NAME_JSPROPS_,
+<a name="line103"></a>      goog.json.serialize(goog.jsaction.jsprops.getPropertiesObject_(elem)));
+<a name="line104"></a>};
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Parses the &#39;jsprops&#39; attribute and returns them as dictionary.
+<a name="line109"></a> * @param {!Element} elem The element.
+<a name="line110"></a> * @return {Object} The properies object.
+<a name="line111"></a> * @private
+<a name="line112"></a> */
+<a name="line113"></a>goog.jsaction.jsprops.getPropertiesObject_ = function(elem) {
+<a name="line114"></a>  var props = elem[goog.jsaction.jsprops.PROPERTY_KEY_JSPROPS_];
+<a name="line115"></a>  if (!props) {
+<a name="line116"></a>    // If the property isn&#39;t set, we parse the attribute (if present) and
+<a name="line117"></a>    // remember it.
+<a name="line118"></a>    var attrVal = elem.getAttribute(
+<a name="line119"></a>        goog.jsaction.jsprops.ATTRIBUTE_NAME_JSPROPS_);
+<a name="line120"></a>    if (attrVal) {
+<a name="line121"></a>      props = goog.json.unsafeParse(attrVal);
+<a name="line122"></a>    } else {
+<a name="line123"></a>      props = {};
+<a name="line124"></a>    }
+<a name="line125"></a>    elem[goog.jsaction.jsprops.PROPERTY_KEY_JSPROPS_] = props;
+<a name="line126"></a>  }
+<a name="line127"></a>  return props;
+<a name="line128"></a>};
+</pre>
+
+
+</body>
+</html>

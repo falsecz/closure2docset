@@ -1,0 +1,324 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>popupdatepicker.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_popupdatepicker.js.html">popupdatepicker.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Popup Date Picker implementation.  Pairs a goog.ui.DatePicker
+<a name="line17"></a> * with a goog.ui.Popup allowing the DatePicker to be attached to elements.
+<a name="line18"></a> *
+<a name="line19"></a> * @see ../demos/popupdatepicker.html
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.ui.PopupDatePicker&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line25"></a>goog.require(&#39;goog.positioning.AnchoredPosition&#39;);
+<a name="line26"></a>goog.require(&#39;goog.positioning.Corner&#39;);
+<a name="line27"></a>goog.require(&#39;goog.style&#39;);
+<a name="line28"></a>goog.require(&#39;goog.ui.Component&#39;);
+<a name="line29"></a>goog.require(&#39;goog.ui.DatePicker&#39;);
+<a name="line30"></a>goog.require(&#39;goog.ui.DatePicker.Events&#39;);
+<a name="line31"></a>goog.require(&#39;goog.ui.Popup&#39;);
+<a name="line32"></a>goog.require(&#39;goog.ui.PopupBase.EventType&#39;);
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>/**
+<a name="line37"></a> * Popup date picker widget.
+<a name="line38"></a> *
+<a name="line39"></a> * @param {goog.ui.DatePicker=} opt_datePicker Optional DatePicker.  This
+<a name="line40"></a> *     enables the use of a custom date-picker instance.
+<a name="line41"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
+<a name="line42"></a> * @extends {goog.ui.Component}
+<a name="line43"></a> * @constructor
+<a name="line44"></a> */
+<a name="line45"></a>goog.ui.PopupDatePicker = function(opt_datePicker, opt_domHelper) {
+<a name="line46"></a>  goog.ui.Component.call(this, opt_domHelper);
+<a name="line47"></a>
+<a name="line48"></a>  this.datePicker_ = opt_datePicker || new goog.ui.DatePicker();
+<a name="line49"></a>};
+<a name="line50"></a>goog.inherits(goog.ui.PopupDatePicker, goog.ui.Component);
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>/**
+<a name="line54"></a> * Instance of a date picker control.
+<a name="line55"></a> * @type {goog.ui.DatePicker?}
+<a name="line56"></a> * @private
+<a name="line57"></a> */
+<a name="line58"></a>goog.ui.PopupDatePicker.prototype.datePicker_ = null;
+<a name="line59"></a>
+<a name="line60"></a>
+<a name="line61"></a>/**
+<a name="line62"></a> * Instance of goog.ui.Popup used to manage the behavior of the date picker.
+<a name="line63"></a> * @type {goog.ui.Popup?}
+<a name="line64"></a> * @private
+<a name="line65"></a> */
+<a name="line66"></a>goog.ui.PopupDatePicker.prototype.popup_ = null;
+<a name="line67"></a>
+<a name="line68"></a>
+<a name="line69"></a>/**
+<a name="line70"></a> * Reference to the element that triggered the last popup.
+<a name="line71"></a> * @type {Element}
+<a name="line72"></a> * @private
+<a name="line73"></a> */
+<a name="line74"></a>goog.ui.PopupDatePicker.prototype.lastTarget_ = null;
+<a name="line75"></a>
+<a name="line76"></a>
+<a name="line77"></a>/**
+<a name="line78"></a> * Whether the date picker can move the focus to its key event target when it
+<a name="line79"></a> * is shown.  The default is true.  Setting to false can break keyboard
+<a name="line80"></a> * navigation, but this is needed for certain scenarios, for example the
+<a name="line81"></a> * toolbar menu in trogedit which can&#39;t have the selection changed.
+<a name="line82"></a> * @type {boolean}
+<a name="line83"></a> * @private
+<a name="line84"></a> */
+<a name="line85"></a>goog.ui.PopupDatePicker.prototype.allowAutoFocus_ = true;
+<a name="line86"></a>
+<a name="line87"></a>
+<a name="line88"></a>/** @override */
+<a name="line89"></a>goog.ui.PopupDatePicker.prototype.createDom = function() {
+<a name="line90"></a>  goog.ui.PopupDatePicker.superClass_.createDom.call(this);
+<a name="line91"></a>  this.getElement().className = goog.getCssName(&#39;goog-popupdatepicker&#39;);
+<a name="line92"></a>  this.popup_ = new goog.ui.Popup(this.getElement());
+<a name="line93"></a>};
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/** @override */
+<a name="line97"></a>goog.ui.PopupDatePicker.prototype.enterDocument = function() {
+<a name="line98"></a>  goog.ui.PopupDatePicker.superClass_.enterDocument.call(this);
+<a name="line99"></a>  // Create the DatePicker, if it isn&#39;t already.
+<a name="line100"></a>  // Done here as DatePicker assumes that the element passed to it is attached
+<a name="line101"></a>  // to a document.
+<a name="line102"></a>  if (!this.datePicker_.isInDocument()) {
+<a name="line103"></a>    var el = this.getElement();
+<a name="line104"></a>    // Make it initially invisible
+<a name="line105"></a>    el.style.visibility = &#39;hidden&#39;;
+<a name="line106"></a>    goog.style.showElement(el, false);
+<a name="line107"></a>    this.datePicker_.decorate(el);
+<a name="line108"></a>  }
+<a name="line109"></a>  this.getHandler().listen(this.datePicker_, goog.ui.DatePicker.Events.CHANGE,
+<a name="line110"></a>                           this.onDateChanged_);
+<a name="line111"></a>};
+<a name="line112"></a>
+<a name="line113"></a>
+<a name="line114"></a>/** @override */
+<a name="line115"></a>goog.ui.PopupDatePicker.prototype.disposeInternal = function() {
+<a name="line116"></a>  goog.ui.PopupDatePicker.superClass_.disposeInternal.call(this);
+<a name="line117"></a>  if (this.popup_) {
+<a name="line118"></a>    this.popup_.dispose();
+<a name="line119"></a>    this.popup_ = null;
+<a name="line120"></a>  }
+<a name="line121"></a>  this.datePicker_.dispose();
+<a name="line122"></a>  this.datePicker_ = null;
+<a name="line123"></a>  this.lastTarget_ = null;
+<a name="line124"></a>};
+<a name="line125"></a>
+<a name="line126"></a>
+<a name="line127"></a>/**
+<a name="line128"></a> * DatePicker cannot be used to decorate pre-existing html, since they&#39;re
+<a name="line129"></a> * not based on Components.
+<a name="line130"></a> * @param {Element} element Element to decorate.
+<a name="line131"></a> * @return {boolean} Returns always false.
+<a name="line132"></a> */
+<a name="line133"></a>goog.ui.PopupDatePicker.prototype.canDecorate = function(element) {
+<a name="line134"></a>  return false;
+<a name="line135"></a>};
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * @return {goog.ui.DatePicker} The date picker instance.
+<a name="line140"></a> */
+<a name="line141"></a>goog.ui.PopupDatePicker.prototype.getDatePicker = function() {
+<a name="line142"></a>  return this.datePicker_;
+<a name="line143"></a>};
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * @return {goog.date.Date?} The selected date, if any.  See
+<a name="line148"></a> *     goog.ui.DatePicker.getDate().
+<a name="line149"></a> */
+<a name="line150"></a>goog.ui.PopupDatePicker.prototype.getDate = function() {
+<a name="line151"></a>  return this.datePicker_.getDate();
+<a name="line152"></a>};
+<a name="line153"></a>
+<a name="line154"></a>
+<a name="line155"></a>/**
+<a name="line156"></a> * Sets the selected date.  See goog.ui.DatePicker.setDate().
+<a name="line157"></a> * @param {goog.date.Date?} date The date to select.
+<a name="line158"></a> */
+<a name="line159"></a>goog.ui.PopupDatePicker.prototype.setDate = function(date) {
+<a name="line160"></a>  this.datePicker_.setDate(date);
+<a name="line161"></a>};
+<a name="line162"></a>
+<a name="line163"></a>
+<a name="line164"></a>/**
+<a name="line165"></a> * @return {Element} The last element that triggered the popup.
+<a name="line166"></a> */
+<a name="line167"></a>goog.ui.PopupDatePicker.prototype.getLastTarget = function() {
+<a name="line168"></a>  return this.lastTarget_;
+<a name="line169"></a>};
+<a name="line170"></a>
+<a name="line171"></a>
+<a name="line172"></a>/**
+<a name="line173"></a> * Attaches the popup date picker to an element.
+<a name="line174"></a> * @param {Element} element The element to attach to.
+<a name="line175"></a> */
+<a name="line176"></a>goog.ui.PopupDatePicker.prototype.attach = function(element) {
+<a name="line177"></a>  this.getHandler().listen(element, goog.events.EventType.MOUSEDOWN,
+<a name="line178"></a>                           this.showPopup_);
+<a name="line179"></a>};
+<a name="line180"></a>
+<a name="line181"></a>
+<a name="line182"></a>/**
+<a name="line183"></a> * Detatches the popup date picker from an element.
+<a name="line184"></a> * @param {Element} element The element to detach from.
+<a name="line185"></a> */
+<a name="line186"></a>goog.ui.PopupDatePicker.prototype.detach = function(element) {
+<a name="line187"></a>  this.getHandler().unlisten(element, goog.events.EventType.MOUSEDOWN,
+<a name="line188"></a>                             this.showPopup_);
+<a name="line189"></a>};
+<a name="line190"></a>
+<a name="line191"></a>
+<a name="line192"></a>/**
+<a name="line193"></a> * Sets whether the date picker can automatically move focus to its key event
+<a name="line194"></a> * target when it is set to visible.
+<a name="line195"></a> * @param {boolean} allow Whether to allow auto focus.
+<a name="line196"></a> */
+<a name="line197"></a>goog.ui.PopupDatePicker.prototype.setAllowAutoFocus = function(allow) {
+<a name="line198"></a>  this.allowAutoFocus_ = allow;
+<a name="line199"></a>};
+<a name="line200"></a>
+<a name="line201"></a>
+<a name="line202"></a>/**
+<a name="line203"></a> * @return {boolean} Whether the date picker can automatically move focus to
+<a name="line204"></a> * its key event target when it is set to visible.
+<a name="line205"></a> */
+<a name="line206"></a>goog.ui.PopupDatePicker.prototype.getAllowAutoFocus = function() {
+<a name="line207"></a>  return this.allowAutoFocus_;
+<a name="line208"></a>};
+<a name="line209"></a>
+<a name="line210"></a>
+<a name="line211"></a>/**
+<a name="line212"></a> * Show the popup at the bottom-left corner of the specified element.
+<a name="line213"></a> * @param {Element} element Reference element for displaying the popup -- popup
+<a name="line214"></a> *     will appear at the bottom-left corner of this element.
+<a name="line215"></a> */
+<a name="line216"></a>goog.ui.PopupDatePicker.prototype.showPopup = function(element) {
+<a name="line217"></a>  this.lastTarget_ = element;
+<a name="line218"></a>  this.popup_.setPosition(new goog.positioning.AnchoredPosition(
+<a name="line219"></a>      element, goog.positioning.Corner.BOTTOM_START));
+<a name="line220"></a>
+<a name="line221"></a>  // Don&#39;t listen to date changes while we&#39;re setting up the popup so we don&#39;t
+<a name="line222"></a>  // have to worry about change events when we call setDate().
+<a name="line223"></a>  this.getHandler().unlisten(this.datePicker_, goog.ui.DatePicker.Events.CHANGE,
+<a name="line224"></a>                             this.onDateChanged_);
+<a name="line225"></a>  this.datePicker_.setDate(null);
+<a name="line226"></a>
+<a name="line227"></a>  // Forward the change event onto our listeners.  Done before we start
+<a name="line228"></a>  // listening to date changes again, so that listeners can change the date
+<a name="line229"></a>  // without firing more events.
+<a name="line230"></a>  this.dispatchEvent(goog.ui.PopupBase.EventType.SHOW);
+<a name="line231"></a>
+<a name="line232"></a>  this.getHandler().listen(this.datePicker_, goog.ui.DatePicker.Events.CHANGE,
+<a name="line233"></a>                           this.onDateChanged_);
+<a name="line234"></a>  this.popup_.setVisible(true);
+<a name="line235"></a>  if (this.allowAutoFocus_) {
+<a name="line236"></a>    this.getElement().focus();  // Our element contains the date picker.
+<a name="line237"></a>  }
+<a name="line238"></a>};
+<a name="line239"></a>
+<a name="line240"></a>
+<a name="line241"></a>/**
+<a name="line242"></a> * Handles click events on the targets and shows the date picker.
+<a name="line243"></a> * @param {goog.events.Event} event The click event.
+<a name="line244"></a> * @private
+<a name="line245"></a> */
+<a name="line246"></a>goog.ui.PopupDatePicker.prototype.showPopup_ = function(event) {
+<a name="line247"></a>  this.showPopup(/** @type {Element} */ (event.currentTarget));
+<a name="line248"></a>};
+<a name="line249"></a>
+<a name="line250"></a>
+<a name="line251"></a>/**
+<a name="line252"></a> * Hides this popup.
+<a name="line253"></a> */
+<a name="line254"></a>goog.ui.PopupDatePicker.prototype.hidePopup = function() {
+<a name="line255"></a>  this.popup_.setVisible(false);
+<a name="line256"></a>  if (this.allowAutoFocus_ &amp;&amp; this.lastTarget_) {
+<a name="line257"></a>    this.lastTarget_.focus();
+<a name="line258"></a>  }
+<a name="line259"></a>};
+<a name="line260"></a>
+<a name="line261"></a>
+<a name="line262"></a>/**
+<a name="line263"></a> * Called when the date is changed.
+<a name="line264"></a> *
+<a name="line265"></a> * @param {goog.events.Event} event The date change event.
+<a name="line266"></a> * @private
+<a name="line267"></a> */
+<a name="line268"></a>goog.ui.PopupDatePicker.prototype.onDateChanged_ = function(event) {
+<a name="line269"></a>  this.hidePopup();
+<a name="line270"></a>
+<a name="line271"></a>  // Forward the change event onto our listeners.
+<a name="line272"></a>  this.dispatchEvent(event);
+<a name="line273"></a>};
+</pre>
+
+
+</body>
+</html>

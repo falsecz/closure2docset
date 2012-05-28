@@ -1,0 +1,696 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>messageformat.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_i18n_messageformat.js.html">messageformat.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Message/plural format library with locale support.
+<a name="line17"></a> *
+<a name="line18"></a> * Message format grammar:
+<a name="line19"></a> *
+<a name="line20"></a> * messageFormatPattern := string ( &quot;{&quot; messageFormatElement &quot;}&quot; string )*
+<a name="line21"></a> * messageFormatElement := argumentIndex [ &quot;,&quot; elementFormat ]
+<a name="line22"></a> * elementFormat := &quot;plural&quot; &quot;,&quot; pluralStyle
+<a name="line23"></a> *                  | &quot;select&quot; &quot;,&quot; selectStyle
+<a name="line24"></a> * pluralStyle :=  pluralFormatPattern
+<a name="line25"></a> * selectStyle :=  selectFormatPattern
+<a name="line26"></a> * pluralFormatPattern := [ &quot;offset&quot; &quot;:&quot; offsetIndex ] pluralForms*
+<a name="line27"></a> * selectFormatPattern := pluralForms*
+<a name="line28"></a> * pluralForms := stringKey &quot;{&quot; ( &quot;{&quot; messageFormatElement &quot;}&quot;|string )* &quot;}&quot;
+<a name="line29"></a> *
+<a name="line30"></a> *
+<a name="line31"></a> * Message example:
+<a name="line32"></a> *
+<a name="line33"></a> * I see {NUM_PEOPLE, plural, offset:1
+<a name="line34"></a> *         =0 {no one at all}
+<a name="line35"></a> *         =1 {{WHO}}
+<a name="line36"></a> *         one {{WHO} and one other person}
+<a name="line37"></a> *         other {{WHO} and # other people}}
+<a name="line38"></a> * in {PLACE}.
+<a name="line39"></a> *
+<a name="line40"></a> * Calling format({&#39;NUM_PEOPLE&#39;: 2, &#39;WHO&#39;: &#39;Mark&#39;, &#39;PLACE&#39;: &#39;Athens&#39;}) would
+<a name="line41"></a> * produce &quot;I see Mark and one other person in Athens.&quot; as output.
+<a name="line42"></a> *
+<a name="line43"></a> * See messageformat_test.html for more examples.
+<a name="line44"></a> */
+<a name="line45"></a>
+<a name="line46"></a>goog.provide(&#39;goog.i18n.MessageFormat&#39;);
+<a name="line47"></a>
+<a name="line48"></a>goog.require(&#39;goog.asserts&#39;);
+<a name="line49"></a>goog.require(&#39;goog.i18n.NumberFormat&#39;);
+<a name="line50"></a>goog.require(&#39;goog.i18n.pluralRules&#39;);
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>/**
+<a name="line55"></a> * Constructor of MessageFormat.
+<a name="line56"></a> * @param {string} pattern The pattern we parse and apply positional parameters
+<a name="line57"></a> *     to.
+<a name="line58"></a> * @constructor
+<a name="line59"></a> */
+<a name="line60"></a>goog.i18n.MessageFormat = function(pattern) {
+<a name="line61"></a>  /**
+<a name="line62"></a>   * All encountered literals during parse stage. Indices tell us the order of
+<a name="line63"></a>   * replacement.
+<a name="line64"></a>   * @type {!Array.&lt;string&gt;}
+<a name="line65"></a>   * @private
+<a name="line66"></a>   */
+<a name="line67"></a>  this.literals_ = [];
+<a name="line68"></a>
+<a name="line69"></a>  /**
+<a name="line70"></a>   * Input pattern gets parsed into objects for faster formatting.
+<a name="line71"></a>   * @type {!Array.&lt;!Object&gt;}
+<a name="line72"></a>   * @private
+<a name="line73"></a>   */
+<a name="line74"></a>  this.parsedPattern_ = [];
+<a name="line75"></a>
+<a name="line76"></a>  /**
+<a name="line77"></a>   * Locale aware number formatter.
+<a name="line78"></a>   * @type {goog.i18n.NumberFormat}
+<a name="line79"></a>   * @private
+<a name="line80"></a>   */
+<a name="line81"></a>  this.numberFormatter_ = new goog.i18n.NumberFormat(
+<a name="line82"></a>      goog.i18n.NumberFormat.Format.DECIMAL);
+<a name="line83"></a>
+<a name="line84"></a>  this.parsePattern_(pattern);
+<a name="line85"></a>};
+<a name="line86"></a>
+<a name="line87"></a>
+<a name="line88"></a>/**
+<a name="line89"></a> * Literal strings, including &#39;&#39;, are replaced with \uFDDF_x_ for
+<a name="line90"></a> * parsing purposes, and recovered during format phase.
+<a name="line91"></a> * \uFDDF is a Unicode nonprinting character, not expected to be found in the
+<a name="line92"></a> * typical message.
+<a name="line93"></a> * @type {string}
+<a name="line94"></a> * @private
+<a name="line95"></a> */
+<a name="line96"></a>goog.i18n.MessageFormat.LITERAL_PLACEHOLDER_ = &#39;\uFDDF_&#39;;
+<a name="line97"></a>
+<a name="line98"></a>
+<a name="line99"></a>/**
+<a name="line100"></a> * Marks a string and block during parsing.
+<a name="line101"></a> * @enum {number}
+<a name="line102"></a> * @private
+<a name="line103"></a> */
+<a name="line104"></a>goog.i18n.MessageFormat.Element_ = {
+<a name="line105"></a>  STRING: 0,
+<a name="line106"></a>  BLOCK: 1
+<a name="line107"></a>};
+<a name="line108"></a>
+<a name="line109"></a>
+<a name="line110"></a>/**
+<a name="line111"></a> * Block type.
+<a name="line112"></a> * @enum {number}
+<a name="line113"></a> * @private
+<a name="line114"></a> */
+<a name="line115"></a>goog.i18n.MessageFormat.BlockType_ = {
+<a name="line116"></a>  PLURAL: 0,
+<a name="line117"></a>  SELECT: 1,
+<a name="line118"></a>  SIMPLE: 2,
+<a name="line119"></a>  STRING: 3,
+<a name="line120"></a>  UNKNOWN: 4
+<a name="line121"></a>};
+<a name="line122"></a>
+<a name="line123"></a>
+<a name="line124"></a>/**
+<a name="line125"></a> * Mandatory option in both select and plural form.
+<a name="line126"></a> * @type {string}
+<a name="line127"></a> * @private
+<a name="line128"></a> */
+<a name="line129"></a>goog.i18n.MessageFormat.OTHER_ = &#39;other&#39;;
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * Regular expression for looking for string literals.
+<a name="line134"></a> * @type {RegExp}
+<a name="line135"></a> * @private
+<a name="line136"></a> */
+<a name="line137"></a>goog.i18n.MessageFormat.REGEX_LITERAL_ = new RegExp(&quot;&#39;([{}#].*?)&#39;&quot;, &#39;g&#39;);
+<a name="line138"></a>
+<a name="line139"></a>
+<a name="line140"></a>/**
+<a name="line141"></a> * Regular expression for looking for &#39;&#39; in the message.
+<a name="line142"></a> * @type {RegExp}
+<a name="line143"></a> * @private
+<a name="line144"></a> */
+<a name="line145"></a>goog.i18n.MessageFormat.REGEX_DOUBLE_APOSTROPHE_ = new RegExp(&quot;&#39;&#39;&quot;, &#39;g&#39;);
+<a name="line146"></a>
+<a name="line147"></a>
+<a name="line148"></a>/**
+<a name="line149"></a> * Formats a message, treating &#39;#&#39; with special meaning representing
+<a name="line150"></a> * the number (plural_variable - offset).
+<a name="line151"></a> * @param {!Object} namedParameters Parameters that either
+<a name="line152"></a> *     influence the formatting or are used as actual data.
+<a name="line153"></a> *     I.e. in call to fmt.format({&#39;NUM_PEOPLE&#39;: 5, &#39;NAME&#39;: &#39;Angela&#39;}),
+<a name="line154"></a> *     object {&#39;NUM_PEOPLE&#39;: 5, &#39;NAME&#39;: &#39;Angela&#39;} holds positional parameters.
+<a name="line155"></a> *     1st parameter could mean 5 people, which could influence plural format,
+<a name="line156"></a> *     and 2nd parameter is just a data to be printed out in proper position.
+<a name="line157"></a> * @return {string} Formatted message.
+<a name="line158"></a> */
+<a name="line159"></a>goog.i18n.MessageFormat.prototype.format = function(namedParameters) {
+<a name="line160"></a>  return this.format_(namedParameters, false);
+<a name="line161"></a>};
+<a name="line162"></a>
+<a name="line163"></a>
+<a name="line164"></a>/**
+<a name="line165"></a> * Formats a message, treating &#39;#&#39; as literary character.
+<a name="line166"></a> * @param {!Object} namedParameters Parameters that either
+<a name="line167"></a> *     influence the formatting or are used as actual data.
+<a name="line168"></a> *     I.e. in call to fmt.format({&#39;NUM_PEOPLE&#39;: 5, &#39;NAME&#39;: &#39;Angela&#39;}),
+<a name="line169"></a> *     object {&#39;NUM_PEOPLE&#39;: 5, &#39;NAME&#39;: &#39;Angela&#39;} holds positional parameters.
+<a name="line170"></a> *     1st parameter could mean 5 people, which could influence plural format,
+<a name="line171"></a> *     and 2nd parameter is just a data to be printed out in proper position.
+<a name="line172"></a> * @return {string} Formatted message.
+<a name="line173"></a> */
+<a name="line174"></a>goog.i18n.MessageFormat.prototype.formatIgnoringPound =
+<a name="line175"></a>    function(namedParameters) {
+<a name="line176"></a>  return this.format_(namedParameters, true);
+<a name="line177"></a>};
+<a name="line178"></a>
+<a name="line179"></a>
+<a name="line180"></a>/**
+<a name="line181"></a> * Formats a message.
+<a name="line182"></a> * @param {!Object} namedParameters Parameters that either
+<a name="line183"></a> *     influence the formatting or are used as actual data.
+<a name="line184"></a> *     I.e. in call to fmt.format({&#39;NUM_PEOPLE&#39;: 5, &#39;NAME&#39;: &#39;Angela&#39;}),
+<a name="line185"></a> *     object {&#39;NUM_PEOPLE&#39;: 5, &#39;NAME&#39;: &#39;Angela&#39;} holds positional parameters.
+<a name="line186"></a> *     1st parameter could mean 5 people, which could influence plural format,
+<a name="line187"></a> *     and 2nd parameter is just a data to be printed out in proper position.
+<a name="line188"></a> * @param {boolean} ignorePound If true, treat &#39;#&#39; in plural messages as a
+<a name="line189"></a> *     literary character, else treat it as an ICU syntax character, resolving
+<a name="line190"></a> *     to the number (plural_variable - offset).
+<a name="line191"></a> * @return {string} Formatted message.
+<a name="line192"></a> * @private
+<a name="line193"></a> */
+<a name="line194"></a>goog.i18n.MessageFormat.prototype.format_ =
+<a name="line195"></a>    function(namedParameters, ignorePound) {
+<a name="line196"></a>  if (this.parsedPattern_.length == 0) {
+<a name="line197"></a>    return &#39;&#39;;
+<a name="line198"></a>  }
+<a name="line199"></a>
+<a name="line200"></a>  var result = [];
+<a name="line201"></a>  this.formatBlock_(this.parsedPattern_, namedParameters, ignorePound, result);
+<a name="line202"></a>  var message = result.join(&#39;&#39;);
+<a name="line203"></a>
+<a name="line204"></a>  if (!ignorePound) {
+<a name="line205"></a>    goog.asserts.assert(message.search(&#39;#&#39;) == -1, &#39;Not all # were replaced.&#39;);
+<a name="line206"></a>  }
+<a name="line207"></a>
+<a name="line208"></a>  while (this.literals_.length &gt; 0) {
+<a name="line209"></a>    message = message.replace(this.buildPlaceholder_(this.literals_),
+<a name="line210"></a>                              this.literals_.pop());
+<a name="line211"></a>  }
+<a name="line212"></a>
+<a name="line213"></a>  return message;
+<a name="line214"></a>};
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * Parses generic block and returns a formatted string.
+<a name="line219"></a> * @param {!Array.&lt;!Object&gt;} parsedPattern Holds parsed tree.
+<a name="line220"></a> * @param {!Object} namedParameters Parameters that either influence
+<a name="line221"></a> *     the formatting or are used as actual data.
+<a name="line222"></a> * @param {boolean} ignorePound If true, treat &#39;#&#39; in plural messages as a
+<a name="line223"></a> *     literary character, else treat it as an ICU syntax character, resolving
+<a name="line224"></a> *     to the number (plural_variable - offset).
+<a name="line225"></a> * @param {!Array.&lt;!string&gt;} result Each formatting stage appends its product
+<a name="line226"></a> *     to the result.
+<a name="line227"></a> * @private
+<a name="line228"></a> */
+<a name="line229"></a>goog.i18n.MessageFormat.prototype.formatBlock_ = function(
+<a name="line230"></a>    parsedPattern, namedParameters, ignorePound, result) {
+<a name="line231"></a>  for (var i = 0; i &lt; parsedPattern.length; i++) {
+<a name="line232"></a>    switch (parsedPattern[i].type) {
+<a name="line233"></a>      case goog.i18n.MessageFormat.BlockType_.STRING:
+<a name="line234"></a>        result.push(parsedPattern[i].value);
+<a name="line235"></a>        break;
+<a name="line236"></a>      case goog.i18n.MessageFormat.BlockType_.SIMPLE:
+<a name="line237"></a>        var pattern = parsedPattern[i].value;
+<a name="line238"></a>        this.formatSimplePlaceholder_(pattern, namedParameters, result);
+<a name="line239"></a>        break;
+<a name="line240"></a>      case goog.i18n.MessageFormat.BlockType_.SELECT:
+<a name="line241"></a>        var pattern = parsedPattern[i].value;
+<a name="line242"></a>        this.formatSelectBlock_(pattern, namedParameters, ignorePound, result);
+<a name="line243"></a>        break;
+<a name="line244"></a>      case goog.i18n.MessageFormat.BlockType_.PLURAL:
+<a name="line245"></a>        var pattern = parsedPattern[i].value;
+<a name="line246"></a>        this.formatPluralBlock_(pattern, namedParameters, ignorePound, result);
+<a name="line247"></a>        break;
+<a name="line248"></a>      default:
+<a name="line249"></a>        goog.asserts.fail(&#39;Unrecognized block type.&#39;);
+<a name="line250"></a>    }
+<a name="line251"></a>  }
+<a name="line252"></a>};
+<a name="line253"></a>
+<a name="line254"></a>
+<a name="line255"></a>/**
+<a name="line256"></a> * Formats simple placeholder.
+<a name="line257"></a> * @param {!Object} parsedPattern JSON object containing placeholder info.
+<a name="line258"></a> * @param {!Object} namedParameters Parameters that are used as actual data.
+<a name="line259"></a> * @param {!Array.&lt;!string&gt;} result Each formatting stage appends its product
+<a name="line260"></a> *     to the result.
+<a name="line261"></a> * @private
+<a name="line262"></a> */
+<a name="line263"></a>goog.i18n.MessageFormat.prototype.formatSimplePlaceholder_ = function(
+<a name="line264"></a>    parsedPattern, namedParameters, result) {
+<a name="line265"></a>  var value = namedParameters[parsedPattern];
+<a name="line266"></a>  if (!goog.isDef(value)) {
+<a name="line267"></a>    result.push(&#39;Undefined parameter - &#39; + parsedPattern);
+<a name="line268"></a>    return;
+<a name="line269"></a>  }
+<a name="line270"></a>
+<a name="line271"></a>  // Don&#39;t push the value yet, it may contain any of # { } in it which
+<a name="line272"></a>  // will break formatter. Insert a placeholder and replace at the end.
+<a name="line273"></a>  this.literals_.push(value);
+<a name="line274"></a>  result.push(this.buildPlaceholder_(this.literals_));
+<a name="line275"></a>};
+<a name="line276"></a>
+<a name="line277"></a>
+<a name="line278"></a>/**
+<a name="line279"></a> * Formats select block. Only one option is selected.
+<a name="line280"></a> * @param {!Object} parsedPattern JSON object containing select block info.
+<a name="line281"></a> * @param {!Object} namedParameters Parameters that either influence
+<a name="line282"></a> *     the formatting or are used as actual data.
+<a name="line283"></a> * @param {boolean} ignorePound If true, treat &#39;#&#39; in plural messages as a
+<a name="line284"></a> *     literary character, else treat it as an ICU syntax character, resolving
+<a name="line285"></a> *     to the number (plural_variable - offset).
+<a name="line286"></a> * @param {!Array.&lt;!string&gt;} result Each formatting stage appends its product
+<a name="line287"></a> *     to the result.
+<a name="line288"></a> * @private
+<a name="line289"></a> */
+<a name="line290"></a>goog.i18n.MessageFormat.prototype.formatSelectBlock_ = function(
+<a name="line291"></a>    parsedPattern, namedParameters, ignorePound, result) {
+<a name="line292"></a>  var argumentIndex = parsedPattern.argumentIndex;
+<a name="line293"></a>  if (!goog.isDef(namedParameters[argumentIndex])) {
+<a name="line294"></a>    result.push(&#39;Undefined parameter - &#39; + argumentIndex);
+<a name="line295"></a>    return;
+<a name="line296"></a>  }
+<a name="line297"></a>
+<a name="line298"></a>  var option = parsedPattern[namedParameters[argumentIndex]];
+<a name="line299"></a>  if (!goog.isDef(option)) {
+<a name="line300"></a>    option = parsedPattern[goog.i18n.MessageFormat.OTHER_];
+<a name="line301"></a>    goog.asserts.assertArray(
+<a name="line302"></a>        option, &#39;Invalid option or missing other option for select block.&#39;);
+<a name="line303"></a>  }
+<a name="line304"></a>
+<a name="line305"></a>  this.formatBlock_(option, namedParameters, ignorePound, result);
+<a name="line306"></a>};
+<a name="line307"></a>
+<a name="line308"></a>
+<a name="line309"></a>/**
+<a name="line310"></a> * Formats plural block. Only one option is selected and all # are replaced.
+<a name="line311"></a> * @param {!Object} parsedPattern JSON object containing plural block info.
+<a name="line312"></a> * @param {!Object} namedParameters Parameters that either influence
+<a name="line313"></a> *     the formatting or are used as actual data.
+<a name="line314"></a> * @param {boolean} ignorePound If true, treat &#39;#&#39; in plural messages as a
+<a name="line315"></a> *     literary character, else treat it as an ICU syntax character, resolving
+<a name="line316"></a> *     to the number (plural_variable - offset).
+<a name="line317"></a> * @param {!Array.&lt;!string&gt;} result Each formatting stage appends its product
+<a name="line318"></a> *     to the result.
+<a name="line319"></a> * @private
+<a name="line320"></a> */
+<a name="line321"></a>goog.i18n.MessageFormat.prototype.formatPluralBlock_ = function(
+<a name="line322"></a>    parsedPattern, namedParameters, ignorePound, result) {
+<a name="line323"></a>  var argumentIndex = parsedPattern.argumentIndex;
+<a name="line324"></a>  var argumentOffset = parsedPattern.argumentOffset;
+<a name="line325"></a>  var pluralValue = +namedParameters[argumentIndex];
+<a name="line326"></a>  if (isNaN(pluralValue)) {
+<a name="line327"></a>    result.push(&#39;Undefined or invalid parameter - &#39; + argumentIndex);
+<a name="line328"></a>    return;
+<a name="line329"></a>  }
+<a name="line330"></a>  var diff = pluralValue - argumentOffset;
+<a name="line331"></a>
+<a name="line332"></a>  // Check if there is an exact match.
+<a name="line333"></a>  var option = parsedPattern[namedParameters[argumentIndex]];
+<a name="line334"></a>  if (!goog.isDef(option)) {
+<a name="line335"></a>    goog.asserts.assert(diff &gt;= 0, &#39;Argument index smaller than offset.&#39;);
+<a name="line336"></a>
+<a name="line337"></a>    var item = goog.i18n.pluralRules.select(diff);
+<a name="line338"></a>    goog.asserts.assertString(item, &#39;Invalid plural key.&#39;);
+<a name="line339"></a>
+<a name="line340"></a>    option = parsedPattern[item];
+<a name="line341"></a>
+<a name="line342"></a>    // If option is not provided fall back to &quot;other&quot;.
+<a name="line343"></a>    if (!goog.isDef(option)) {
+<a name="line344"></a>      option = parsedPattern[goog.i18n.MessageFormat.OTHER_];
+<a name="line345"></a>    }
+<a name="line346"></a>
+<a name="line347"></a>    goog.asserts.assertArray(
+<a name="line348"></a>        option, &#39;Invalid option or missing other option for plural block.&#39;);
+<a name="line349"></a>  }
+<a name="line350"></a>
+<a name="line351"></a>  var pluralResult = [];
+<a name="line352"></a>  this.formatBlock_(option, namedParameters, ignorePound, pluralResult);
+<a name="line353"></a>  var plural = pluralResult.join(&#39;&#39;);
+<a name="line354"></a>  goog.asserts.assertString(plural, &#39;Empty block in plural.&#39;);
+<a name="line355"></a>  if (ignorePound) {
+<a name="line356"></a>    result.push(plural);
+<a name="line357"></a>  } else {
+<a name="line358"></a>    var localeAwareDiff = this.numberFormatter_.format(diff);
+<a name="line359"></a>    result.push(plural.replace(/#/g, function() { return localeAwareDiff; }));
+<a name="line360"></a>  }
+<a name="line361"></a>};
+<a name="line362"></a>
+<a name="line363"></a>
+<a name="line364"></a>/**
+<a name="line365"></a> * Parses input pattern into an array, for faster reformatting with
+<a name="line366"></a> * different input parameters.
+<a name="line367"></a> * Parsing is locale independent.
+<a name="line368"></a> * @param {string} pattern MessageFormat pattern to parse.
+<a name="line369"></a> * @private
+<a name="line370"></a> */
+<a name="line371"></a>goog.i18n.MessageFormat.prototype.parsePattern_ = function(pattern) {
+<a name="line372"></a>  if (pattern) {
+<a name="line373"></a>    pattern = this.insertPlaceholders_(pattern);
+<a name="line374"></a>
+<a name="line375"></a>    this.parsedPattern_ = this.parseBlock_(pattern);
+<a name="line376"></a>  }
+<a name="line377"></a>};
+<a name="line378"></a>
+<a name="line379"></a>
+<a name="line380"></a>/**
+<a name="line381"></a> * Replaces string literals with literal placeholders.
+<a name="line382"></a> * Literals are string of the form &#39;}...&#39;, &#39;{...&#39; and &#39;#...&#39; where ... is
+<a name="line383"></a> * set of characters not containing &#39;
+<a name="line384"></a> * Builds a dictionary so we can recover literals during format phase.
+<a name="line385"></a> * @param {string} pattern Pattern to clean up.
+<a name="line386"></a> * @return {string} Pattern with literals replaced with placeholders.
+<a name="line387"></a> * @private
+<a name="line388"></a> */
+<a name="line389"></a>goog.i18n.MessageFormat.prototype.insertPlaceholders_ = function(pattern) {
+<a name="line390"></a>  var literals = this.literals_;
+<a name="line391"></a>  var buildPlaceholder = goog.bind(this.buildPlaceholder_, this);
+<a name="line392"></a>
+<a name="line393"></a>  // First replace &#39;&#39; with single quote placeholder since they can be found
+<a name="line394"></a>  // inside other literals.
+<a name="line395"></a>  pattern = pattern.replace(
+<a name="line396"></a>      goog.i18n.MessageFormat.REGEX_DOUBLE_APOSTROPHE_,
+<a name="line397"></a>      function() {
+<a name="line398"></a>        literals.push(&quot;&#39;&quot;);
+<a name="line399"></a>        return buildPlaceholder(literals);
+<a name="line400"></a>      });
+<a name="line401"></a>
+<a name="line402"></a>  pattern = pattern.replace(
+<a name="line403"></a>      goog.i18n.MessageFormat.REGEX_LITERAL_,
+<a name="line404"></a>      function(match, text) {
+<a name="line405"></a>        literals.push(text);
+<a name="line406"></a>        return buildPlaceholder(literals);
+<a name="line407"></a>      });
+<a name="line408"></a>
+<a name="line409"></a>  return pattern;
+<a name="line410"></a>};
+<a name="line411"></a>
+<a name="line412"></a>
+<a name="line413"></a>/**
+<a name="line414"></a> * Breaks pattern into strings and top level {...} blocks.
+<a name="line415"></a> * @param {string} pattern (sub)Pattern to be broken.
+<a name="line416"></a> * @return {Array.&lt;Object&gt;} Each item is {type, value}.
+<a name="line417"></a> * @private
+<a name="line418"></a> */
+<a name="line419"></a>goog.i18n.MessageFormat.prototype.extractParts_ = function(pattern) {
+<a name="line420"></a>  var prevPos = 0;
+<a name="line421"></a>  var inBlock = false;
+<a name="line422"></a>  var braceStack = [];
+<a name="line423"></a>  var results = [];
+<a name="line424"></a>
+<a name="line425"></a>  var braces = /[{}]/g;
+<a name="line426"></a>  braces.lastIndex = 0;  // lastIndex doesn&#39;t get set to 0 so we have to.
+<a name="line427"></a>  var match;
+<a name="line428"></a>
+<a name="line429"></a>  while (match = braces.exec(pattern)) {
+<a name="line430"></a>    var pos = match.index;
+<a name="line431"></a>    if (match[0] == &#39;}&#39;) {
+<a name="line432"></a>      var brace = braceStack.pop();
+<a name="line433"></a>      goog.asserts.assert(goog.isDef(brace) &amp;&amp; brace == &#39;{&#39;,
+<a name="line434"></a>                          &#39;No matching { for }.&#39;);
+<a name="line435"></a>
+<a name="line436"></a>      if (braceStack.length == 0) {
+<a name="line437"></a>        // End of the block.
+<a name="line438"></a>        var part = {};
+<a name="line439"></a>        part.type = goog.i18n.MessageFormat.Element_.BLOCK;
+<a name="line440"></a>        part.value = pattern.substring(prevPos, pos);
+<a name="line441"></a>        results.push(part);
+<a name="line442"></a>        prevPos = pos + 1;
+<a name="line443"></a>        inBlock = false;
+<a name="line444"></a>      }
+<a name="line445"></a>    } else {
+<a name="line446"></a>      if (braceStack.length == 0) {
+<a name="line447"></a>        inBlock = true;
+<a name="line448"></a>        var substring = pattern.substring(prevPos, pos);
+<a name="line449"></a>        if (substring != &#39;&#39;) {
+<a name="line450"></a>          results.push({
+<a name="line451"></a>            type: goog.i18n.MessageFormat.Element_.STRING,
+<a name="line452"></a>            value: substring
+<a name="line453"></a>          });
+<a name="line454"></a>        }
+<a name="line455"></a>        prevPos = pos + 1;
+<a name="line456"></a>      }
+<a name="line457"></a>      braceStack.push(&#39;{&#39;);
+<a name="line458"></a>    }
+<a name="line459"></a>  }
+<a name="line460"></a>
+<a name="line461"></a>  // Take care of the final string, and check if the braceStack is empty.
+<a name="line462"></a>  goog.asserts.assert(braceStack.length == 0,
+<a name="line463"></a>                      &#39;There are mismatched { or } in the pattern.&#39;);
+<a name="line464"></a>
+<a name="line465"></a>  var substring = pattern.substring(prevPos);
+<a name="line466"></a>  if (substring != &#39;&#39;) {
+<a name="line467"></a>    results.push({
+<a name="line468"></a>      type: goog.i18n.MessageFormat.Element_.STRING,
+<a name="line469"></a>      value: substring
+<a name="line470"></a>    });
+<a name="line471"></a>  }
+<a name="line472"></a>
+<a name="line473"></a>  return results;
+<a name="line474"></a>};
+<a name="line475"></a>
+<a name="line476"></a>
+<a name="line477"></a>/**
+<a name="line478"></a> * Detects which type of a block is the pattern.
+<a name="line479"></a> * @param {string} pattern Content of the block.
+<a name="line480"></a> * @return {goog.i18n.MessageFormat.BlockType_} One of the block types.
+<a name="line481"></a> * @private
+<a name="line482"></a> */
+<a name="line483"></a>goog.i18n.MessageFormat.prototype.parseBlockType_ = function(pattern) {
+<a name="line484"></a>  if (/^\s*\w+\s*,\s*plural.*/.test(pattern)) {
+<a name="line485"></a>    return goog.i18n.MessageFormat.BlockType_.PLURAL;
+<a name="line486"></a>  }
+<a name="line487"></a>
+<a name="line488"></a>  if (/^\s*\w+\s*,\s*select.*/.test(pattern)) {
+<a name="line489"></a>    return goog.i18n.MessageFormat.BlockType_.SELECT;
+<a name="line490"></a>  }
+<a name="line491"></a>
+<a name="line492"></a>  if (/^\s*\w+\s*/.test(pattern)) {
+<a name="line493"></a>    return goog.i18n.MessageFormat.BlockType_.SIMPLE;
+<a name="line494"></a>  }
+<a name="line495"></a>
+<a name="line496"></a>  return goog.i18n.MessageFormat.BlockType_.UNKNOWN;
+<a name="line497"></a>};
+<a name="line498"></a>
+<a name="line499"></a>
+<a name="line500"></a>/**
+<a name="line501"></a> * Parses generic block.
+<a name="line502"></a> * @param {string} pattern Content of the block to parse.
+<a name="line503"></a> * @return {!Array.&lt;!Object&gt;} Subblocks marked as strings, select...
+<a name="line504"></a> * @private
+<a name="line505"></a> */
+<a name="line506"></a>goog.i18n.MessageFormat.prototype.parseBlock_ = function(pattern) {
+<a name="line507"></a>  var result = [];
+<a name="line508"></a>  var parts = this.extractParts_(pattern);
+<a name="line509"></a>  for (var i = 0; i &lt; parts.length; i++) {
+<a name="line510"></a>    var block = {};
+<a name="line511"></a>    if (goog.i18n.MessageFormat.Element_.STRING == parts[i].type) {
+<a name="line512"></a>      block.type = goog.i18n.MessageFormat.BlockType_.STRING;
+<a name="line513"></a>      block.value = parts[i].value;
+<a name="line514"></a>    } else if (goog.i18n.MessageFormat.Element_.BLOCK == parts[i].type) {
+<a name="line515"></a>      var blockType = this.parseBlockType_(parts[i].value);
+<a name="line516"></a>
+<a name="line517"></a>      switch (blockType) {
+<a name="line518"></a>        case goog.i18n.MessageFormat.BlockType_.SELECT:
+<a name="line519"></a>          block.type = goog.i18n.MessageFormat.BlockType_.SELECT;
+<a name="line520"></a>          block.value = this.parseSelectBlock_(parts[i].value);
+<a name="line521"></a>          break;
+<a name="line522"></a>        case goog.i18n.MessageFormat.BlockType_.PLURAL:
+<a name="line523"></a>          block.type = goog.i18n.MessageFormat.BlockType_.PLURAL;
+<a name="line524"></a>          block.value = this.parsePluralBlock_(parts[i].value);
+<a name="line525"></a>          break;
+<a name="line526"></a>        case goog.i18n.MessageFormat.BlockType_.SIMPLE:
+<a name="line527"></a>          block.type = goog.i18n.MessageFormat.BlockType_.SIMPLE;
+<a name="line528"></a>          block.value = parts[i].value;
+<a name="line529"></a>          break;
+<a name="line530"></a>        default:
+<a name="line531"></a>          goog.asserts.fail(&#39;Unknown block type.&#39;);
+<a name="line532"></a>      }
+<a name="line533"></a>    } else {
+<a name="line534"></a>      goog.asserts.fail(&#39;Unknown part of the pattern.&#39;);
+<a name="line535"></a>    }
+<a name="line536"></a>    result.push(block);
+<a name="line537"></a>  }
+<a name="line538"></a>
+<a name="line539"></a>  return result;
+<a name="line540"></a>};
+<a name="line541"></a>
+<a name="line542"></a>
+<a name="line543"></a>/**
+<a name="line544"></a> * Parses a select type of a block and produces JSON object for it.
+<a name="line545"></a> * @param {string} pattern Subpattern that needs to be parsed as select pattern.
+<a name="line546"></a> * @return {Object} Object with select block info.
+<a name="line547"></a> * @private
+<a name="line548"></a> */
+<a name="line549"></a>goog.i18n.MessageFormat.prototype.parseSelectBlock_ = function(pattern) {
+<a name="line550"></a>  var argumentIndex = &#39;&#39;;
+<a name="line551"></a>  var replaceRegex = /\s*(\w+)\s*,\s*select\s*,/;
+<a name="line552"></a>  pattern = pattern.replace(replaceRegex, function(string, name) {
+<a name="line553"></a>    argumentIndex = name;
+<a name="line554"></a>    return &#39;&#39;;
+<a name="line555"></a>  });
+<a name="line556"></a>  var result = {};
+<a name="line557"></a>  result.argumentIndex = argumentIndex;
+<a name="line558"></a>
+<a name="line559"></a>  var parts = this.extractParts_(pattern);
+<a name="line560"></a>  // Looking for (key block)+ sequence. One of the keys has to be &quot;other&quot;.
+<a name="line561"></a>  var pos = 0;
+<a name="line562"></a>  while (pos &lt; parts.length) {
+<a name="line563"></a>    var key = parts[pos].value;
+<a name="line564"></a>    goog.asserts.assertString(key, &#39;Missing select key element.&#39;);
+<a name="line565"></a>
+<a name="line566"></a>    pos++;
+<a name="line567"></a>    goog.asserts.assert(pos &lt; parts.length,
+<a name="line568"></a>                        &#39;Missing or invalid select value element.&#39;);
+<a name="line569"></a>
+<a name="line570"></a>    if (goog.i18n.MessageFormat.Element_.BLOCK == parts[pos].type) {
+<a name="line571"></a>      var value = this.parseBlock_(parts[pos].value);
+<a name="line572"></a>    } else {
+<a name="line573"></a>      goog.asserts.fail(&#39;Expected block type.&#39;);
+<a name="line574"></a>    }
+<a name="line575"></a>    result[key.replace(/\s/g, &#39;&#39;)] = value;
+<a name="line576"></a>    pos++;
+<a name="line577"></a>  }
+<a name="line578"></a>
+<a name="line579"></a>  goog.asserts.assertArray(result[goog.i18n.MessageFormat.OTHER_],
+<a name="line580"></a>                           &#39;Missing other key in select statement.&#39;);
+<a name="line581"></a>  return result;
+<a name="line582"></a>};
+<a name="line583"></a>
+<a name="line584"></a>
+<a name="line585"></a>/**
+<a name="line586"></a> * Parses a plural type of a block and produces JSON object for it.
+<a name="line587"></a> * @param {string} pattern Subpattern that needs to be parsed as plural pattern.
+<a name="line588"></a> * @return {Object} Object with select block info.
+<a name="line589"></a> * @private
+<a name="line590"></a> */
+<a name="line591"></a>goog.i18n.MessageFormat.prototype.parsePluralBlock_ = function(pattern) {
+<a name="line592"></a>  var argumentIndex = &#39;&#39;;
+<a name="line593"></a>  var argumentOffset = 0;
+<a name="line594"></a>  var replaceRegex = /\s*(\w+)\s*,\s*plural\s*,(?:\s*offset:(\d+))?/;
+<a name="line595"></a>  pattern = pattern.replace(replaceRegex, function(string, name, offset) {
+<a name="line596"></a>    argumentIndex = name;
+<a name="line597"></a>    if (offset) {
+<a name="line598"></a>      argumentOffset = parseInt(offset, 10);
+<a name="line599"></a>    }
+<a name="line600"></a>    return &#39;&#39;;
+<a name="line601"></a>  });
+<a name="line602"></a>
+<a name="line603"></a>  var result = {};
+<a name="line604"></a>  result.argumentIndex = argumentIndex;
+<a name="line605"></a>  result.argumentOffset = argumentOffset;
+<a name="line606"></a>
+<a name="line607"></a>  var parts = this.extractParts_(pattern);
+<a name="line608"></a>  // Looking for (key block)+ sequence.
+<a name="line609"></a>  var pos = 0;
+<a name="line610"></a>  while (pos &lt; parts.length) {
+<a name="line611"></a>    var key = parts[pos].value;
+<a name="line612"></a>    goog.asserts.assertString(key, &#39;Missing plural key element.&#39;);
+<a name="line613"></a>
+<a name="line614"></a>    pos++;
+<a name="line615"></a>    goog.asserts.assert(pos &lt; parts.length,
+<a name="line616"></a>                        &#39;Missing or invalid plural value element.&#39;);
+<a name="line617"></a>
+<a name="line618"></a>    if (goog.i18n.MessageFormat.Element_.BLOCK == parts[pos].type) {
+<a name="line619"></a>      var value = this.parseBlock_(parts[pos].value);
+<a name="line620"></a>    } else {
+<a name="line621"></a>      goog.asserts.fail(&#39;Expected block type.&#39;);
+<a name="line622"></a>    }
+<a name="line623"></a>    result[key.replace(/\s*(?:=)?(\w+)\s*/, &#39;$1&#39;)] = value;
+<a name="line624"></a>    pos++;
+<a name="line625"></a>  }
+<a name="line626"></a>
+<a name="line627"></a>  goog.asserts.assertArray(result[goog.i18n.MessageFormat.OTHER_],
+<a name="line628"></a>                           &#39;Missing other key in plural statement.&#39;);
+<a name="line629"></a>
+<a name="line630"></a>  return result;
+<a name="line631"></a>};
+<a name="line632"></a>
+<a name="line633"></a>
+<a name="line634"></a>/**
+<a name="line635"></a> * Builds a placeholder from the last index of the array.
+<a name="line636"></a> * @param {!Array} literals All literals encountered during parse.
+<a name="line637"></a> * @return {string} \uFDDF_ + last index + _.
+<a name="line638"></a> * @private
+<a name="line639"></a> */
+<a name="line640"></a>goog.i18n.MessageFormat.prototype.buildPlaceholder_ = function(literals) {
+<a name="line641"></a>  goog.asserts.assert(literals.length &gt; 0, &#39;Literal array is empty.&#39;);
+<a name="line642"></a>
+<a name="line643"></a>  var index = (literals.length - 1).toString(10);
+<a name="line644"></a>  return goog.i18n.MessageFormat.LITERAL_PLACEHOLDER_ + index + &#39;_&#39;;
+<a name="line645"></a>};
+</pre>
+
+
+</body>
+</html>

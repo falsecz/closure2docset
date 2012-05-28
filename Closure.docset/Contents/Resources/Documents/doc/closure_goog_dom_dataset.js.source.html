@@ -1,0 +1,141 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>dataset.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_dom_dataset.js.html">dataset.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities for adding, removing and setting values in
+<a name="line17"></a> * an Element&#39;s dataset.
+<a name="line18"></a> * See {@link http://www.w3.org/TR/html5/Overview.html#dom-dataset}.
+<a name="line19"></a> *
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.dom.dataset&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.string&#39;);
+<a name="line25"></a>
+<a name="line26"></a>
+<a name="line27"></a>/**
+<a name="line28"></a> * Sets a custom data attribute on an element. The key should be
+<a name="line29"></a> * in camelCase format (e.g &quot;keyName&quot; for the &quot;data-key-name&quot; attribute).
+<a name="line30"></a> * @param {Element} element DOM node to set the custom data attribute on.
+<a name="line31"></a> * @param {string} key Key for the custom data attribute.
+<a name="line32"></a> * @param {string} value Value for the custom data attribute.
+<a name="line33"></a> */
+<a name="line34"></a>goog.dom.dataset.set = function(element, key, value) {
+<a name="line35"></a>  if (element.dataset) {
+<a name="line36"></a>    element.dataset[key] = value;
+<a name="line37"></a>  } else {
+<a name="line38"></a>    element.setAttribute(&#39;data-&#39; + goog.string.toSelectorCase(key), value);
+<a name="line39"></a>  }
+<a name="line40"></a>};
+<a name="line41"></a>
+<a name="line42"></a>
+<a name="line43"></a>/**
+<a name="line44"></a> * Gets a custom data attribute from an element. The key should be
+<a name="line45"></a>  * in camelCase format (e.g &quot;keyName&quot; for the &quot;data-key-name&quot; attribute).
+<a name="line46"></a> * @param {Element} element DOM node to get the custom data attribute from.
+<a name="line47"></a> * @param {string} key Key for the custom data attribute.
+<a name="line48"></a> * @return {?string} The attribute value, if it exists.
+<a name="line49"></a> */
+<a name="line50"></a>goog.dom.dataset.get = function(element, key) {
+<a name="line51"></a>  if (element.dataset) {
+<a name="line52"></a>    return element.dataset[key];
+<a name="line53"></a>  } else {
+<a name="line54"></a>    return element.getAttribute(&#39;data-&#39; + goog.string.toSelectorCase(key));
+<a name="line55"></a>  }
+<a name="line56"></a>};
+<a name="line57"></a>
+<a name="line58"></a>
+<a name="line59"></a>/**
+<a name="line60"></a> * Removes a custom data attribute from an element. The key should be
+<a name="line61"></a>  * in camelCase format (e.g &quot;keyName&quot; for the &quot;data-key-name&quot; attribute).
+<a name="line62"></a> * @param {Element} element DOM node to get the custom data attribute from.
+<a name="line63"></a> * @param {string} key Key for the custom data attribute.
+<a name="line64"></a> */
+<a name="line65"></a>goog.dom.dataset.remove = function(element, key) {
+<a name="line66"></a>  if (element.dataset) {
+<a name="line67"></a>    delete element.dataset[key];
+<a name="line68"></a>  } else {
+<a name="line69"></a>    element.removeAttribute(&#39;data-&#39; + goog.string.toSelectorCase(key));
+<a name="line70"></a>  }
+<a name="line71"></a>};
+<a name="line72"></a>
+<a name="line73"></a>
+<a name="line74"></a>/**
+<a name="line75"></a> * Checks whether custom data attribute exists on an element. The key should be
+<a name="line76"></a>  * in camelCase format (e.g &quot;keyName&quot; for the &quot;data-key-name&quot; attribute).
+<a name="line77"></a> *
+<a name="line78"></a> * @param {Element} element DOM node to get the custom data attribute from.
+<a name="line79"></a> * @param {string} key Key for the custom data attribute.
+<a name="line80"></a> * @return {boolean} Whether the attibute exists.
+<a name="line81"></a> */
+<a name="line82"></a>goog.dom.dataset.has = function(element, key) {
+<a name="line83"></a>  if (element.dataset) {
+<a name="line84"></a>    return key in element.dataset;
+<a name="line85"></a>  } else if (element.hasAttribute) {
+<a name="line86"></a>    return element.hasAttribute(&#39;data-&#39; + goog.string.toSelectorCase(key));
+<a name="line87"></a>  } else {
+<a name="line88"></a>    return !!(element.getAttribute(&#39;data-&#39; + goog.string.toSelectorCase(key)));
+<a name="line89"></a>  }
+<a name="line90"></a>};
+</pre>
+
+
+</body>
+</html>

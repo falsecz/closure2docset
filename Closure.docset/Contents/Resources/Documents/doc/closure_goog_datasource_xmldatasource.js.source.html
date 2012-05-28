@@ -1,0 +1,458 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>xmldatasource.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_datasource_xmldatasource.js.html">xmldatasource.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview
+<a name="line17"></a> * Implementations of DataNode for wrapping XML data.
+<a name="line18"></a> *
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.ds.XmlDataSource&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.ds.XmlHttpDataSource&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.Uri&#39;);
+<a name="line25"></a>goog.require(&#39;goog.dom.NodeType&#39;);
+<a name="line26"></a>goog.require(&#39;goog.dom.xml&#39;);
+<a name="line27"></a>goog.require(&#39;goog.ds.BasicNodeList&#39;);
+<a name="line28"></a>goog.require(&#39;goog.ds.DataManager&#39;);
+<a name="line29"></a>goog.require(&#39;goog.ds.LoadState&#39;);
+<a name="line30"></a>goog.require(&#39;goog.ds.logger&#39;);
+<a name="line31"></a>goog.require(&#39;goog.net.XhrIo&#39;);
+<a name="line32"></a>goog.require(&#39;goog.string&#39;);
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>/**
+<a name="line36"></a> * Data source whose backing is an xml node
+<a name="line37"></a> *
+<a name="line38"></a> * @param {Node} node The XML node. Can be null.
+<a name="line39"></a> * @param {goog.ds.XmlDataSource} parent Parent of XML element. Can be null.
+<a name="line40"></a> * @param {string=} opt_name The name of this node relative to the parent node.
+<a name="line41"></a> *
+<a name="line42"></a> * @extends {goog.ds.DataNode}
+<a name="line43"></a> * @constructor
+<a name="line44"></a> */
+<a name="line45"></a>// TODO(user): Use interfaces when available.
+<a name="line46"></a>goog.ds.XmlDataSource = function(node, parent, opt_name) {
+<a name="line47"></a>  this.parent_ = parent;
+<a name="line48"></a>  this.dataName_ = opt_name || (node ? node.nodeName : &#39;&#39;);
+<a name="line49"></a>  this.setNode_(node);
+<a name="line50"></a>};
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>/**
+<a name="line54"></a> * Constant to select XML attributes for getChildNodes
+<a name="line55"></a> * @type {string}
+<a name="line56"></a> * @private
+<a name="line57"></a> */
+<a name="line58"></a>goog.ds.XmlDataSource.ATTRIBUTE_SELECTOR_ = &#39;@*&#39;;
+<a name="line59"></a>
+<a name="line60"></a>
+<a name="line61"></a>/**
+<a name="line62"></a> * Set the current root nodeof the data source.
+<a name="line63"></a> * Can be an attribute node, text node, or element node
+<a name="line64"></a> * @param {Node} node The node. Can be null.
+<a name="line65"></a> *
+<a name="line66"></a> * @private
+<a name="line67"></a> */
+<a name="line68"></a>goog.ds.XmlDataSource.prototype.setNode_ = function(node) {
+<a name="line69"></a>  this.node_ = node;
+<a name="line70"></a>  if (node != null) {
+<a name="line71"></a>    switch (node.nodeType) {
+<a name="line72"></a>      case goog.dom.NodeType.ATTRIBUTE:
+<a name="line73"></a>      case goog.dom.NodeType.TEXT:
+<a name="line74"></a>        this.value_ = node.nodeValue;
+<a name="line75"></a>        break;
+<a name="line76"></a>      case goog.dom.NodeType.ELEMENT:
+<a name="line77"></a>        if (node.childNodes.length == 1 &amp;&amp;
+<a name="line78"></a>            node.firstChild.nodeType == goog.dom.NodeType.TEXT) {
+<a name="line79"></a>          this.value_ = node.firstChild.nodeValue;
+<a name="line80"></a>        }
+<a name="line81"></a>    }
+<a name="line82"></a>  }
+<a name="line83"></a>};
+<a name="line84"></a>
+<a name="line85"></a>
+<a name="line86"></a>/**
+<a name="line87"></a> * Creates the DataNodeList with the child nodes for this element.
+<a name="line88"></a> * Allows for only building list as needed.
+<a name="line89"></a> *
+<a name="line90"></a> * @private
+<a name="line91"></a> */
+<a name="line92"></a>goog.ds.XmlDataSource.prototype.createChildNodes_ = function() {
+<a name="line93"></a>  if (this.childNodeList_) {
+<a name="line94"></a>    return;
+<a name="line95"></a>  }
+<a name="line96"></a>  var childNodeList = new goog.ds.BasicNodeList();
+<a name="line97"></a>  if (this.node_ != null) {
+<a name="line98"></a>    var childNodes = this.node_.childNodes;
+<a name="line99"></a>    for (var i = 0, childNode; childNode = childNodes[i]; i++) {
+<a name="line100"></a>      if (childNode.nodeType != goog.dom.NodeType.TEXT ||
+<a name="line101"></a>          !goog.ds.XmlDataSource.isEmptyTextNodeValue_(childNode.nodeValue)) {
+<a name="line102"></a>        var newNode = new goog.ds.XmlDataSource(childNode,
+<a name="line103"></a>            this, childNode.nodeName);
+<a name="line104"></a>        childNodeList.add(newNode);
+<a name="line105"></a>      }
+<a name="line106"></a>    }
+<a name="line107"></a>  }
+<a name="line108"></a>  this.childNodeList_ = childNodeList;
+<a name="line109"></a>};
+<a name="line110"></a>
+<a name="line111"></a>
+<a name="line112"></a>/**
+<a name="line113"></a> * Creates the DataNodeList with the attributes for the element
+<a name="line114"></a> * Allows for only building list as needed.
+<a name="line115"></a> *
+<a name="line116"></a> * @private
+<a name="line117"></a> */
+<a name="line118"></a>goog.ds.XmlDataSource.prototype.createAttributes_ = function() {
+<a name="line119"></a>  if (this.attributes_) {
+<a name="line120"></a>    return;
+<a name="line121"></a>  }
+<a name="line122"></a>  var attributes = new goog.ds.BasicNodeList();
+<a name="line123"></a>  if (this.node_ != null &amp;&amp; this.node_.attributes != null) {
+<a name="line124"></a>    var atts = this.node_.attributes;
+<a name="line125"></a>    for (var i = 0, att; att = atts[i]; i++) {
+<a name="line126"></a>      var newNode = new goog.ds.XmlDataSource(att, this, att.nodeName);
+<a name="line127"></a>      attributes.add(newNode);
+<a name="line128"></a>    }
+<a name="line129"></a>  }
+<a name="line130"></a>  this.attributes_ = attributes;
+<a name="line131"></a>};
+<a name="line132"></a>
+<a name="line133"></a>
+<a name="line134"></a>/**
+<a name="line135"></a> * Get the value of the node
+<a name="line136"></a> * @return {Object} The value of the node, or null if no value.
+<a name="line137"></a> */
+<a name="line138"></a>goog.ds.XmlDataSource.prototype.get = function() {
+<a name="line139"></a>  this.createChildNodes_();
+<a name="line140"></a>  return this.value_;
+<a name="line141"></a>};
+<a name="line142"></a>
+<a name="line143"></a>
+<a name="line144"></a>/**
+<a name="line145"></a> * Set the value of the node
+<a name="line146"></a> * @param {Object} value The new value of the node.
+<a name="line147"></a> */
+<a name="line148"></a>goog.ds.XmlDataSource.prototype.set = function(value) {
+<a name="line149"></a>  throw Error(&#39;Can\&#39;t set on XmlDataSource yet&#39;);
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>/**
+<a name="line154"></a> * Gets all of the child nodes of the current node.
+<a name="line155"></a> * Should return an empty DataNode list if no child nodes.
+<a name="line156"></a> * @param {string=} opt_selector String selector to choose child nodes.
+<a name="line157"></a> * @return {goog.ds.DataNodeList} The child nodes.
+<a name="line158"></a> */
+<a name="line159"></a>goog.ds.XmlDataSource.prototype.getChildNodes = function(opt_selector) {
+<a name="line160"></a>  if (opt_selector &amp;&amp; opt_selector ==
+<a name="line161"></a>      goog.ds.XmlDataSource.ATTRIBUTE_SELECTOR_) {
+<a name="line162"></a>    this.createAttributes_();
+<a name="line163"></a>    return this.attributes_;
+<a name="line164"></a>  } else if (opt_selector == null ||
+<a name="line165"></a>      opt_selector == goog.ds.STR_ALL_CHILDREN_SELECTOR) {
+<a name="line166"></a>    this.createChildNodes_();
+<a name="line167"></a>    return this.childNodeList_;
+<a name="line168"></a>  } else {
+<a name="line169"></a>    throw Error(&#39;Unsupported selector&#39;);
+<a name="line170"></a>  }
+<a name="line171"></a>
+<a name="line172"></a>};
+<a name="line173"></a>
+<a name="line174"></a>
+<a name="line175"></a>/**
+<a name="line176"></a> * Gets a named child node of the current node
+<a name="line177"></a> * @param {string} name The node name.
+<a name="line178"></a> * @return {goog.ds.DataNode} The child node, or null if
+<a name="line179"></a> *   no node of this name exists.
+<a name="line180"></a> */
+<a name="line181"></a>goog.ds.XmlDataSource.prototype.getChildNode = function(name) {
+<a name="line182"></a>  if (goog.string.startsWith(name, goog.ds.STR_ATTRIBUTE_START_)) {
+<a name="line183"></a>    var att = this.node_.getAttributeNode(name.substring(1));
+<a name="line184"></a>    return att ? new goog.ds.XmlDataSource(att, this) : null;
+<a name="line185"></a>  } else {
+<a name="line186"></a>    return this.getChildNodes().get(name);
+<a name="line187"></a>  }
+<a name="line188"></a>};
+<a name="line189"></a>
+<a name="line190"></a>
+<a name="line191"></a>/**
+<a name="line192"></a> * Gets the value of a child node
+<a name="line193"></a> * @param {string} name The node name.
+<a name="line194"></a> * @return {Object} The value of the node, or null if no value or the child node
+<a name="line195"></a> *    doesn&#39;t exist.
+<a name="line196"></a> */
+<a name="line197"></a>goog.ds.XmlDataSource.prototype.getChildNodeValue = function(name) {
+<a name="line198"></a>  if (goog.string.startsWith(name, goog.ds.STR_ATTRIBUTE_START_)) {
+<a name="line199"></a>    var node = this.node_.getAttributeNode(name.substring(1));
+<a name="line200"></a>    return node ? node.nodeValue : null;
+<a name="line201"></a>  } else {
+<a name="line202"></a>    var node = this.getChildNode(name);
+<a name="line203"></a>    return node ? node.get() : null;
+<a name="line204"></a>  }
+<a name="line205"></a>};
+<a name="line206"></a>
+<a name="line207"></a>
+<a name="line208"></a>/**
+<a name="line209"></a> * Get the name of the node relative to the parent node
+<a name="line210"></a> * @return {string} The name of the node.
+<a name="line211"></a> */
+<a name="line212"></a>goog.ds.XmlDataSource.prototype.getDataName = function() {
+<a name="line213"></a>  return this.dataName_;
+<a name="line214"></a>};
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * Setthe name of the node relative to the parent node
+<a name="line219"></a> * @param {string} name The name of the node.
+<a name="line220"></a> */
+<a name="line221"></a>goog.ds.XmlDataSource.prototype.setDataName = function(name) {
+<a name="line222"></a>  this.dataName_ = name;
+<a name="line223"></a>};
+<a name="line224"></a>
+<a name="line225"></a>
+<a name="line226"></a>/**
+<a name="line227"></a> * Gets the a qualified data path to this node
+<a name="line228"></a> * @return {string} The data path.
+<a name="line229"></a> */
+<a name="line230"></a>goog.ds.XmlDataSource.prototype.getDataPath = function() {
+<a name="line231"></a>  var parentPath = &#39;&#39;;
+<a name="line232"></a>  if (this.parent_) {
+<a name="line233"></a>    parentPath = this.parent_.getDataPath() +
+<a name="line234"></a>        (this.dataName_.indexOf(goog.ds.STR_ARRAY_START) != -1 ? &#39;&#39; :
+<a name="line235"></a>        goog.ds.STR_PATH_SEPARATOR);
+<a name="line236"></a>  }
+<a name="line237"></a>
+<a name="line238"></a>  return parentPath + this.dataName_;
+<a name="line239"></a>};
+<a name="line240"></a>
+<a name="line241"></a>
+<a name="line242"></a>/**
+<a name="line243"></a> * Load or reload the backing data for this node
+<a name="line244"></a> */
+<a name="line245"></a>goog.ds.XmlDataSource.prototype.load = function() {
+<a name="line246"></a>  // Nothing to do
+<a name="line247"></a>};
+<a name="line248"></a>
+<a name="line249"></a>
+<a name="line250"></a>/**
+<a name="line251"></a> * Gets the state of the backing data for this node
+<a name="line252"></a> * @return {goog.ds.LoadState} The state.
+<a name="line253"></a> */
+<a name="line254"></a>goog.ds.XmlDataSource.prototype.getLoadState = function() {
+<a name="line255"></a>  return this.node_ ? goog.ds.LoadState.LOADED : goog.ds.LoadState.NOT_LOADED;
+<a name="line256"></a>};
+<a name="line257"></a>
+<a name="line258"></a>
+<a name="line259"></a>/**
+<a name="line260"></a> * Check whether a node is an empty text node. Nodes consisting of only white
+<a name="line261"></a> * space (#x20, #xD, #xA, #x9) can generally be collapsed to a zero length
+<a name="line262"></a> * text string.
+<a name="line263"></a> * @param {string} str String to match.
+<a name="line264"></a> * @return {boolean} True if string equates to empty text node.
+<a name="line265"></a> * @private
+<a name="line266"></a> */
+<a name="line267"></a>goog.ds.XmlDataSource.isEmptyTextNodeValue_ = function(str) {
+<a name="line268"></a>  return /^[\r\n\t ]*$/.test(str);
+<a name="line269"></a>};
+<a name="line270"></a>
+<a name="line271"></a>
+<a name="line272"></a>/**
+<a name="line273"></a> * Creates an XML document with one empty node.
+<a name="line274"></a> * Useful for places where you need a node that
+<a name="line275"></a> * can be queried against.
+<a name="line276"></a> *
+<a name="line277"></a> * @return {Document} Document with one empty node.
+<a name="line278"></a> * @private
+<a name="line279"></a> */
+<a name="line280"></a>goog.ds.XmlDataSource.createChildlessDocument_ = function() {
+<a name="line281"></a>  return goog.dom.xml.createDocument(&#39;nothing&#39;);
+<a name="line282"></a>};
+<a name="line283"></a>
+<a name="line284"></a>
+<a name="line285"></a>
+<a name="line286"></a>/**
+<a name="line287"></a> * Data source whose backing is an XMLHttpRequest,
+<a name="line288"></a> *
+<a name="line289"></a> * A URI of an empty string will mean that no request is made
+<a name="line290"></a> * and the data source will be a single, empty node.
+<a name="line291"></a> *
+<a name="line292"></a> * @param {(string,goog.Uri)} uri URL of the XMLHttpRequest.
+<a name="line293"></a> * @param {string} name Name of the datasource.
+<a name="line294"></a> *
+<a name="line295"></a> * implements goog.ds.XmlHttpDataSource.
+<a name="line296"></a> * @constructor
+<a name="line297"></a> * @extends {goog.ds.XmlDataSource}
+<a name="line298"></a> */
+<a name="line299"></a>goog.ds.XmlHttpDataSource = function(uri, name) {
+<a name="line300"></a>  goog.ds.XmlDataSource.call(this, null, null, name);
+<a name="line301"></a>  if (uri) {
+<a name="line302"></a>    this.uri_ = new goog.Uri(uri);
+<a name="line303"></a>  } else {
+<a name="line304"></a>    this.uri_ = null;
+<a name="line305"></a>  }
+<a name="line306"></a>};
+<a name="line307"></a>goog.inherits(goog.ds.XmlHttpDataSource, goog.ds.XmlDataSource);
+<a name="line308"></a>
+<a name="line309"></a>
+<a name="line310"></a>/**
+<a name="line311"></a> * Default load state is NOT_LOADED
+<a name="line312"></a> * @private
+<a name="line313"></a> */
+<a name="line314"></a>goog.ds.XmlHttpDataSource.prototype.loadState_ = goog.ds.LoadState.NOT_LOADED;
+<a name="line315"></a>
+<a name="line316"></a>
+<a name="line317"></a>/**
+<a name="line318"></a> * Load or reload the backing data for this node.
+<a name="line319"></a> * Fires the XMLHttpRequest
+<a name="line320"></a> */
+<a name="line321"></a>goog.ds.XmlHttpDataSource.prototype.load = function() {
+<a name="line322"></a>  if (this.uri_) {
+<a name="line323"></a>    goog.ds.logger.info(&#39;Sending XML request for DataSource &#39; +
+<a name="line324"></a>        this.getDataName() + &#39; to &#39; + this.uri_);
+<a name="line325"></a>    this.loadState_ = goog.ds.LoadState.LOADING;
+<a name="line326"></a>
+<a name="line327"></a>    goog.net.XhrIo.send(this.uri_, goog.bind(this.complete_, this));
+<a name="line328"></a>  } else {
+<a name="line329"></a>    this.node_ = goog.ds.XmlDataSource.createChildlessDocument_();
+<a name="line330"></a>    this.loadState_ = goog.ds.LoadState.NOT_LOADED;
+<a name="line331"></a>  }
+<a name="line332"></a>};
+<a name="line333"></a>
+<a name="line334"></a>
+<a name="line335"></a>/**
+<a name="line336"></a> * Gets the state of the backing data for this node
+<a name="line337"></a> * @return {goog.ds.LoadState} The state.
+<a name="line338"></a> */
+<a name="line339"></a>goog.ds.XmlHttpDataSource.prototype.getLoadState = function() {
+<a name="line340"></a>  return this.loadState_;
+<a name="line341"></a>};
+<a name="line342"></a>
+<a name="line343"></a>
+<a name="line344"></a>/**
+<a name="line345"></a> * Handles the completion of an XhrIo request. Dispatches to success or load
+<a name="line346"></a> * based on the result.
+<a name="line347"></a> * @param {!goog.events.Event} e The XhrIo event object.
+<a name="line348"></a> * @private
+<a name="line349"></a> */
+<a name="line350"></a>goog.ds.XmlHttpDataSource.prototype.complete_ = function(e) {
+<a name="line351"></a>  var xhr = /** @type {goog.net.XhrIo} */ (e.target);
+<a name="line352"></a>  if (xhr &amp;&amp; xhr.isSuccess()) {
+<a name="line353"></a>    this.success_(xhr);
+<a name="line354"></a>  } else {
+<a name="line355"></a>    this.failure_();
+<a name="line356"></a>  }
+<a name="line357"></a>};
+<a name="line358"></a>
+<a name="line359"></a>
+<a name="line360"></a>/**
+<a name="line361"></a> * Success result. Checks whether valid XML was returned
+<a name="line362"></a> * and sets the XML and loadstate.
+<a name="line363"></a> *
+<a name="line364"></a> * @param {!goog.net.XhrIo} xhr The successful XhrIo object.
+<a name="line365"></a> * @private
+<a name="line366"></a> */
+<a name="line367"></a>goog.ds.XmlHttpDataSource.prototype.success_ = function(xhr) {
+<a name="line368"></a>  goog.ds.logger.info(&#39;Got data for DataSource &#39; + this.getDataName());
+<a name="line369"></a>  var xml = xhr.getResponseXml();
+<a name="line370"></a>
+<a name="line371"></a>  // Fix for case where IE returns valid XML as text but
+<a name="line372"></a>  // doesn&#39;t parse by default
+<a name="line373"></a>  if (xml &amp;&amp; !xml.hasChildNodes() &amp;&amp;
+<a name="line374"></a>      goog.isObject(xhr.getResponseText())) {
+<a name="line375"></a>    xml = goog.dom.xml.loadXml(xhr.getResponseText());
+<a name="line376"></a>  }
+<a name="line377"></a>  // Failure result
+<a name="line378"></a>  if (!xml || !xml.hasChildNodes()) {
+<a name="line379"></a>    this.loadState_ = goog.ds.LoadState.FAILED;
+<a name="line380"></a>    this.node_ = goog.ds.XmlDataSource.createChildlessDocument_();
+<a name="line381"></a>  } else {
+<a name="line382"></a>    this.loadState_ = goog.ds.LoadState.LOADED;
+<a name="line383"></a>    this.node_ = xml.documentElement;
+<a name="line384"></a>  }
+<a name="line385"></a>
+<a name="line386"></a>  if (this.getDataName()) {
+<a name="line387"></a>    goog.ds.DataManager.getInstance().fireDataChange(this.getDataName());
+<a name="line388"></a>  }
+<a name="line389"></a>};
+<a name="line390"></a>
+<a name="line391"></a>
+<a name="line392"></a>/**
+<a name="line393"></a> * Failure result
+<a name="line394"></a> *
+<a name="line395"></a> * @private
+<a name="line396"></a> */
+<a name="line397"></a>goog.ds.XmlHttpDataSource.prototype.failure_ = function() {
+<a name="line398"></a>  goog.ds.logger.info(&#39;Data retrieve failed for DataSource &#39; +
+<a name="line399"></a>      this.getDataName());
+<a name="line400"></a>
+<a name="line401"></a>  this.loadState_ = goog.ds.LoadState.FAILED;
+<a name="line402"></a>  this.node_ = goog.ds.XmlDataSource.createChildlessDocument_();
+<a name="line403"></a>
+<a name="line404"></a>  if (this.getDataName()) {
+<a name="line405"></a>    goog.ds.DataManager.getInstance().fireDataChange(this.getDataName());
+<a name="line406"></a>  }
+<a name="line407"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>hmac.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_crypt_hmac.js.html">hmac.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Implementation of HMAC in JavaScript.
+<a name="line17"></a> *
+<a name="line18"></a> * Usage:
+<a name="line19"></a> *   var hmac = new goog.crypt.Hmac(new goog.crypt.sha1(), key, 64);
+<a name="line20"></a> *   var digest = hmac.getHmac(bytes);
+<a name="line21"></a> *
+<a name="line22"></a> */
+<a name="line23"></a>
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.crypt.Hmac&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.asserts&#39;);
+<a name="line28"></a>goog.require(&#39;goog.crypt.Hash&#39;);
+<a name="line29"></a>
+<a name="line30"></a>
+<a name="line31"></a>
+<a name="line32"></a>/**
+<a name="line33"></a> * @constructor
+<a name="line34"></a> * @param {!goog.crypt.Hash} hasher An object to serve as a hash function.
+<a name="line35"></a> * @param {Array.&lt;number&gt;} key The secret key to use to calculate the hmac.
+<a name="line36"></a> *     Should be an array of not more than {@code blockSize} integers in
+<a name="line37"></a>       {0, 255}.
+<a name="line38"></a> * @param {number=} opt_blockSize Optional. The block size {@code hasher} uses.
+<a name="line39"></a> *     If not specified, 16.
+<a name="line40"></a> * @extends {goog.crypt.Hash}
+<a name="line41"></a> */
+<a name="line42"></a>goog.crypt.Hmac = function(hasher, key, opt_blockSize) {
+<a name="line43"></a>  goog.base(this);
+<a name="line44"></a>
+<a name="line45"></a>  /**
+<a name="line46"></a>   * The underlying hasher to calculate hash.
+<a name="line47"></a>   *
+<a name="line48"></a>   * @type {!goog.crypt.Hash}
+<a name="line49"></a>   * @private
+<a name="line50"></a>   */
+<a name="line51"></a>  this.hasher_ = hasher;
+<a name="line52"></a>
+<a name="line53"></a>  /**
+<a name="line54"></a>   * The block size.
+<a name="line55"></a>   *
+<a name="line56"></a>   * @type {number}
+<a name="line57"></a>   * @private
+<a name="line58"></a>   */
+<a name="line59"></a>  this.blockSize_ = opt_blockSize || 16;
+<a name="line60"></a>
+<a name="line61"></a>  /**
+<a name="line62"></a>   * The outer padding array of hmac
+<a name="line63"></a>   *
+<a name="line64"></a>   * @type {!Array.&lt;number&gt;}
+<a name="line65"></a>   * @private
+<a name="line66"></a>   */
+<a name="line67"></a>  this.keyO_ = new Array(this.blockSize_);
+<a name="line68"></a>
+<a name="line69"></a>  /**
+<a name="line70"></a>   * The inner padding array of hmac
+<a name="line71"></a>   *
+<a name="line72"></a>   * @type {!Array.&lt;number&gt;}
+<a name="line73"></a>   * @private
+<a name="line74"></a>   */
+<a name="line75"></a>  this.keyI_ = new Array(this.blockSize_);
+<a name="line76"></a>
+<a name="line77"></a>  this.initialize_(key);
+<a name="line78"></a>};
+<a name="line79"></a>goog.inherits(goog.crypt.Hmac, goog.crypt.Hash);
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>/**
+<a name="line83"></a> * Outer padding byte of HMAC algorith, per http://en.wikipedia.org/wiki/HMAC
+<a name="line84"></a> *
+<a name="line85"></a> * @type {number}
+<a name="line86"></a> * @private
+<a name="line87"></a> */
+<a name="line88"></a>goog.crypt.Hmac.OPAD_ = 0x5c;
+<a name="line89"></a>
+<a name="line90"></a>
+<a name="line91"></a>/**
+<a name="line92"></a> * Inner padding byte of HMAC algorith, per http://en.wikipedia.org/wiki/HMAC
+<a name="line93"></a> *
+<a name="line94"></a> * @type {number}
+<a name="line95"></a> * @private
+<a name="line96"></a> */
+<a name="line97"></a>goog.crypt.Hmac.IPAD_ = 0x36;
+<a name="line98"></a>
+<a name="line99"></a>
+<a name="line100"></a>/**
+<a name="line101"></a> * Initializes Hmac by precalculating the inner and outer paddings.
+<a name="line102"></a> *
+<a name="line103"></a> * @param {Array.&lt;number&gt;} key The secret key to use to calculate the hmac.
+<a name="line104"></a> *     Should be an array of not more than {@code blockSize} integers in
+<a name="line105"></a>       {0, 255}.
+<a name="line106"></a> * @private
+<a name="line107"></a> */
+<a name="line108"></a>goog.crypt.Hmac.prototype.initialize_ = function(key) {
+<a name="line109"></a>  if (key.length &gt; this.blockSize_) {
+<a name="line110"></a>    this.hasher_.update(key);
+<a name="line111"></a>    key = this.hasher_.digest();
+<a name="line112"></a>  }
+<a name="line113"></a>  // Precalculate padded and xor&#39;d keys.
+<a name="line114"></a>  var keyByte;
+<a name="line115"></a>  for (var i = 0; i &lt; this.blockSize_; i++) {
+<a name="line116"></a>    if (i &lt; key.length) {
+<a name="line117"></a>      keyByte = key[i];
+<a name="line118"></a>    } else {
+<a name="line119"></a>      keyByte = 0;
+<a name="line120"></a>    }
+<a name="line121"></a>    this.keyO_[i] = keyByte ^ goog.crypt.Hmac.OPAD_;
+<a name="line122"></a>    this.keyI_[i] = keyByte ^ goog.crypt.Hmac.IPAD_;
+<a name="line123"></a>  }
+<a name="line124"></a>  // Be ready for an immediate update.
+<a name="line125"></a>  this.hasher_.update(this.keyI_);
+<a name="line126"></a>};
+<a name="line127"></a>
+<a name="line128"></a>
+<a name="line129"></a>/** @override */
+<a name="line130"></a>goog.crypt.Hmac.prototype.reset = function() {
+<a name="line131"></a>  this.hasher_.reset();
+<a name="line132"></a>  this.hasher_.update(this.keyI_);
+<a name="line133"></a>};
+<a name="line134"></a>
+<a name="line135"></a>
+<a name="line136"></a>/** @override */
+<a name="line137"></a>goog.crypt.Hmac.prototype.update = function(bytes, opt_length) {
+<a name="line138"></a>  this.hasher_.update(bytes, opt_length);
+<a name="line139"></a>};
+<a name="line140"></a>
+<a name="line141"></a>
+<a name="line142"></a>/** @override */
+<a name="line143"></a>goog.crypt.Hmac.prototype.digest = function() {
+<a name="line144"></a>  var temp = this.hasher_.digest();
+<a name="line145"></a>  this.hasher_.reset();
+<a name="line146"></a>  this.hasher_.update(this.keyO_);
+<a name="line147"></a>  this.hasher_.update(temp);
+<a name="line148"></a>  return this.hasher_.digest();
+<a name="line149"></a>};
+<a name="line150"></a>
+<a name="line151"></a>
+<a name="line152"></a>/**
+<a name="line153"></a> * Calculates an HMAC for a given message.
+<a name="line154"></a> *
+<a name="line155"></a> * @param {Array.&lt;number&gt;} message  An array of integers in {0, 255}.
+<a name="line156"></a> * @return {Array} the digest of the given message.
+<a name="line157"></a> */
+<a name="line158"></a>goog.crypt.Hmac.prototype.getHmac = function(message) {
+<a name="line159"></a>  this.reset();
+<a name="line160"></a>  this.update(message);
+<a name="line161"></a>  return this.digest();
+<a name="line162"></a>};
+</pre>
+
+
+</body>
+</html>

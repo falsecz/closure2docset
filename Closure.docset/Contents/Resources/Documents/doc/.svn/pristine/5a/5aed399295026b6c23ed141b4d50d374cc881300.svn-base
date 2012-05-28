@@ -1,0 +1,432 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>pool.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_structs_pool.js.html">pool.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Datastructure: Pool.
+<a name="line17"></a> *
+<a name="line18"></a> *
+<a name="line19"></a> * A generic class for handling pools of objects.
+<a name="line20"></a> * When an object is released, it is attempted to be reused.
+<a name="line21"></a> */
+<a name="line22"></a>
+<a name="line23"></a>
+<a name="line24"></a>goog.provide(&#39;goog.structs.Pool&#39;);
+<a name="line25"></a>
+<a name="line26"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line27"></a>goog.require(&#39;goog.structs.Queue&#39;);
+<a name="line28"></a>goog.require(&#39;goog.structs.Set&#39;);
+<a name="line29"></a>
+<a name="line30"></a>
+<a name="line31"></a>
+<a name="line32"></a>/**
+<a name="line33"></a> * A generic pool class. If min is greater than max, an error is thrown.
+<a name="line34"></a> * @param {number=} opt_minCount Min. number of objects (Default: 1).
+<a name="line35"></a> * @param {number=} opt_maxCount Max. number of objects (Default: 10).
+<a name="line36"></a> * @constructor
+<a name="line37"></a> * @extends {goog.Disposable}
+<a name="line38"></a> */
+<a name="line39"></a>goog.structs.Pool = function(opt_minCount, opt_maxCount) {
+<a name="line40"></a>  goog.Disposable.call(this);
+<a name="line41"></a>
+<a name="line42"></a>  /**
+<a name="line43"></a>   * Minimum number of objects allowed
+<a name="line44"></a>   * @type {number}
+<a name="line45"></a>   * @private
+<a name="line46"></a>   */
+<a name="line47"></a>  this.minCount_ = opt_minCount || 0;
+<a name="line48"></a>
+<a name="line49"></a>  /**
+<a name="line50"></a>   * Maximum number of objects allowed
+<a name="line51"></a>   * @type {number}
+<a name="line52"></a>   * @private
+<a name="line53"></a>   */
+<a name="line54"></a>  this.maxCount_ = opt_maxCount || 10;
+<a name="line55"></a>
+<a name="line56"></a>  // Make sure that the max and min constraints are valid.
+<a name="line57"></a>  if (this.minCount_ &gt; this.maxCount_) {
+<a name="line58"></a>    throw Error(goog.structs.Pool.ERROR_MIN_MAX_);
+<a name="line59"></a>  }
+<a name="line60"></a>
+<a name="line61"></a>  /**
+<a name="line62"></a>   * Set used to store objects that are currently in the pool and available
+<a name="line63"></a>   * to be used.
+<a name="line64"></a>   * @type {goog.structs.Queue}
+<a name="line65"></a>   * @private
+<a name="line66"></a>   */
+<a name="line67"></a>  this.freeQueue_ = new goog.structs.Queue();
+<a name="line68"></a>
+<a name="line69"></a>  /**
+<a name="line70"></a>   * Set used to store objects that are currently in the pool and in use.
+<a name="line71"></a>   * @type {goog.structs.Set}
+<a name="line72"></a>   * @private
+<a name="line73"></a>   */
+<a name="line74"></a>  this.inUseSet_ = new goog.structs.Set();
+<a name="line75"></a>
+<a name="line76"></a>  /**
+<a name="line77"></a>   * The minimum delay between objects being made available, in milliseconds. If
+<a name="line78"></a>   * this is 0, no minimum delay is enforced.
+<a name="line79"></a>   * @type {number}
+<a name="line80"></a>   * @protected
+<a name="line81"></a>   */
+<a name="line82"></a>  this.delay = 0;
+<a name="line83"></a>
+<a name="line84"></a>  /**
+<a name="line85"></a>   * The time of the last object being made available, in milliseconds since the
+<a name="line86"></a>   * epoch (i.e., the result of Date#toTime). If this is null, no access has
+<a name="line87"></a>   * occurred yet.
+<a name="line88"></a>   * @type {number?}
+<a name="line89"></a>   * @protected
+<a name="line90"></a>   */
+<a name="line91"></a>  this.lastAccess = null;
+<a name="line92"></a>
+<a name="line93"></a>  // Make sure that the minCount constraint is satisfied.
+<a name="line94"></a>  this.adjustForMinMax();
+<a name="line95"></a>
+<a name="line96"></a>
+<a name="line97"></a>  // TODO(user): Remove once JSCompiler&#39;s undefined properties warnings
+<a name="line98"></a>  // don&#39;t error for guarded properties.
+<a name="line99"></a>  var magicProps = {canBeReused: 0};
+<a name="line100"></a>};
+<a name="line101"></a>goog.inherits(goog.structs.Pool, goog.Disposable);
+<a name="line102"></a>
+<a name="line103"></a>
+<a name="line104"></a>/**
+<a name="line105"></a> * Error to throw when the max/min constraint is attempted to be invalidated.
+<a name="line106"></a> * I.e., when it is attempted for maxCount to be less than minCount.
+<a name="line107"></a> * @type {string}
+<a name="line108"></a> * @private
+<a name="line109"></a> */
+<a name="line110"></a>goog.structs.Pool.ERROR_MIN_MAX_ =
+<a name="line111"></a>    &#39;[goog.structs.Pool] Min can not be greater than max&#39;;
+<a name="line112"></a>
+<a name="line113"></a>
+<a name="line114"></a>/**
+<a name="line115"></a> * Error to throw when the Pool is attempted to be disposed and it is asked to
+<a name="line116"></a> * make sure that there are no objects that are in use (i.e., haven&#39;t been
+<a name="line117"></a> * released).
+<a name="line118"></a> * @type {string}
+<a name="line119"></a> * @private
+<a name="line120"></a> */
+<a name="line121"></a>goog.structs.Pool.ERROR_DISPOSE_UNRELEASED_OBJS_ =
+<a name="line122"></a>    &#39;[goog.structs.Pool] Objects not released&#39;;
+<a name="line123"></a>
+<a name="line124"></a>
+<a name="line125"></a>/**
+<a name="line126"></a> * Sets the minimum count of the pool.
+<a name="line127"></a> * If min is greater than the max count of the pool, an error is thrown.
+<a name="line128"></a> * @param {number} min The minimum count of the pool.
+<a name="line129"></a> */
+<a name="line130"></a>goog.structs.Pool.prototype.setMinimumCount = function(min) {
+<a name="line131"></a>  // Check count constraints.
+<a name="line132"></a>  if (min &gt; this.maxCount_) {
+<a name="line133"></a>    throw Error(goog.structs.Pool.ERROR_MIN_MAX_);
+<a name="line134"></a>  }
+<a name="line135"></a>  this.minCount_ = min;
+<a name="line136"></a>
+<a name="line137"></a>  // Adjust the objects in the pool as needed.
+<a name="line138"></a>  this.adjustForMinMax();
+<a name="line139"></a>};
+<a name="line140"></a>
+<a name="line141"></a>
+<a name="line142"></a>/**
+<a name="line143"></a> * Sets the maximum count of the pool.
+<a name="line144"></a> * If max is less than the max count of the pool, an error is thrown.
+<a name="line145"></a> * @param {number} max The maximium count of the pool.
+<a name="line146"></a> */
+<a name="line147"></a>goog.structs.Pool.prototype.setMaximumCount = function(max) {
+<a name="line148"></a>  // Check count constraints.
+<a name="line149"></a>  if (max &lt; this.minCount_) {
+<a name="line150"></a>    throw Error(goog.structs.Pool.ERROR_MIN_MAX_);
+<a name="line151"></a>  }
+<a name="line152"></a>  this.maxCount_ = max;
+<a name="line153"></a>
+<a name="line154"></a>  // Adjust the objects in the pool as needed.
+<a name="line155"></a>  this.adjustForMinMax();
+<a name="line156"></a>};
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/**
+<a name="line160"></a> * Sets the minimum delay between objects being returned by getObject, in
+<a name="line161"></a> * milliseconds. This defaults to zero, meaning that no minimum delay is
+<a name="line162"></a> * enforced and objects may be used as soon as they&#39;re available.
+<a name="line163"></a> * @param {number} delay The minimum delay, in milliseconds.
+<a name="line164"></a> */
+<a name="line165"></a>goog.structs.Pool.prototype.setDelay = function(delay) {
+<a name="line166"></a>  this.delay = delay;
+<a name="line167"></a>};
+<a name="line168"></a>
+<a name="line169"></a>
+<a name="line170"></a>/**
+<a name="line171"></a> * @return {Object|undefined} A new object from the pool if there is one
+<a name="line172"></a> *     available, otherwise undefined.
+<a name="line173"></a> */
+<a name="line174"></a>goog.structs.Pool.prototype.getObject = function() {
+<a name="line175"></a>  var time = goog.now();
+<a name="line176"></a>  if (goog.isDefAndNotNull(this.lastAccess) &amp;&amp;
+<a name="line177"></a>      time - this.lastAccess &lt; this.delay) {
+<a name="line178"></a>    return undefined;
+<a name="line179"></a>  }
+<a name="line180"></a>
+<a name="line181"></a>  var obj = this.removeFreeObject_();
+<a name="line182"></a>  if (obj) {
+<a name="line183"></a>    this.lastAccess = time;
+<a name="line184"></a>    this.inUseSet_.add(obj);
+<a name="line185"></a>  }
+<a name="line186"></a>
+<a name="line187"></a>  return obj;
+<a name="line188"></a>};
+<a name="line189"></a>
+<a name="line190"></a>
+<a name="line191"></a>/**
+<a name="line192"></a> * Returns an object to the pool of available objects so that it can be reused.
+<a name="line193"></a> * @param {Object} obj The object to return to the pool of free objects.
+<a name="line194"></a> * @return {boolean} Whether the object was found in the Pool&#39;s set of in-use
+<a name="line195"></a> *     objects (in other words, whether any action was taken).
+<a name="line196"></a> */
+<a name="line197"></a>goog.structs.Pool.prototype.releaseObject = function(obj) {
+<a name="line198"></a>  if (this.inUseSet_.remove(obj)) {
+<a name="line199"></a>    this.addFreeObject(obj);
+<a name="line200"></a>    return true;
+<a name="line201"></a>  }
+<a name="line202"></a>  return false;
+<a name="line203"></a>};
+<a name="line204"></a>
+<a name="line205"></a>
+<a name="line206"></a>/**
+<a name="line207"></a> * Removes a free object from the collection of objects that are free so that it
+<a name="line208"></a> * can be used.
+<a name="line209"></a> *
+<a name="line210"></a> * NOTE: This method does not mark the returned object as in use.
+<a name="line211"></a> *
+<a name="line212"></a> * @return {Object|undefined} The object removed from the free collection, if
+<a name="line213"></a> *     there is one available. Otherwise, undefined.
+<a name="line214"></a> * @private
+<a name="line215"></a> */
+<a name="line216"></a>goog.structs.Pool.prototype.removeFreeObject_ = function() {
+<a name="line217"></a>  var obj;
+<a name="line218"></a>  while (this.getFreeCount() &gt; 0) {
+<a name="line219"></a>    obj = /** @type {Object} */(this.freeQueue_.dequeue());
+<a name="line220"></a>
+<a name="line221"></a>    if (!this.objectCanBeReused(obj)) {
+<a name="line222"></a>      this.adjustForMinMax();
+<a name="line223"></a>    } else {
+<a name="line224"></a>      break;
+<a name="line225"></a>    }
+<a name="line226"></a>  }
+<a name="line227"></a>
+<a name="line228"></a>  if (!obj &amp;&amp; this.getCount() &lt; this.maxCount_) {
+<a name="line229"></a>    obj = this.createObject();
+<a name="line230"></a>  }
+<a name="line231"></a>
+<a name="line232"></a>  return obj;
+<a name="line233"></a>};
+<a name="line234"></a>
+<a name="line235"></a>
+<a name="line236"></a>/**
+<a name="line237"></a> * Adds an object to the collection of objects that are free. If the object can
+<a name="line238"></a> * not be added, then it is disposed.
+<a name="line239"></a> *
+<a name="line240"></a> * @param {Object} obj The object to add to collection of free objects.
+<a name="line241"></a> */
+<a name="line242"></a>goog.structs.Pool.prototype.addFreeObject = function(obj) {
+<a name="line243"></a>  this.inUseSet_.remove(obj);
+<a name="line244"></a>  if (this.objectCanBeReused(obj) &amp;&amp; this.getCount() &lt; this.maxCount_) {
+<a name="line245"></a>    this.freeQueue_.enqueue(obj);
+<a name="line246"></a>  } else {
+<a name="line247"></a>    this.disposeObject(obj);
+<a name="line248"></a>  }
+<a name="line249"></a>};
+<a name="line250"></a>
+<a name="line251"></a>
+<a name="line252"></a>/**
+<a name="line253"></a> * Adjusts the objects held in the pool to be within the min/max constraints.
+<a name="line254"></a> *
+<a name="line255"></a> * NOTE: It is possible that the number of objects in the pool will still be
+<a name="line256"></a> * greater than the maximum count of objects allowed. This will be the case
+<a name="line257"></a> * if no more free objects can be disposed of to get below the minimum count
+<a name="line258"></a> * (i.e., all objects are in use).
+<a name="line259"></a> */
+<a name="line260"></a>goog.structs.Pool.prototype.adjustForMinMax = function() {
+<a name="line261"></a>  var freeQueue = this.freeQueue_;
+<a name="line262"></a>
+<a name="line263"></a>  // Make sure the at least the minimum number of objects are created.
+<a name="line264"></a>  while (this.getCount() &lt; this.minCount_) {
+<a name="line265"></a>    freeQueue.enqueue(this.createObject());
+<a name="line266"></a>  }
+<a name="line267"></a>
+<a name="line268"></a>  // Make sure no more than the maximum number of objects are created.
+<a name="line269"></a>  while (this.getCount() &gt; this.maxCount_ &amp;&amp; this.getFreeCount() &gt; 0) {
+<a name="line270"></a>    this.disposeObject(/** @type {Object} */(freeQueue.dequeue()));
+<a name="line271"></a>  }
+<a name="line272"></a>};
+<a name="line273"></a>
+<a name="line274"></a>
+<a name="line275"></a>/**
+<a name="line276"></a> * Should be overriden by sub-classes to return an instance of the object type
+<a name="line277"></a> * that is expected in the pool.
+<a name="line278"></a> * @return {Object} The created object.
+<a name="line279"></a> */
+<a name="line280"></a>goog.structs.Pool.prototype.createObject = function() {
+<a name="line281"></a>  return {};
+<a name="line282"></a>};
+<a name="line283"></a>
+<a name="line284"></a>
+<a name="line285"></a>/**
+<a name="line286"></a> * Should be overriden to dispose of an object. Default implementation is to
+<a name="line287"></a> * remove all its members, which should render it useless. Calls the object&#39;s
+<a name="line288"></a> * {@code dispose()} method, if available.
+<a name="line289"></a> * @param {Object} obj The object to dispose.
+<a name="line290"></a> */
+<a name="line291"></a>goog.structs.Pool.prototype.disposeObject = function(obj) {
+<a name="line292"></a>  if (typeof obj.dispose == &#39;function&#39;) {
+<a name="line293"></a>    obj.dispose();
+<a name="line294"></a>  } else {
+<a name="line295"></a>    for (var i in obj) {
+<a name="line296"></a>      obj[i] = null;
+<a name="line297"></a>    }
+<a name="line298"></a>  }
+<a name="line299"></a>};
+<a name="line300"></a>
+<a name="line301"></a>
+<a name="line302"></a>/**
+<a name="line303"></a> * Should be overriden to determine whether an object has become unusable and
+<a name="line304"></a> * should not be returned by getObject(). Calls the object&#39;s
+<a name="line305"></a> * {@code canBeReused()}  method, if available.
+<a name="line306"></a> * @param {Object} obj The object to test.
+<a name="line307"></a> * @return {boolean} Whether the object can be reused.
+<a name="line308"></a> */
+<a name="line309"></a>goog.structs.Pool.prototype.objectCanBeReused = function(obj) {
+<a name="line310"></a>  if (typeof obj.canBeReused == &#39;function&#39;) {
+<a name="line311"></a>    return obj.canBeReused();
+<a name="line312"></a>  }
+<a name="line313"></a>  return true;
+<a name="line314"></a>};
+<a name="line315"></a>
+<a name="line316"></a>
+<a name="line317"></a>/**
+<a name="line318"></a> * Returns true if the given object is in the pool.
+<a name="line319"></a> * @param {Object} obj The object to check the pool for.
+<a name="line320"></a> * @return {boolean} Whether the pool contains the object.
+<a name="line321"></a> */
+<a name="line322"></a>goog.structs.Pool.prototype.contains = function(obj) {
+<a name="line323"></a>  return this.freeQueue_.contains(obj) || this.inUseSet_.contains(obj);
+<a name="line324"></a>};
+<a name="line325"></a>
+<a name="line326"></a>
+<a name="line327"></a>/**
+<a name="line328"></a> * Returns the number of objects currently in the pool.
+<a name="line329"></a> * @return {number} Number of objects currently in the pool.
+<a name="line330"></a> */
+<a name="line331"></a>goog.structs.Pool.prototype.getCount = function() {
+<a name="line332"></a>  return this.freeQueue_.getCount() + this.inUseSet_.getCount();
+<a name="line333"></a>};
+<a name="line334"></a>
+<a name="line335"></a>
+<a name="line336"></a>/**
+<a name="line337"></a> * Returns the number of objects currently in use in the pool.
+<a name="line338"></a> * @return {number} Number of objects currently in use in the pool.
+<a name="line339"></a> */
+<a name="line340"></a>goog.structs.Pool.prototype.getInUseCount = function() {
+<a name="line341"></a>  return this.inUseSet_.getCount();
+<a name="line342"></a>};
+<a name="line343"></a>
+<a name="line344"></a>
+<a name="line345"></a>/**
+<a name="line346"></a> * Returns the number of objects currently free in the pool.
+<a name="line347"></a> * @return {number} Number of objects currently free in the pool.
+<a name="line348"></a> */
+<a name="line349"></a>goog.structs.Pool.prototype.getFreeCount = function() {
+<a name="line350"></a>  return this.freeQueue_.getCount();
+<a name="line351"></a>};
+<a name="line352"></a>
+<a name="line353"></a>
+<a name="line354"></a>/**
+<a name="line355"></a> * Determines if the pool contains no objects.
+<a name="line356"></a> * @return {boolean} Whether the pool contains no objects.
+<a name="line357"></a> */
+<a name="line358"></a>goog.structs.Pool.prototype.isEmpty = function() {
+<a name="line359"></a>  return this.freeQueue_.isEmpty() &amp;&amp; this.inUseSet_.isEmpty();
+<a name="line360"></a>};
+<a name="line361"></a>
+<a name="line362"></a>
+<a name="line363"></a>/**
+<a name="line364"></a> * Disposes of the pool and all objects currently held in the pool.
+<a name="line365"></a> * @override
+<a name="line366"></a> * @protected
+<a name="line367"></a> */
+<a name="line368"></a>goog.structs.Pool.prototype.disposeInternal = function() {
+<a name="line369"></a>  goog.structs.Pool.superClass_.disposeInternal.call(this);
+<a name="line370"></a>  if (this.getInUseCount() &gt; 0) {
+<a name="line371"></a>    throw Error(goog.structs.Pool.ERROR_DISPOSE_UNRELEASED_OBJS_);
+<a name="line372"></a>  }
+<a name="line373"></a>  delete this.inUseSet_;
+<a name="line374"></a>
+<a name="line375"></a>  // Call disposeObject on each object held by the pool.
+<a name="line376"></a>  var freeQueue = this.freeQueue_;
+<a name="line377"></a>  while (!freeQueue.isEmpty()) {
+<a name="line378"></a>    this.disposeObject(/** @type {Object} */ (freeQueue.dequeue()));
+<a name="line379"></a>  }
+<a name="line380"></a>  delete this.freeQueue_;
+<a name="line381"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>asserts.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_asserts_asserts.js.html">asserts.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities to check the preconditions, postconditions and
+<a name="line17"></a> * invariants runtime.
+<a name="line18"></a> *
+<a name="line19"></a> * Methods in this package should be given special treatment by the compiler
+<a name="line20"></a> * for type-inference. For example, &lt;code&gt;goog.asserts.assert(foo)&lt;/code&gt;
+<a name="line21"></a> * will restrict &lt;code&gt;foo&lt;/code&gt; to a truthy value.
+<a name="line22"></a> *
+<a name="line23"></a> * The compiler has an option to disable asserts. So code like:
+<a name="line24"></a> * &lt;code&gt;
+<a name="line25"></a> * var x = goog.asserts.assert(foo()); goog.asserts.assert(bar());
+<a name="line26"></a> * &lt;/code&gt;
+<a name="line27"></a> * will be transformed into:
+<a name="line28"></a> * &lt;code&gt;
+<a name="line29"></a> * var x = foo();
+<a name="line30"></a> * &lt;/code&gt;
+<a name="line31"></a> * The compiler will leave in foo() (because its return value is used),
+<a name="line32"></a> * but it will remove bar() because it assumes it does not have side-effects.
+<a name="line33"></a> *
+<a name="line34"></a> */
+<a name="line35"></a>
+<a name="line36"></a>goog.provide(&#39;goog.asserts&#39;);
+<a name="line37"></a>goog.provide(&#39;goog.asserts.AssertionError&#39;);
+<a name="line38"></a>
+<a name="line39"></a>goog.require(&#39;goog.debug.Error&#39;);
+<a name="line40"></a>goog.require(&#39;goog.string&#39;);
+<a name="line41"></a>
+<a name="line42"></a>
+<a name="line43"></a>/**
+<a name="line44"></a> * @define {boolean} Whether to strip out asserts or to leave them in.
+<a name="line45"></a> */
+<a name="line46"></a>goog.asserts.ENABLE_ASSERTS = goog.DEBUG;
+<a name="line47"></a>
+<a name="line48"></a>
+<a name="line49"></a>
+<a name="line50"></a>/**
+<a name="line51"></a> * Error object for failed assertions.
+<a name="line52"></a> * @param {string} messagePattern The pattern that was used to form message.
+<a name="line53"></a> * @param {!Array.&lt;*&gt;} messageArgs The items to substitute into the pattern.
+<a name="line54"></a> * @constructor
+<a name="line55"></a> * @extends {goog.debug.Error}
+<a name="line56"></a> */
+<a name="line57"></a>goog.asserts.AssertionError = function(messagePattern, messageArgs) {
+<a name="line58"></a>  messageArgs.unshift(messagePattern);
+<a name="line59"></a>  goog.debug.Error.call(this, goog.string.subs.apply(null, messageArgs));
+<a name="line60"></a>  // Remove the messagePattern afterwards to avoid permenantly modifying the
+<a name="line61"></a>  // passed in array.
+<a name="line62"></a>  messageArgs.shift();
+<a name="line63"></a>
+<a name="line64"></a>  /**
+<a name="line65"></a>   * The message pattern used to format the error message. Error handlers can
+<a name="line66"></a>   * use this to uniquely identify the assertion.
+<a name="line67"></a>   * @type {string}
+<a name="line68"></a>   */
+<a name="line69"></a>  this.messagePattern = messagePattern;
+<a name="line70"></a>};
+<a name="line71"></a>goog.inherits(goog.asserts.AssertionError, goog.debug.Error);
+<a name="line72"></a>
+<a name="line73"></a>
+<a name="line74"></a>/** @override */
+<a name="line75"></a>goog.asserts.AssertionError.prototype.name = &#39;AssertionError&#39;;
+<a name="line76"></a>
+<a name="line77"></a>
+<a name="line78"></a>/**
+<a name="line79"></a> * Throws an exception with the given message and &quot;Assertion failed&quot; prefixed
+<a name="line80"></a> * onto it.
+<a name="line81"></a> * @param {string} defaultMessage The message to use if givenMessage is empty.
+<a name="line82"></a> * @param {Array.&lt;*&gt;} defaultArgs The substitution arguments for defaultMessage.
+<a name="line83"></a> * @param {string|undefined} givenMessage Message supplied by the caller.
+<a name="line84"></a> * @param {Array.&lt;*&gt;} givenArgs The substitution arguments for givenMessage.
+<a name="line85"></a> * @throws {goog.asserts.AssertionError} When the value is not a number.
+<a name="line86"></a> * @private
+<a name="line87"></a> */
+<a name="line88"></a>goog.asserts.doAssertFailure_ =
+<a name="line89"></a>    function(defaultMessage, defaultArgs, givenMessage, givenArgs) {
+<a name="line90"></a>  var message = &#39;Assertion failed&#39;;
+<a name="line91"></a>  if (givenMessage) {
+<a name="line92"></a>    message += &#39;: &#39; + givenMessage;
+<a name="line93"></a>    var args = givenArgs;
+<a name="line94"></a>  } else if (defaultMessage) {
+<a name="line95"></a>    message += &#39;: &#39; + defaultMessage;
+<a name="line96"></a>    args = defaultArgs;
+<a name="line97"></a>  }
+<a name="line98"></a>  // The &#39;&#39; + works around an Opera 10 bug in the unit tests. Without it,
+<a name="line99"></a>  // a stack trace is added to var message above. With this, a stack trace is
+<a name="line100"></a>  // not added until this line (it causes the extra garbage to be added after
+<a name="line101"></a>  // the assertion message instead of in the middle of it).
+<a name="line102"></a>  throw new goog.asserts.AssertionError(&#39;&#39; + message, args || []);
+<a name="line103"></a>};
+<a name="line104"></a>
+<a name="line105"></a>
+<a name="line106"></a>/**
+<a name="line107"></a> * Checks if the condition evaluates to true if goog.asserts.ENABLE_ASSERTS is
+<a name="line108"></a> * true.
+<a name="line109"></a> * @param {*} condition The condition to check.
+<a name="line110"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line111"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line112"></a> * @return {*} The value of the condition.
+<a name="line113"></a> * @throws {goog.asserts.AssertionError} When the condition evaluates to false.
+<a name="line114"></a> */
+<a name="line115"></a>goog.asserts.assert = function(condition, opt_message, var_args) {
+<a name="line116"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !condition) {
+<a name="line117"></a>    goog.asserts.doAssertFailure_(&#39;&#39;, null, opt_message,
+<a name="line118"></a>        Array.prototype.slice.call(arguments, 2));
+<a name="line119"></a>  }
+<a name="line120"></a>  return condition;
+<a name="line121"></a>};
+<a name="line122"></a>
+<a name="line123"></a>
+<a name="line124"></a>/**
+<a name="line125"></a> * Fails if goog.asserts.ENABLE_ASSERTS is true. This function is useful in case
+<a name="line126"></a> * when we want to add a check in the unreachable area like switch-case
+<a name="line127"></a> * statement:
+<a name="line128"></a> *
+<a name="line129"></a> * &lt;pre&gt;
+<a name="line130"></a> *  switch(type) {
+<a name="line131"></a> *    case FOO: doSomething(); break;
+<a name="line132"></a> *    case BAR: doSomethingElse(); break;
+<a name="line133"></a> *    default: goog.assert.fail(&#39;Unrecognized type: &#39; + type);
+<a name="line134"></a> *      // We have only 2 types - &quot;default:&quot; section is unreachable code.
+<a name="line135"></a> *  }
+<a name="line136"></a> * &lt;/pre&gt;
+<a name="line137"></a> *
+<a name="line138"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line139"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line140"></a> * @throws {goog.asserts.AssertionError} Failure.
+<a name="line141"></a> */
+<a name="line142"></a>goog.asserts.fail = function(opt_message, var_args) {
+<a name="line143"></a>  if (goog.asserts.ENABLE_ASSERTS) {
+<a name="line144"></a>    throw new goog.asserts.AssertionError(
+<a name="line145"></a>        &#39;Failure&#39; + (opt_message ? &#39;: &#39; + opt_message : &#39;&#39;),
+<a name="line146"></a>        Array.prototype.slice.call(arguments, 1));
+<a name="line147"></a>  }
+<a name="line148"></a>};
+<a name="line149"></a>
+<a name="line150"></a>
+<a name="line151"></a>/**
+<a name="line152"></a> * Checks if the value is a number if goog.asserts.ENABLE_ASSERTS is true.
+<a name="line153"></a> * @param {*} value The value to check.
+<a name="line154"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line155"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line156"></a> * @return {number} The value, guaranteed to be a number when asserts enabled.
+<a name="line157"></a> * @throws {goog.asserts.AssertionError} When the value is not a number.
+<a name="line158"></a> */
+<a name="line159"></a>goog.asserts.assertNumber = function(value, opt_message, var_args) {
+<a name="line160"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !goog.isNumber(value)) {
+<a name="line161"></a>    goog.asserts.doAssertFailure_(&#39;Expected number but got %s: %s.&#39;,
+<a name="line162"></a>        [goog.typeOf(value), value], opt_message,
+<a name="line163"></a>        Array.prototype.slice.call(arguments, 2));
+<a name="line164"></a>  }
+<a name="line165"></a>  return /** @type {number} */ (value);
+<a name="line166"></a>};
+<a name="line167"></a>
+<a name="line168"></a>
+<a name="line169"></a>/**
+<a name="line170"></a> * Checks if the value is a string if goog.asserts.ENABLE_ASSERTS is true.
+<a name="line171"></a> * @param {*} value The value to check.
+<a name="line172"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line173"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line174"></a> * @return {string} The value, guaranteed to be a string when asserts enabled.
+<a name="line175"></a> * @throws {goog.asserts.AssertionError} When the value is not a string.
+<a name="line176"></a> */
+<a name="line177"></a>goog.asserts.assertString = function(value, opt_message, var_args) {
+<a name="line178"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !goog.isString(value)) {
+<a name="line179"></a>    goog.asserts.doAssertFailure_(&#39;Expected string but got %s: %s.&#39;,
+<a name="line180"></a>        [goog.typeOf(value), value], opt_message,
+<a name="line181"></a>        Array.prototype.slice.call(arguments, 2));
+<a name="line182"></a>  }
+<a name="line183"></a>  return /** @type {string} */ (value);
+<a name="line184"></a>};
+<a name="line185"></a>
+<a name="line186"></a>
+<a name="line187"></a>/**
+<a name="line188"></a> * Checks if the value is a function if goog.asserts.ENABLE_ASSERTS is true.
+<a name="line189"></a> * @param {*} value The value to check.
+<a name="line190"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line191"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line192"></a> * @return {!Function} The value, guaranteed to be a function when asserts
+<a name="line193"></a> *     enabled.
+<a name="line194"></a> * @throws {goog.asserts.AssertionError} When the value is not a function.
+<a name="line195"></a> */
+<a name="line196"></a>goog.asserts.assertFunction = function(value, opt_message, var_args) {
+<a name="line197"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !goog.isFunction(value)) {
+<a name="line198"></a>    goog.asserts.doAssertFailure_(&#39;Expected function but got %s: %s.&#39;,
+<a name="line199"></a>        [goog.typeOf(value), value], opt_message,
+<a name="line200"></a>        Array.prototype.slice.call(arguments, 2));
+<a name="line201"></a>  }
+<a name="line202"></a>  return /** @type {!Function} */ (value);
+<a name="line203"></a>};
+<a name="line204"></a>
+<a name="line205"></a>
+<a name="line206"></a>/**
+<a name="line207"></a> * Checks if the value is an Object if goog.asserts.ENABLE_ASSERTS is true.
+<a name="line208"></a> * @param {*} value The value to check.
+<a name="line209"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line210"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line211"></a> * @return {!Object} The value, guaranteed to be a non-null object.
+<a name="line212"></a> * @throws {goog.asserts.AssertionError} When the value is not an object.
+<a name="line213"></a> */
+<a name="line214"></a>goog.asserts.assertObject = function(value, opt_message, var_args) {
+<a name="line215"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !goog.isObject(value)) {
+<a name="line216"></a>    goog.asserts.doAssertFailure_(&#39;Expected object but got %s: %s.&#39;,
+<a name="line217"></a>        [goog.typeOf(value), value],
+<a name="line218"></a>        opt_message, Array.prototype.slice.call(arguments, 2));
+<a name="line219"></a>  }
+<a name="line220"></a>  return /** @type {!Object} */ (value);
+<a name="line221"></a>};
+<a name="line222"></a>
+<a name="line223"></a>
+<a name="line224"></a>/**
+<a name="line225"></a> * Checks if the value is an Array if goog.asserts.ENABLE_ASSERTS is true.
+<a name="line226"></a> * @param {*} value The value to check.
+<a name="line227"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line228"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line229"></a> * @return {!Array} The value, guaranteed to be a non-null array.
+<a name="line230"></a> * @throws {goog.asserts.AssertionError} When the value is not an array.
+<a name="line231"></a> */
+<a name="line232"></a>goog.asserts.assertArray = function(value, opt_message, var_args) {
+<a name="line233"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !goog.isArray(value)) {
+<a name="line234"></a>    goog.asserts.doAssertFailure_(&#39;Expected array but got %s: %s.&#39;,
+<a name="line235"></a>        [goog.typeOf(value), value], opt_message,
+<a name="line236"></a>        Array.prototype.slice.call(arguments, 2));
+<a name="line237"></a>  }
+<a name="line238"></a>  return /** @type {!Array} */ (value);
+<a name="line239"></a>};
+<a name="line240"></a>
+<a name="line241"></a>
+<a name="line242"></a>/**
+<a name="line243"></a> * Checks if the value is a boolean if goog.asserts.ENABLE_ASSERTS is true.
+<a name="line244"></a> * @param {*} value The value to check.
+<a name="line245"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line246"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line247"></a> * @return {boolean} The value, guaranteed to be a boolean when asserts are
+<a name="line248"></a> *     enabled.
+<a name="line249"></a> * @throws {goog.asserts.AssertionError} When the value is not a boolean.
+<a name="line250"></a> */
+<a name="line251"></a>goog.asserts.assertBoolean = function(value, opt_message, var_args) {
+<a name="line252"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !goog.isBoolean(value)) {
+<a name="line253"></a>    goog.asserts.doAssertFailure_(&#39;Expected boolean but got %s: %s.&#39;,
+<a name="line254"></a>        [goog.typeOf(value), value], opt_message,
+<a name="line255"></a>        Array.prototype.slice.call(arguments, 2));
+<a name="line256"></a>  }
+<a name="line257"></a>  return /** @type {boolean} */ (value);
+<a name="line258"></a>};
+<a name="line259"></a>
+<a name="line260"></a>
+<a name="line261"></a>/**
+<a name="line262"></a> * Checks if the value is an instance of the user-defined type if
+<a name="line263"></a> * goog.asserts.ENABLE_ASSERTS is true.
+<a name="line264"></a> * @param {*} value The value to check.
+<a name="line265"></a> * @param {!Function} type A user-defined constructor.
+<a name="line266"></a> * @param {string=} opt_message Error message in case of failure.
+<a name="line267"></a> * @param {...*} var_args The items to substitute into the failure message.
+<a name="line268"></a> * @throws {goog.asserts.AssertionError} When the value is not an instance of
+<a name="line269"></a> *     type.
+<a name="line270"></a> */
+<a name="line271"></a>goog.asserts.assertInstanceof = function(value, type, opt_message, var_args) {
+<a name="line272"></a>  if (goog.asserts.ENABLE_ASSERTS &amp;&amp; !(value instanceof type)) {
+<a name="line273"></a>    goog.asserts.doAssertFailure_(&#39;instanceof check failed.&#39;, null,
+<a name="line274"></a>        opt_message, Array.prototype.slice.call(arguments, 3));
+<a name="line275"></a>  }
+<a name="line276"></a>};
+</pre>
+
+
+</body>
+</html>

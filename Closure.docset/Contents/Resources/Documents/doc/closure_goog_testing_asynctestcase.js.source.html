@@ -1,0 +1,871 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>asynctestcase.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_asynctestcase.js.html">asynctestcase.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>// All Rights Reserved.
+<a name="line15"></a>
+<a name="line16"></a>/**
+<a name="line17"></a> * @fileoverview A class representing a set of test functions that use
+<a name="line18"></a> * asynchronous functions that cannot be meaningfully mocked.
+<a name="line19"></a> *
+<a name="line20"></a> * To create a Google-compatable JsUnit test using this test case, put the
+<a name="line21"></a> * following snippet in your test:
+<a name="line22"></a> *
+<a name="line23"></a> *   var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
+<a name="line24"></a> *
+<a name="line25"></a> * To make the test runner wait for your asynchronous behaviour, use:
+<a name="line26"></a> *
+<a name="line27"></a> *   asyncTestCase.waitForAsync(&#39;Waiting for xhr to respond&#39;);
+<a name="line28"></a> *
+<a name="line29"></a> * The next test will not start until the following call is made, or a
+<a name="line30"></a> * timeout occurs:
+<a name="line31"></a> *
+<a name="line32"></a> *   asyncTestCase.continueTesting();
+<a name="line33"></a> *
+<a name="line34"></a> * There does NOT need to be a 1:1 mapping of waitForAsync calls and
+<a name="line35"></a> * continueTesting calls. The next test will be run after a single call to
+<a name="line36"></a> * continueTesting is made, as long as there is no subsequent call to
+<a name="line37"></a> * waitForAsync in the same thread.
+<a name="line38"></a> *
+<a name="line39"></a> * Example:
+<a name="line40"></a> *   // Returning here would cause the next test to be run.
+<a name="line41"></a> *   asyncTestCase.waitForAsync(&#39;description 1&#39;);
+<a name="line42"></a> *   // Returning here would *not* cause the next test to be run.
+<a name="line43"></a> *   // Only effect of additional waitForAsync() calls is an updated
+<a name="line44"></a> *   // description in the case of a timeout.
+<a name="line45"></a> *   asyncTestCase.waitForAsync(&#39;updated description&#39;);
+<a name="line46"></a> *   asyncTestCase.continueTesting();
+<a name="line47"></a> *   // Returning here would cause the next test to be run.
+<a name="line48"></a> *   asyncTestCase.waitForAsync(&#39;just kidding, still running.&#39;);
+<a name="line49"></a> *   // Returning here would *not* cause the next test to be run.
+<a name="line50"></a> *
+<a name="line51"></a> * This class supports asynchronous behaviour in all test functions except for
+<a name="line52"></a> * tearDownPage. If such support is needed, it can be added.
+<a name="line53"></a> *
+<a name="line54"></a> * Example Usage:
+<a name="line55"></a> *
+<a name="line56"></a> *   var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
+<a name="line57"></a> *   // Optionally, set a longer-than-normal step timeout.
+<a name="line58"></a> *   asyncTestCase.stepTimeout = 30 * 1000;
+<a name="line59"></a> *
+<a name="line60"></a> *   function testSetTimeout() {
+<a name="line61"></a> *     var step = 0;
+<a name="line62"></a> *     function stepCallback() {
+<a name="line63"></a> *       step++;
+<a name="line64"></a> *       switch (step) {
+<a name="line65"></a> *         case 1:
+<a name="line66"></a> *           var startTime = goog.now();
+<a name="line67"></a> *           asyncTestCase.waitForAsync(&#39;step 1&#39;);
+<a name="line68"></a> *           window.setTimeout(stepCallback, 100);
+<a name="line69"></a> *           break;
+<a name="line70"></a> *         case 2:
+<a name="line71"></a> *           assertTrue(&#39;Timeout fired too soon&#39;,
+<a name="line72"></a> *               goog.now() - startTime &gt;= 100);
+<a name="line73"></a> *           asyncTestCase.waitForAsync(&#39;step 2&#39;);
+<a name="line74"></a> *           window.setTimeout(stepCallback, 100);
+<a name="line75"></a> *           break;
+<a name="line76"></a> *         case 3:
+<a name="line77"></a> *           assertTrue(&#39;Timeout fired too soon&#39;,
+<a name="line78"></a> *               goog.now() - startTime &gt;= 200);
+<a name="line79"></a> *           asyncTestCase.continueTesting();
+<a name="line80"></a> *           break;
+<a name="line81"></a> *         default:
+<a name="line82"></a> *           fail(&#39;Unexpected call to stepCallback&#39;);
+<a name="line83"></a> *       }
+<a name="line84"></a> *     }
+<a name="line85"></a> *     stepCallback();
+<a name="line86"></a> *   }
+<a name="line87"></a> *
+<a name="line88"></a> * Known Issues:
+<a name="line89"></a> *   IE7 Exceptions:
+<a name="line90"></a> *     As the failingtest.html will show, it appears as though ie7 does not
+<a name="line91"></a> *     propagate an exception past a function called using the func.call()
+<a name="line92"></a> *     syntax. This causes case 3 of the failing tests (exceptions) to show up
+<a name="line93"></a> *     as timeouts in IE.
+<a name="line94"></a> *   window.onerror:
+<a name="line95"></a> *     This seems to catch errors only in ff2/ff3. It does not work in Safari or
+<a name="line96"></a> *     IE7. The consequence of this is that exceptions that would have been
+<a name="line97"></a> *     caught by window.onerror show up as timeouts.
+<a name="line98"></a> *
+<a name="line99"></a> * @author agrieve@google.com (Andrew Grieve)
+<a name="line100"></a> */
+<a name="line101"></a>
+<a name="line102"></a>goog.provide(&#39;goog.testing.AsyncTestCase&#39;);
+<a name="line103"></a>goog.provide(&#39;goog.testing.AsyncTestCase.ControlBreakingException&#39;);
+<a name="line104"></a>
+<a name="line105"></a>goog.require(&#39;goog.testing.TestCase&#39;);
+<a name="line106"></a>goog.require(&#39;goog.testing.TestCase.Test&#39;);
+<a name="line107"></a>goog.require(&#39;goog.testing.asserts&#39;);
+<a name="line108"></a>
+<a name="line109"></a>
+<a name="line110"></a>
+<a name="line111"></a>/**
+<a name="line112"></a> * A test case that is capable of running tests the contain asynchronous logic.
+<a name="line113"></a> * @param {string=} opt_name A descriptive name for the test case.
+<a name="line114"></a> * @extends {goog.testing.TestCase}
+<a name="line115"></a> * @constructor
+<a name="line116"></a> */
+<a name="line117"></a>goog.testing.AsyncTestCase = function(opt_name) {
+<a name="line118"></a>  goog.testing.TestCase.call(this, opt_name);
+<a name="line119"></a>};
+<a name="line120"></a>goog.inherits(goog.testing.AsyncTestCase, goog.testing.TestCase);
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>/**
+<a name="line124"></a> * Represents result of top stack function call.
+<a name="line125"></a> * @typedef {{controlBreakingExceptionThrown: boolean, message: string}}
+<a name="line126"></a> * @private
+<a name="line127"></a> */
+<a name="line128"></a>goog.testing.AsyncTestCase.TopStackFuncResult_;
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * An exception class used solely for control flow.
+<a name="line134"></a> * @param {string=} opt_message Error message.
+<a name="line135"></a> * @constructor
+<a name="line136"></a> */
+<a name="line137"></a>goog.testing.AsyncTestCase.ControlBreakingException = function(opt_message) {
+<a name="line138"></a>  /**
+<a name="line139"></a>   * The exception message.
+<a name="line140"></a>   * @type {string}
+<a name="line141"></a>   */
+<a name="line142"></a>  this.message = opt_message || &#39;&#39;;
+<a name="line143"></a>};
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * Return value for .toString().
+<a name="line148"></a> * @type {string}
+<a name="line149"></a> */
+<a name="line150"></a>goog.testing.AsyncTestCase.ControlBreakingException.TO_STRING =
+<a name="line151"></a>    &#39;[AsyncTestCase.ControlBreakingException]&#39;;
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * Marks this object as a ControlBreakingException
+<a name="line156"></a> * @type {boolean}
+<a name="line157"></a> */
+<a name="line158"></a>goog.testing.AsyncTestCase.ControlBreakingException.prototype.
+<a name="line159"></a>    isControlBreakingException = true;
+<a name="line160"></a>
+<a name="line161"></a>
+<a name="line162"></a>/** @override */
+<a name="line163"></a>goog.testing.AsyncTestCase.ControlBreakingException.prototype.toString =
+<a name="line164"></a>    function() {
+<a name="line165"></a>  // This shows up in the console when the exception is not caught.
+<a name="line166"></a>  return goog.testing.AsyncTestCase.ControlBreakingException.TO_STRING;
+<a name="line167"></a>};
+<a name="line168"></a>
+<a name="line169"></a>
+<a name="line170"></a>/**
+<a name="line171"></a> * How long to wait for a single step of a test to complete in milliseconds.
+<a name="line172"></a> * A step starts when a call to waitForAsync() is made.
+<a name="line173"></a> * @type {number}
+<a name="line174"></a> */
+<a name="line175"></a>goog.testing.AsyncTestCase.prototype.stepTimeout = 1000;
+<a name="line176"></a>
+<a name="line177"></a>
+<a name="line178"></a>/**
+<a name="line179"></a> * How long to wait after a failed test before moving onto the next one.
+<a name="line180"></a> * The purpose of this is to allow any pending async callbacks from the failing
+<a name="line181"></a> * test to finish up and not cause the next test to fail.
+<a name="line182"></a> * @type {number}
+<a name="line183"></a> */
+<a name="line184"></a>goog.testing.AsyncTestCase.prototype.timeToSleepAfterFailure = 500;
+<a name="line185"></a>
+<a name="line186"></a>
+<a name="line187"></a>/**
+<a name="line188"></a> * Turn on extra logging to help debug failing async. tests.
+<a name="line189"></a> * @type {boolean}
+<a name="line190"></a> * @private
+<a name="line191"></a> */
+<a name="line192"></a>goog.testing.AsyncTestCase.prototype.enableDebugLogs_ = false;
+<a name="line193"></a>
+<a name="line194"></a>
+<a name="line195"></a>/**
+<a name="line196"></a> * A reference to the original asserts.js assert_() function.
+<a name="line197"></a> * @private
+<a name="line198"></a> */
+<a name="line199"></a>goog.testing.AsyncTestCase.prototype.origAssert_;
+<a name="line200"></a>
+<a name="line201"></a>
+<a name="line202"></a>/**
+<a name="line203"></a> * A reference to the original asserts.js fail() function.
+<a name="line204"></a> * @private
+<a name="line205"></a> */
+<a name="line206"></a>goog.testing.AsyncTestCase.prototype.origFail_;
+<a name="line207"></a>
+<a name="line208"></a>
+<a name="line209"></a>/**
+<a name="line210"></a> * A reference to the original window.onerror function.
+<a name="line211"></a> * @type {Function|undefined}
+<a name="line212"></a> * @private
+<a name="line213"></a> */
+<a name="line214"></a>goog.testing.AsyncTestCase.prototype.origOnError_;
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * The stage of the test we are currently on.
+<a name="line219"></a> * @type {Function|undefined}}
+<a name="line220"></a> * @private
+<a name="line221"></a> */
+<a name="line222"></a>goog.testing.AsyncTestCase.prototype.curStepFunc_;
+<a name="line223"></a>
+<a name="line224"></a>
+<a name="line225"></a>/**
+<a name="line226"></a> * The name of the stage of the test we are currently on.
+<a name="line227"></a> * @type {string}
+<a name="line228"></a> * @private
+<a name="line229"></a> */
+<a name="line230"></a>goog.testing.AsyncTestCase.prototype.curStepName_ = &#39;&#39;;
+<a name="line231"></a>
+<a name="line232"></a>
+<a name="line233"></a>/**
+<a name="line234"></a> * The stage of the test we should run next.
+<a name="line235"></a> * @type {Function|undefined}
+<a name="line236"></a> * @private
+<a name="line237"></a> */
+<a name="line238"></a>goog.testing.AsyncTestCase.prototype.nextStepFunc;
+<a name="line239"></a>
+<a name="line240"></a>
+<a name="line241"></a>/**
+<a name="line242"></a> * The name of the stage of the test we should run next.
+<a name="line243"></a> * @type {string}
+<a name="line244"></a> * @private
+<a name="line245"></a> */
+<a name="line246"></a>goog.testing.AsyncTestCase.prototype.nextStepName_ = &#39;&#39;;
+<a name="line247"></a>
+<a name="line248"></a>
+<a name="line249"></a>/**
+<a name="line250"></a> * The handle to the current setTimeout timer.
+<a name="line251"></a> * @type {number|undefined}
+<a name="line252"></a> * @private
+<a name="line253"></a> */
+<a name="line254"></a>goog.testing.AsyncTestCase.prototype.timeoutHandle_;
+<a name="line255"></a>
+<a name="line256"></a>
+<a name="line257"></a>/**
+<a name="line258"></a> * Marks if the cleanUp() function has been called for the currently running
+<a name="line259"></a> * test.
+<a name="line260"></a> * @type {boolean}
+<a name="line261"></a> * @private
+<a name="line262"></a> */
+<a name="line263"></a>goog.testing.AsyncTestCase.prototype.cleanedUp_ = false;
+<a name="line264"></a>
+<a name="line265"></a>
+<a name="line266"></a>/**
+<a name="line267"></a> * The currently active test.
+<a name="line268"></a> * @type {goog.testing.TestCase.Test|undefined}
+<a name="line269"></a> * @protected
+<a name="line270"></a> */
+<a name="line271"></a>goog.testing.AsyncTestCase.prototype.activeTest;
+<a name="line272"></a>
+<a name="line273"></a>
+<a name="line274"></a>/**
+<a name="line275"></a> * A flag to prevent recursive exception handling.
+<a name="line276"></a> * @type {boolean}
+<a name="line277"></a> * @private
+<a name="line278"></a> */
+<a name="line279"></a>goog.testing.AsyncTestCase.prototype.inException_ = false;
+<a name="line280"></a>
+<a name="line281"></a>
+<a name="line282"></a>/**
+<a name="line283"></a> * Flag used to determine if we can move to the next step in the testing loop.
+<a name="line284"></a> * @type {boolean}
+<a name="line285"></a> * @private
+<a name="line286"></a> */
+<a name="line287"></a>goog.testing.AsyncTestCase.prototype.isReady_ = true;
+<a name="line288"></a>
+<a name="line289"></a>
+<a name="line290"></a>/**
+<a name="line291"></a> * Flag that tells us if there is a function in the call stack that will make
+<a name="line292"></a> * a call to pump_().
+<a name="line293"></a> * @type {boolean}
+<a name="line294"></a> * @private
+<a name="line295"></a> */
+<a name="line296"></a>goog.testing.AsyncTestCase.prototype.returnWillPump_ = false;
+<a name="line297"></a>
+<a name="line298"></a>
+<a name="line299"></a>/**
+<a name="line300"></a> * The number of times we have thrown a ControlBreakingException so that we
+<a name="line301"></a> * know not to complain in our window.onerror handler. In Webkit, window.onerror
+<a name="line302"></a> * is not supported, and so this counter will keep going up but we won&#39;t care
+<a name="line303"></a> * about it.
+<a name="line304"></a> * @type {number}
+<a name="line305"></a> * @private
+<a name="line306"></a> */
+<a name="line307"></a>goog.testing.AsyncTestCase.prototype.numControlExceptionsExpected_ = 0;
+<a name="line308"></a>
+<a name="line309"></a>
+<a name="line310"></a>/**
+<a name="line311"></a> * Preferred way of creating an AsyncTestCase. Creates one and initializes it
+<a name="line312"></a> * with the G_testRunner.
+<a name="line313"></a> * @param {string=} opt_name A descriptive name for the test case.
+<a name="line314"></a> * @return {goog.testing.AsyncTestCase} The created AsyncTestCase.
+<a name="line315"></a> */
+<a name="line316"></a>goog.testing.AsyncTestCase.createAndInstall = function(opt_name) {
+<a name="line317"></a>  var asyncTestCase = new goog.testing.AsyncTestCase(opt_name);
+<a name="line318"></a>  goog.testing.TestCase.initializeTestRunner(asyncTestCase);
+<a name="line319"></a>  return asyncTestCase;
+<a name="line320"></a>};
+<a name="line321"></a>
+<a name="line322"></a>
+<a name="line323"></a>/**
+<a name="line324"></a> * Informs the testcase not to continue to the next step in the test cycle
+<a name="line325"></a> * until continueTesting is called.
+<a name="line326"></a> * @param {string=} opt_name A description of what we are waiting for.
+<a name="line327"></a> */
+<a name="line328"></a>goog.testing.AsyncTestCase.prototype.waitForAsync = function(opt_name) {
+<a name="line329"></a>  this.isReady_ = false;
+<a name="line330"></a>  this.curStepName_ = opt_name || this.curStepName_;
+<a name="line331"></a>
+<a name="line332"></a>  // Reset the timer that tracks if the async test takes too long.
+<a name="line333"></a>  this.stopTimeoutTimer_();
+<a name="line334"></a>  this.startTimeoutTimer_();
+<a name="line335"></a>};
+<a name="line336"></a>
+<a name="line337"></a>
+<a name="line338"></a>/**
+<a name="line339"></a> * Continue with the next step in the test cycle.
+<a name="line340"></a> */
+<a name="line341"></a>goog.testing.AsyncTestCase.prototype.continueTesting = function() {
+<a name="line342"></a>  if (!this.isReady_) {
+<a name="line343"></a>    // We are a potential entry point, so we pump.
+<a name="line344"></a>    this.isReady_ = true;
+<a name="line345"></a>    this.stopTimeoutTimer_();
+<a name="line346"></a>    // Run this in a setTimeout so that the caller has a chance to call
+<a name="line347"></a>    // waitForAsync() again before we continue.
+<a name="line348"></a>    this.timeout(goog.bind(this.pump_, this, null), 0);
+<a name="line349"></a>  }
+<a name="line350"></a>};
+<a name="line351"></a>
+<a name="line352"></a>
+<a name="line353"></a>/**
+<a name="line354"></a> * Handles an exception thrown by a test.
+<a name="line355"></a> * @param {*=} opt_e The exception object associated with the failure
+<a name="line356"></a> *     or a string.
+<a name="line357"></a> * @throws Always throws a ControlBreakingException.
+<a name="line358"></a> */
+<a name="line359"></a>goog.testing.AsyncTestCase.prototype.doAsyncError = function(opt_e) {
+<a name="line360"></a>  // If we&#39;ve caught an exception that we threw, then just pass it along. This
+<a name="line361"></a>  // can happen if doAsyncError() was called from a call to assert and then
+<a name="line362"></a>  // again by pump_().
+<a name="line363"></a>  if (opt_e &amp;&amp; opt_e.isControlBreakingException) {
+<a name="line364"></a>    throw opt_e;
+<a name="line365"></a>  }
+<a name="line366"></a>
+<a name="line367"></a>  // Prevent another timeout error from triggering for this test step.
+<a name="line368"></a>  this.stopTimeoutTimer_();
+<a name="line369"></a>
+<a name="line370"></a>  // doError() uses test.name. Here, we create a dummy test and give it a more
+<a name="line371"></a>  // helpful name based on the step we&#39;re currently on.
+<a name="line372"></a>  var fakeTestObj = new goog.testing.TestCase.Test(this.curStepName_,
+<a name="line373"></a>                                                   goog.nullFunction);
+<a name="line374"></a>  if (this.activeTest) {
+<a name="line375"></a>    fakeTestObj.name = this.activeTest.name + &#39; [&#39; + fakeTestObj.name + &#39;]&#39;;
+<a name="line376"></a>  }
+<a name="line377"></a>
+<a name="line378"></a>  // Note: if the test has an error, and then tearDown has an error, they will
+<a name="line379"></a>  // both be reported.
+<a name="line380"></a>  this.doError(fakeTestObj, opt_e);
+<a name="line381"></a>
+<a name="line382"></a>  // This is a potential entry point, so we pump. We also add in a bit of a
+<a name="line383"></a>  // delay to try and prevent any async behavior from the failed test from
+<a name="line384"></a>  // causing the next test to fail.
+<a name="line385"></a>  this.timeout(goog.bind(this.pump_, this, this.doAsyncErrorTearDown_),
+<a name="line386"></a>      this.timeToSleepAfterFailure);
+<a name="line387"></a>
+<a name="line388"></a>  // We just caught an exception, so we do not want the code above us on the
+<a name="line389"></a>  // stack to continue executing. If pump_ is in our call-stack, then it will
+<a name="line390"></a>  // batch together multiple errors, so we only increment the count if pump_ is
+<a name="line391"></a>  // not in the stack and let pump_ increment the count when it batches them.
+<a name="line392"></a>  if (!this.returnWillPump_) {
+<a name="line393"></a>    this.numControlExceptionsExpected_ += 1;
+<a name="line394"></a>    this.dbgLog_(&#39;doAsynError: numControlExceptionsExpected_ = &#39; +
+<a name="line395"></a>        this.numControlExceptionsExpected_ + &#39; and throwing exception.&#39;);
+<a name="line396"></a>  }
+<a name="line397"></a>
+<a name="line398"></a>  // Copy the error message to ControlBreakingException.
+<a name="line399"></a>  var message = &#39;&#39;;
+<a name="line400"></a>  if (typeof opt_e == &#39;string&#39;) {
+<a name="line401"></a>    message = opt_e;
+<a name="line402"></a>  } else if (opt_e &amp;&amp; opt_e.message) {
+<a name="line403"></a>    message = opt_e.message;
+<a name="line404"></a>  }
+<a name="line405"></a>  throw new goog.testing.AsyncTestCase.ControlBreakingException(message);
+<a name="line406"></a>};
+<a name="line407"></a>
+<a name="line408"></a>
+<a name="line409"></a>/**
+<a name="line410"></a> * Sets up the test page and then waits until the test case has been marked
+<a name="line411"></a> * as ready before executing the tests.
+<a name="line412"></a> * @override
+<a name="line413"></a> */
+<a name="line414"></a>goog.testing.AsyncTestCase.prototype.runTests = function() {
+<a name="line415"></a>  this.hookAssert_();
+<a name="line416"></a>  this.hookOnError_();
+<a name="line417"></a>
+<a name="line418"></a>  this.setNextStep_(this.doSetUpPage_, &#39;setUpPage&#39;);
+<a name="line419"></a>  // We are an entry point, so we pump.
+<a name="line420"></a>  this.pump_();
+<a name="line421"></a>};
+<a name="line422"></a>
+<a name="line423"></a>
+<a name="line424"></a>/**
+<a name="line425"></a> * Starts the tests.
+<a name="line426"></a> * @override
+<a name="line427"></a> */
+<a name="line428"></a>goog.testing.AsyncTestCase.prototype.cycleTests = function() {
+<a name="line429"></a>  // We are an entry point, so we pump.
+<a name="line430"></a>  this.saveMessage(&#39;Start&#39;);
+<a name="line431"></a>  this.setNextStep_(this.doIteration_, &#39;doIteration&#39;);
+<a name="line432"></a>  this.pump_();
+<a name="line433"></a>};
+<a name="line434"></a>
+<a name="line435"></a>
+<a name="line436"></a>/**
+<a name="line437"></a> * Finalizes the test case, called when the tests have finished executing.
+<a name="line438"></a> * @override
+<a name="line439"></a> */
+<a name="line440"></a>goog.testing.AsyncTestCase.prototype.finalize = function() {
+<a name="line441"></a>  this.unhookAll_();
+<a name="line442"></a>  this.setNextStep_(null, &#39;finalized&#39;);
+<a name="line443"></a>  goog.testing.AsyncTestCase.superClass_.finalize.call(this);
+<a name="line444"></a>};
+<a name="line445"></a>
+<a name="line446"></a>
+<a name="line447"></a>/**
+<a name="line448"></a> * Enables verbose logging of what is happening inside of the AsyncTestCase.
+<a name="line449"></a> */
+<a name="line450"></a>goog.testing.AsyncTestCase.prototype.enableDebugLogging = function() {
+<a name="line451"></a>  this.enableDebugLogs_ = true;
+<a name="line452"></a>};
+<a name="line453"></a>
+<a name="line454"></a>
+<a name="line455"></a>/**
+<a name="line456"></a> * Logs the given debug message to the console (when enabled).
+<a name="line457"></a> * @param {string} message The message to log.
+<a name="line458"></a> * @private
+<a name="line459"></a> */
+<a name="line460"></a>goog.testing.AsyncTestCase.prototype.dbgLog_ = function(message) {
+<a name="line461"></a>  if (this.enableDebugLogs_) {
+<a name="line462"></a>    this.log(&#39;AsyncTestCase - &#39; + message);
+<a name="line463"></a>  }
+<a name="line464"></a>};
+<a name="line465"></a>
+<a name="line466"></a>
+<a name="line467"></a>/**
+<a name="line468"></a> * Wraps doAsyncError() for when we are sure that the test runner has no user
+<a name="line469"></a> * code above it in the stack.
+<a name="line470"></a> * @param {string|Error=} opt_e The exception object associated with the
+<a name="line471"></a> *     failure or a string.
+<a name="line472"></a> * @private
+<a name="line473"></a> */
+<a name="line474"></a>goog.testing.AsyncTestCase.prototype.doTopOfStackAsyncError_ =
+<a name="line475"></a>    function(opt_e) {
+<a name="line476"></a>  /** @preserveTry */
+<a name="line477"></a>  try {
+<a name="line478"></a>    this.doAsyncError(opt_e);
+<a name="line479"></a>  } catch (e) {
+<a name="line480"></a>    // We know that we are on the top of the stack, so there is no need to
+<a name="line481"></a>    // throw this exception in this case.
+<a name="line482"></a>    if (e.isControlBreakingException) {
+<a name="line483"></a>      this.numControlExceptionsExpected_ -= 1;
+<a name="line484"></a>      this.dbgLog_(&#39;doTopOfStackAsyncError_: numControlExceptionsExpected_ = &#39; +
+<a name="line485"></a>          this.numControlExceptionsExpected_ + &#39; and catching exception.&#39;);
+<a name="line486"></a>    } else {
+<a name="line487"></a>      throw e;
+<a name="line488"></a>    }
+<a name="line489"></a>  }
+<a name="line490"></a>};
+<a name="line491"></a>
+<a name="line492"></a>
+<a name="line493"></a>/**
+<a name="line494"></a> * Calls the tearDown function, catching any errors, and then moves on to
+<a name="line495"></a> * the next step in the testing cycle.
+<a name="line496"></a> * @private
+<a name="line497"></a> */
+<a name="line498"></a>goog.testing.AsyncTestCase.prototype.doAsyncErrorTearDown_ = function() {
+<a name="line499"></a>  if (this.inException_) {
+<a name="line500"></a>    // We get here if tearDown is throwing the error.
+<a name="line501"></a>    // Upon calling continueTesting, the inline function &#39;doAsyncError&#39; (set
+<a name="line502"></a>    // below) is run.
+<a name="line503"></a>    this.continueTesting();
+<a name="line504"></a>  } else {
+<a name="line505"></a>    this.inException_ = true;
+<a name="line506"></a>    this.isReady_ = true;
+<a name="line507"></a>
+<a name="line508"></a>    // The continue point is different depending on if the error happened in
+<a name="line509"></a>    // setUpPage() or in setUp()/test*()/tearDown().
+<a name="line510"></a>    var stepFuncAfterError = this.nextStepFunc_;
+<a name="line511"></a>    var stepNameAfterError = &#39;TestCase.execute (after error)&#39;;
+<a name="line512"></a>    if (this.activeTest) {
+<a name="line513"></a>      stepFuncAfterError = this.doIteration_;
+<a name="line514"></a>      stepNameAfterError = &#39;doIteration (after error)&#39;;
+<a name="line515"></a>    }
+<a name="line516"></a>
+<a name="line517"></a>    // We must set the next step before calling tearDown.
+<a name="line518"></a>    this.setNextStep_(function() {
+<a name="line519"></a>      this.inException_ = false;
+<a name="line520"></a>      // This is null when an error happens in setUpPage.
+<a name="line521"></a>      this.setNextStep_(stepFuncAfterError, stepNameAfterError);
+<a name="line522"></a>    }, &#39;doAsyncError&#39;);
+<a name="line523"></a>
+<a name="line524"></a>    // Call the test&#39;s tearDown().
+<a name="line525"></a>    if (!this.cleanedUp_) {
+<a name="line526"></a>      this.cleanedUp_ = true;
+<a name="line527"></a>      this.tearDown();
+<a name="line528"></a>    }
+<a name="line529"></a>  }
+<a name="line530"></a>};
+<a name="line531"></a>
+<a name="line532"></a>
+<a name="line533"></a>/**
+<a name="line534"></a> * Replaces the asserts.js assert_() and fail() functions with a wrappers to
+<a name="line535"></a> * catch the exceptions.
+<a name="line536"></a> * @private
+<a name="line537"></a> */
+<a name="line538"></a>goog.testing.AsyncTestCase.prototype.hookAssert_ = function() {
+<a name="line539"></a>  if (!this.origAssert_) {
+<a name="line540"></a>    this.origAssert_ = _assert;
+<a name="line541"></a>    this.origFail_ = fail;
+<a name="line542"></a>    var self = this;
+<a name="line543"></a>    _assert = function() {
+<a name="line544"></a>      /** @preserveTry */
+<a name="line545"></a>      try {
+<a name="line546"></a>        self.origAssert_.apply(this, arguments);
+<a name="line547"></a>      } catch (e) {
+<a name="line548"></a>        self.dbgLog_(&#39;Wrapping failed assert()&#39;);
+<a name="line549"></a>        self.doAsyncError(e);
+<a name="line550"></a>      }
+<a name="line551"></a>    };
+<a name="line552"></a>    fail = function() {
+<a name="line553"></a>      /** @preserveTry */
+<a name="line554"></a>      try {
+<a name="line555"></a>        self.origFail_.apply(this, arguments);
+<a name="line556"></a>      } catch (e) {
+<a name="line557"></a>        self.dbgLog_(&#39;Wrapping fail()&#39;);
+<a name="line558"></a>        self.doAsyncError(e);
+<a name="line559"></a>      }
+<a name="line560"></a>    };
+<a name="line561"></a>  }
+<a name="line562"></a>};
+<a name="line563"></a>
+<a name="line564"></a>
+<a name="line565"></a>/**
+<a name="line566"></a> * Sets a window.onerror handler for catching exceptions that happen in async
+<a name="line567"></a> * callbacks. Note that as of Safari 3.1, Safari does not support this.
+<a name="line568"></a> * @private
+<a name="line569"></a> */
+<a name="line570"></a>goog.testing.AsyncTestCase.prototype.hookOnError_ = function() {
+<a name="line571"></a>  if (!this.origOnError_) {
+<a name="line572"></a>    this.origOnError_ = window.onerror;
+<a name="line573"></a>    var self = this;
+<a name="line574"></a>    window.onerror = function(error, url, line) {
+<a name="line575"></a>      // Ignore exceptions that we threw on purpose.
+<a name="line576"></a>      var cbe =
+<a name="line577"></a>          goog.testing.AsyncTestCase.ControlBreakingException.TO_STRING;
+<a name="line578"></a>      if (String(error).indexOf(cbe) != -1 &amp;&amp;
+<a name="line579"></a>          self.numControlExceptionsExpected_) {
+<a name="line580"></a>        self.numControlExceptionsExpected_ -= 1;
+<a name="line581"></a>        self.dbgLog_(&#39;window.onerror: numControlExceptionsExpected_ = &#39; +
+<a name="line582"></a>            self.numControlExceptionsExpected_ + &#39; and ignoring exception. &#39; +
+<a name="line583"></a>            error);
+<a name="line584"></a>        // Tell the browser not to compain about the error.
+<a name="line585"></a>        return true;
+<a name="line586"></a>      } else {
+<a name="line587"></a>        self.dbgLog_(&#39;window.onerror caught exception.&#39;);
+<a name="line588"></a>        var message = error + &#39;\nURL: &#39; + url + &#39;\nLine: &#39; + line;
+<a name="line589"></a>        self.doTopOfStackAsyncError_(message);
+<a name="line590"></a>        // Tell the browser to complain about the error.
+<a name="line591"></a>        return false;
+<a name="line592"></a>      }
+<a name="line593"></a>    };
+<a name="line594"></a>  }
+<a name="line595"></a>};
+<a name="line596"></a>
+<a name="line597"></a>
+<a name="line598"></a>/**
+<a name="line599"></a> * Unhooks window.onerror and _assert.
+<a name="line600"></a> * @private
+<a name="line601"></a> */
+<a name="line602"></a>goog.testing.AsyncTestCase.prototype.unhookAll_ = function() {
+<a name="line603"></a>  if (this.origOnError_) {
+<a name="line604"></a>    window.onerror = this.origOnError_;
+<a name="line605"></a>    this.origOnError_ = null;
+<a name="line606"></a>    _assert = this.origAssert_;
+<a name="line607"></a>    this.origAssert_ = null;
+<a name="line608"></a>    fail = this.origFail_;
+<a name="line609"></a>    this.origFail_ = null;
+<a name="line610"></a>  }
+<a name="line611"></a>};
+<a name="line612"></a>
+<a name="line613"></a>
+<a name="line614"></a>/**
+<a name="line615"></a> * Enables the timeout timer. This timer fires unless continueTesting is
+<a name="line616"></a> * called.
+<a name="line617"></a> * @private
+<a name="line618"></a> */
+<a name="line619"></a>goog.testing.AsyncTestCase.prototype.startTimeoutTimer_ = function() {
+<a name="line620"></a>  if (!this.timeoutHandle_ &amp;&amp; this.stepTimeout &gt; 0) {
+<a name="line621"></a>    this.timeoutHandle_ = this.timeout(goog.bind(function() {
+<a name="line622"></a>      this.dbgLog_(&#39;Timeout timer fired with id &#39; + this.timeoutHandle_);
+<a name="line623"></a>      this.timeoutHandle_ = null;
+<a name="line624"></a>
+<a name="line625"></a>      this.doTopOfStackAsyncError_(&#39;Timed out while waiting for &#39; +
+<a name="line626"></a>          &#39;continueTesting() to be called.&#39;);
+<a name="line627"></a>    }, this, null), this.stepTimeout);
+<a name="line628"></a>    this.dbgLog_(&#39;Started timeout timer with id &#39; + this.timeoutHandle_);
+<a name="line629"></a>  }
+<a name="line630"></a>};
+<a name="line631"></a>
+<a name="line632"></a>
+<a name="line633"></a>/**
+<a name="line634"></a> * Disables the timeout timer.
+<a name="line635"></a> * @private
+<a name="line636"></a> */
+<a name="line637"></a>goog.testing.AsyncTestCase.prototype.stopTimeoutTimer_ = function() {
+<a name="line638"></a>  if (this.timeoutHandle_) {
+<a name="line639"></a>    this.dbgLog_(&#39;Clearing timeout timer with id &#39; + this.timeoutHandle_);
+<a name="line640"></a>    window.clearTimeout(this.timeoutHandle_);
+<a name="line641"></a>    this.timeoutHandle_ = 0;
+<a name="line642"></a>  }
+<a name="line643"></a>};
+<a name="line644"></a>
+<a name="line645"></a>
+<a name="line646"></a>/**
+<a name="line647"></a> * Sets the next function to call in our sequence of async callbacks.
+<a name="line648"></a> * @param {Function} func The function that executes the next step.
+<a name="line649"></a> * @param {string} name A description of the next step.
+<a name="line650"></a> * @private
+<a name="line651"></a> */
+<a name="line652"></a>goog.testing.AsyncTestCase.prototype.setNextStep_ = function(func, name) {
+<a name="line653"></a>  this.nextStepFunc_ = func &amp;&amp; goog.bind(func, this);
+<a name="line654"></a>  this.nextStepName_ = name;
+<a name="line655"></a>};
+<a name="line656"></a>
+<a name="line657"></a>
+<a name="line658"></a>/**
+<a name="line659"></a> * Calls the given function, redirecting any exceptions to doAsyncError.
+<a name="line660"></a> * @param {Function} func The function to call.
+<a name="line661"></a> * @return {!goog.testing.AsyncTestCase.TopStackFuncResult_} Returns a
+<a name="line662"></a> * TopStackFuncResult_.
+<a name="line663"></a> * @private
+<a name="line664"></a> */
+<a name="line665"></a>goog.testing.AsyncTestCase.prototype.callTopOfStackFunc_ = function(func) {
+<a name="line666"></a>  /** @preserveTry */
+<a name="line667"></a>  try {
+<a name="line668"></a>    func.call(this);
+<a name="line669"></a>    return {controlBreakingExceptionThrown: false, message: &#39;&#39;};
+<a name="line670"></a>  } catch (e) {
+<a name="line671"></a>    this.dbgLog_(&#39;Caught exception in callTopOfStackFunc_&#39;);
+<a name="line672"></a>    /** @preserveTry */
+<a name="line673"></a>    try {
+<a name="line674"></a>      this.doAsyncError(e);
+<a name="line675"></a>      return {controlBreakingExceptionThrown: false, message: &#39;&#39;};
+<a name="line676"></a>    } catch (e2) {
+<a name="line677"></a>      if (!e2.isControlBreakingException) {
+<a name="line678"></a>        throw e2;
+<a name="line679"></a>      }
+<a name="line680"></a>      return {controlBreakingExceptionThrown: true, message: e2.message};
+<a name="line681"></a>    }
+<a name="line682"></a>  }
+<a name="line683"></a>};
+<a name="line684"></a>
+<a name="line685"></a>
+<a name="line686"></a>/**
+<a name="line687"></a> * Calls the next callback when the isReady_ flag is true.
+<a name="line688"></a> * @param {Function=} opt_doFirst A function to call before pumping.
+<a name="line689"></a> * @private
+<a name="line690"></a> * @throws Throws a ControlBreakingException if there were any failing steps.
+<a name="line691"></a> */
+<a name="line692"></a>goog.testing.AsyncTestCase.prototype.pump_ = function(opt_doFirst) {
+<a name="line693"></a>  // If this function is already above us in the call-stack, then we should
+<a name="line694"></a>  // return rather than pumping in order to minimize call-stack depth.
+<a name="line695"></a>  if (!this.returnWillPump_) {
+<a name="line696"></a>    this.setBatchTime(this.now_());
+<a name="line697"></a>    this.returnWillPump_ = true;
+<a name="line698"></a>    // If we catch an exception in the step, we don&#39;t want to return control
+<a name="line699"></a>    // to our caller since there may be non-testcase code in our call stack.
+<a name="line700"></a>    // Eg)
+<a name="line701"></a>    //   asyncCallback() { fail(1); fail(2); }
+<a name="line702"></a>    //                       V
+<a name="line703"></a>    //   - ...
+<a name="line704"></a>    //   - pump_();
+<a name="line705"></a>    // We don&#39;t want fail(2) to ever be called.
+<a name="line706"></a>    var topFuncResult = {};
+<a name="line707"></a>
+<a name="line708"></a>    if (opt_doFirst) {
+<a name="line709"></a>      topFuncResult = this.callTopOfStackFunc_(opt_doFirst);
+<a name="line710"></a>    }
+<a name="line711"></a>    // Note: we don&#39;t check for this.running here because it is not set to true
+<a name="line712"></a>    // while executing setUpPage and tearDownPage.
+<a name="line713"></a>    // Also, if isReady_ is false, then one of two things will happen:
+<a name="line714"></a>    // 1. Our timeout callback will be called.
+<a name="line715"></a>    // 2. The tests will call continueTesting(), which will call pump_() again.
+<a name="line716"></a>    while (this.isReady_ &amp;&amp; this.nextStepFunc_ &amp;&amp;
+<a name="line717"></a>        !topFuncResult.controlBreakingExceptionThrown) {
+<a name="line718"></a>      this.curStepFunc_ = this.nextStepFunc_;
+<a name="line719"></a>      this.curStepName_ = this.nextStepName_;
+<a name="line720"></a>      this.nextStepFunc_ = null;
+<a name="line721"></a>      this.nextStepName_ = &#39;&#39;;
+<a name="line722"></a>
+<a name="line723"></a>      this.dbgLog_(&#39;Performing step: &#39; + this.curStepName_);
+<a name="line724"></a>      topFuncResult =
+<a name="line725"></a>          this.callTopOfStackFunc_(/** @type {Function} */(this.curStepFunc_));
+<a name="line726"></a>
+<a name="line727"></a>      // If the max run time is exceeded call this function again async so as
+<a name="line728"></a>      // not to block the browser.
+<a name="line729"></a>      var delta = this.now_() - this.getBatchTime();
+<a name="line730"></a>      if (delta &gt; goog.testing.TestCase.MAX_RUN_TIME &amp;&amp;
+<a name="line731"></a>          !topFuncResult.controlBreakingExceptionThrown) {
+<a name="line732"></a>        this.saveMessage(&#39;Breaking async&#39;);
+<a name="line733"></a>        var self = this;
+<a name="line734"></a>        this.timeout(function() { self.pump_(); }, 100);
+<a name="line735"></a>        break;
+<a name="line736"></a>      }
+<a name="line737"></a>    }
+<a name="line738"></a>    this.returnWillPump_ = false;
+<a name="line739"></a>    // See note at top of this function.
+<a name="line740"></a>    if (topFuncResult.controlBreakingExceptionThrown) {
+<a name="line741"></a>      this.numControlExceptionsExpected_ += 1;
+<a name="line742"></a>      this.dbgLog_(&#39;pump: numControlExceptionsExpected_ = &#39; +
+<a name="line743"></a>          this.numControlExceptionsExpected_ + &#39; and throwing exception.&#39;);
+<a name="line744"></a>      throw new goog.testing.AsyncTestCase.
+<a name="line745"></a>          ControlBreakingException(topFuncResult.message);
+<a name="line746"></a>    }
+<a name="line747"></a>  } else if (opt_doFirst) {
+<a name="line748"></a>    opt_doFirst.call(this);
+<a name="line749"></a>  }
+<a name="line750"></a>};
+<a name="line751"></a>
+<a name="line752"></a>
+<a name="line753"></a>/**
+<a name="line754"></a> * Sets up the test page and then waits untill the test case has been marked
+<a name="line755"></a> * as ready before executing the tests.
+<a name="line756"></a> * @private
+<a name="line757"></a> */
+<a name="line758"></a>goog.testing.AsyncTestCase.prototype.doSetUpPage_ = function() {
+<a name="line759"></a>  this.setNextStep_(this.execute, &#39;TestCase.execute&#39;);
+<a name="line760"></a>  this.setUpPage();
+<a name="line761"></a>};
+<a name="line762"></a>
+<a name="line763"></a>
+<a name="line764"></a>/**
+<a name="line765"></a> * Step 1: Move to the next test.
+<a name="line766"></a> * @private
+<a name="line767"></a> */
+<a name="line768"></a>goog.testing.AsyncTestCase.prototype.doIteration_ = function() {
+<a name="line769"></a>  this.activeTest = this.next();
+<a name="line770"></a>  if (this.activeTest &amp;&amp; this.running) {
+<a name="line771"></a>    this.result_.runCount++;
+<a name="line772"></a>    this.setNextStep_(this.doSetUp_, &#39;setUp&#39;);
+<a name="line773"></a>  } else {
+<a name="line774"></a>    // All tests done.
+<a name="line775"></a>    this.finalize();
+<a name="line776"></a>  }
+<a name="line777"></a>};
+<a name="line778"></a>
+<a name="line779"></a>
+<a name="line780"></a>/**
+<a name="line781"></a> * Step 2: Call setUp().
+<a name="line782"></a> * @private
+<a name="line783"></a> */
+<a name="line784"></a>goog.testing.AsyncTestCase.prototype.doSetUp_ = function() {
+<a name="line785"></a>  this.log(&#39;Running test: &#39; + this.activeTest.name);
+<a name="line786"></a>  this.cleanedUp_ = false;
+<a name="line787"></a>  this.setNextStep_(this.doExecute_, this.activeTest.name);
+<a name="line788"></a>  this.setUp();
+<a name="line789"></a>};
+<a name="line790"></a>
+<a name="line791"></a>
+<a name="line792"></a>/**
+<a name="line793"></a> * Step 3: Call test.execute().
+<a name="line794"></a> * @private
+<a name="line795"></a> */
+<a name="line796"></a>goog.testing.AsyncTestCase.prototype.doExecute_ = function() {
+<a name="line797"></a>  this.setNextStep_(this.doTearDown_, &#39;tearDown&#39;);
+<a name="line798"></a>  this.activeTest.execute();
+<a name="line799"></a>};
+<a name="line800"></a>
+<a name="line801"></a>
+<a name="line802"></a>/**
+<a name="line803"></a> * Step 4: Call tearDown().
+<a name="line804"></a> * @private
+<a name="line805"></a> */
+<a name="line806"></a>goog.testing.AsyncTestCase.prototype.doTearDown_ = function() {
+<a name="line807"></a>  this.cleanedUp_ = true;
+<a name="line808"></a>  this.setNextStep_(this.doNext_, &#39;doNext&#39;);
+<a name="line809"></a>  this.tearDown();
+<a name="line810"></a>};
+<a name="line811"></a>
+<a name="line812"></a>
+<a name="line813"></a>/**
+<a name="line814"></a> * Step 5: Call doSuccess()
+<a name="line815"></a> * @private
+<a name="line816"></a> */
+<a name="line817"></a>goog.testing.AsyncTestCase.prototype.doNext_ = function() {
+<a name="line818"></a>  this.setNextStep_(this.doIteration_, &#39;doIteration&#39;);
+<a name="line819"></a>  this.doSuccess(/** @type {goog.testing.TestCase.Test} */(this.activeTest));
+<a name="line820"></a>};
+</pre>
+
+
+</body>
+</html>

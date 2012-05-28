@@ -1,0 +1,495 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>plugin.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_editor_plugin.js.html">plugin.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>// All Rights Reserved.
+<a name="line15"></a>
+<a name="line16"></a>/**
+<a name="line17"></a> * @fileoverview Abstract API for TrogEdit plugins.
+<a name="line18"></a> *
+<a name="line19"></a> * @see ../demos/editor/editor.html
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.editor.Plugin&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line25"></a>// TODO(user): Remove the dependency on goog.editor.Command asap. Currently only
+<a name="line26"></a>// needed for execCommand issues with links.
+<a name="line27"></a>goog.require(&#39;goog.editor.Command&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events.EventTarget&#39;);
+<a name="line29"></a>goog.require(&#39;goog.functions&#39;);
+<a name="line30"></a>goog.require(&#39;goog.object&#39;);
+<a name="line31"></a>goog.require(&#39;goog.reflect&#39;);
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>/**
+<a name="line36"></a> * Abstract API for trogedit plugins.
+<a name="line37"></a> * @constructor
+<a name="line38"></a> * @extends {goog.events.EventTarget}
+<a name="line39"></a> */
+<a name="line40"></a>goog.editor.Plugin = function() {
+<a name="line41"></a>  goog.events.EventTarget.call(this);
+<a name="line42"></a>
+<a name="line43"></a>  /**
+<a name="line44"></a>   * Whether this plugin is enabled for the registered field object.
+<a name="line45"></a>   * @type {boolean}
+<a name="line46"></a>   * @private
+<a name="line47"></a>   */
+<a name="line48"></a>  this.enabled_ = this.activeOnUneditableFields();
+<a name="line49"></a>};
+<a name="line50"></a>goog.inherits(goog.editor.Plugin, goog.events.EventTarget);
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>/**
+<a name="line54"></a> * The field object this plugin is attached to.
+<a name="line55"></a> * @type {goog.editor.Field}
+<a name="line56"></a> * @protected
+<a name="line57"></a> */
+<a name="line58"></a>goog.editor.Plugin.prototype.fieldObject = null;
+<a name="line59"></a>
+<a name="line60"></a>
+<a name="line61"></a>/**
+<a name="line62"></a> * @return {goog.dom.DomHelper?} The dom helper object associated with the
+<a name="line63"></a> *     currently active field.
+<a name="line64"></a> */
+<a name="line65"></a>goog.editor.Plugin.prototype.getFieldDomHelper = function() {
+<a name="line66"></a>  return this.fieldObject &amp;&amp; this.fieldObject.getEditableDomHelper();
+<a name="line67"></a>};
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/**
+<a name="line71"></a> * Indicates if this plugin should be automatically disposed when the
+<a name="line72"></a> * registered field is disposed. This should be changed to false for
+<a name="line73"></a> * plugins used as multi-field plugins.
+<a name="line74"></a> * @type {boolean}
+<a name="line75"></a> * @private
+<a name="line76"></a> */
+<a name="line77"></a>goog.editor.Plugin.prototype.autoDispose_ = true;
+<a name="line78"></a>
+<a name="line79"></a>
+<a name="line80"></a>/**
+<a name="line81"></a> * The logger for this plugin.
+<a name="line82"></a> * @type {goog.debug.Logger}
+<a name="line83"></a> * @protected
+<a name="line84"></a> */
+<a name="line85"></a>goog.editor.Plugin.prototype.logger =
+<a name="line86"></a>    goog.debug.Logger.getLogger(&#39;goog.editor.Plugin&#39;);
+<a name="line87"></a>
+<a name="line88"></a>
+<a name="line89"></a>/**
+<a name="line90"></a> * Registers the field object for use with this plugin.
+<a name="line91"></a> * @param {goog.editor.Field} fieldObject The editable field object.
+<a name="line92"></a> */
+<a name="line93"></a>goog.editor.Plugin.prototype.registerFieldObject = function(fieldObject) {
+<a name="line94"></a>  this.fieldObject = fieldObject;
+<a name="line95"></a>};
+<a name="line96"></a>
+<a name="line97"></a>
+<a name="line98"></a>/**
+<a name="line99"></a> * Unregisters and disables this plugin for the current field object.
+<a name="line100"></a> * @param {goog.editor.Field} fieldObj The field object. For single-field
+<a name="line101"></a> *     plugins, this parameter is ignored.
+<a name="line102"></a> */
+<a name="line103"></a>goog.editor.Plugin.prototype.unregisterFieldObject = function(fieldObj) {
+<a name="line104"></a>  if (this.fieldObject) {
+<a name="line105"></a>    this.disable(this.fieldObject);
+<a name="line106"></a>    this.fieldObject = null;
+<a name="line107"></a>  }
+<a name="line108"></a>};
+<a name="line109"></a>
+<a name="line110"></a>
+<a name="line111"></a>/**
+<a name="line112"></a> * Enables this plugin for the specified, registered field object. A field
+<a name="line113"></a> * object should only be enabled when it is loaded.
+<a name="line114"></a> * @param {goog.editor.Field} fieldObject The field object.
+<a name="line115"></a> */
+<a name="line116"></a>goog.editor.Plugin.prototype.enable = function(fieldObject) {
+<a name="line117"></a>  if (this.fieldObject == fieldObject) {
+<a name="line118"></a>    this.enabled_ = true;
+<a name="line119"></a>  } else {
+<a name="line120"></a>    this.logger.severe(&#39;Trying to enable an unregistered field with &#39; +
+<a name="line121"></a>        &#39;this plugin.&#39;);
+<a name="line122"></a>  }
+<a name="line123"></a>};
+<a name="line124"></a>
+<a name="line125"></a>
+<a name="line126"></a>/**
+<a name="line127"></a> * Disables this plugin for the specified, registered field object.
+<a name="line128"></a> * @param {goog.editor.Field} fieldObject The field object.
+<a name="line129"></a> */
+<a name="line130"></a>goog.editor.Plugin.prototype.disable = function(fieldObject) {
+<a name="line131"></a>  if (this.fieldObject == fieldObject) {
+<a name="line132"></a>    this.enabled_ = false;
+<a name="line133"></a>  } else {
+<a name="line134"></a>    this.logger.severe(&#39;Trying to disable an unregistered field &#39; +
+<a name="line135"></a>        &#39;with this plugin.&#39;);
+<a name="line136"></a>  }
+<a name="line137"></a>};
+<a name="line138"></a>
+<a name="line139"></a>
+<a name="line140"></a>/**
+<a name="line141"></a> * Returns whether this plugin is enabled for the field object.
+<a name="line142"></a> *
+<a name="line143"></a> * @param {goog.editor.Field} fieldObject The field object.
+<a name="line144"></a> * @return {boolean} Whether this plugin is enabled for the field object.
+<a name="line145"></a> */
+<a name="line146"></a>goog.editor.Plugin.prototype.isEnabled = function(fieldObject) {
+<a name="line147"></a>  return this.fieldObject == fieldObject ? this.enabled_ : false;
+<a name="line148"></a>};
+<a name="line149"></a>
+<a name="line150"></a>
+<a name="line151"></a>/**
+<a name="line152"></a> * Set if this plugin should automatically be disposed when the registered
+<a name="line153"></a> * field is disposed.
+<a name="line154"></a> * @param {boolean} autoDispose Whether to autoDispose.
+<a name="line155"></a> */
+<a name="line156"></a>goog.editor.Plugin.prototype.setAutoDispose = function(autoDispose) {
+<a name="line157"></a>  this.autoDispose_ = autoDispose;
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/**
+<a name="line162"></a> * @return {boolean} Whether or not this plugin should automatically be disposed
+<a name="line163"></a> *     when it&#39;s registered field is disposed.
+<a name="line164"></a> */
+<a name="line165"></a>goog.editor.Plugin.prototype.isAutoDispose = function() {
+<a name="line166"></a>  return this.autoDispose_;
+<a name="line167"></a>};
+<a name="line168"></a>
+<a name="line169"></a>
+<a name="line170"></a>/**
+<a name="line171"></a> * @return {boolean} If true, field will not disable the command
+<a name="line172"></a> *     when the field becomes uneditable.
+<a name="line173"></a> */
+<a name="line174"></a>goog.editor.Plugin.prototype.activeOnUneditableFields = goog.functions.FALSE;
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * @param {string} command The command to check.
+<a name="line179"></a> * @return {boolean} If true, field will not dispatch change events
+<a name="line180"></a> *     for commands of this type. This is useful for &quot;seamless&quot; plugins like
+<a name="line181"></a> *     dialogs and lorem ipsum.
+<a name="line182"></a> */
+<a name="line183"></a>goog.editor.Plugin.prototype.isSilentCommand = goog.functions.FALSE;
+<a name="line184"></a>
+<a name="line185"></a>
+<a name="line186"></a>/** @override */
+<a name="line187"></a>goog.editor.Plugin.prototype.disposeInternal = function() {
+<a name="line188"></a>  if (this.fieldObject) {
+<a name="line189"></a>    this.unregisterFieldObject(this.fieldObject);
+<a name="line190"></a>  }
+<a name="line191"></a>
+<a name="line192"></a>  goog.editor.Plugin.superClass_.disposeInternal.call(this);
+<a name="line193"></a>};
+<a name="line194"></a>
+<a name="line195"></a>
+<a name="line196"></a>/**
+<a name="line197"></a> * @return {string} The ID unique to this plugin class. Note that different
+<a name="line198"></a> *     instances off the plugin share the same classId.
+<a name="line199"></a> */
+<a name="line200"></a>goog.editor.Plugin.prototype.getTrogClassId;
+<a name="line201"></a>
+<a name="line202"></a>
+<a name="line203"></a>/**
+<a name="line204"></a> * An enum of operations that plugins may support.
+<a name="line205"></a> * @enum {number}
+<a name="line206"></a> */
+<a name="line207"></a>goog.editor.Plugin.Op = {
+<a name="line208"></a>  KEYDOWN: 1,
+<a name="line209"></a>  KEYPRESS: 2,
+<a name="line210"></a>  KEYUP: 3,
+<a name="line211"></a>  SELECTION: 4,
+<a name="line212"></a>  SHORTCUT: 5,
+<a name="line213"></a>  EXEC_COMMAND: 6,
+<a name="line214"></a>  QUERY_COMMAND: 7,
+<a name="line215"></a>  PREPARE_CONTENTS_HTML: 8,
+<a name="line216"></a>  CLEAN_CONTENTS_HTML: 10,
+<a name="line217"></a>  CLEAN_CONTENTS_DOM: 11
+<a name="line218"></a>};
+<a name="line219"></a>
+<a name="line220"></a>
+<a name="line221"></a>/**
+<a name="line222"></a> * A map from plugin operations to the names of the methods that
+<a name="line223"></a> * invoke those operations.
+<a name="line224"></a> */
+<a name="line225"></a>goog.editor.Plugin.OPCODE = goog.object.transpose(
+<a name="line226"></a>    goog.reflect.object(goog.editor.Plugin, {
+<a name="line227"></a>      handleKeyDown: goog.editor.Plugin.Op.KEYDOWN,
+<a name="line228"></a>      handleKeyPress: goog.editor.Plugin.Op.KEYPRESS,
+<a name="line229"></a>      handleKeyUp: goog.editor.Plugin.Op.KEYUP,
+<a name="line230"></a>      handleSelectionChange: goog.editor.Plugin.Op.SELECTION,
+<a name="line231"></a>      handleKeyboardShortcut: goog.editor.Plugin.Op.SHORTCUT,
+<a name="line232"></a>      execCommand: goog.editor.Plugin.Op.EXEC_COMMAND,
+<a name="line233"></a>      queryCommandValue: goog.editor.Plugin.Op.QUERY_COMMAND,
+<a name="line234"></a>      prepareContentsHtml: goog.editor.Plugin.Op.PREPARE_CONTENTS_HTML,
+<a name="line235"></a>      cleanContentsHtml: goog.editor.Plugin.Op.CLEAN_CONTENTS_HTML,
+<a name="line236"></a>      cleanContentsDom: goog.editor.Plugin.Op.CLEAN_CONTENTS_DOM
+<a name="line237"></a>    }));
+<a name="line238"></a>
+<a name="line239"></a>
+<a name="line240"></a>/**
+<a name="line241"></a> * A set of op codes that run even on disabled plugins.
+<a name="line242"></a> */
+<a name="line243"></a>goog.editor.Plugin.IRREPRESSIBLE_OPS = goog.object.createSet(
+<a name="line244"></a>    goog.editor.Plugin.Op.PREPARE_CONTENTS_HTML,
+<a name="line245"></a>    goog.editor.Plugin.Op.CLEAN_CONTENTS_HTML,
+<a name="line246"></a>    goog.editor.Plugin.Op.CLEAN_CONTENTS_DOM);
+<a name="line247"></a>
+<a name="line248"></a>
+<a name="line249"></a>/**
+<a name="line250"></a> * Handles keydown. It is run before handleKeyboardShortcut and if it returns
+<a name="line251"></a> * true handleKeyboardShortcut will not be called.
+<a name="line252"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line253"></a> * @return {boolean} Whether the event was handled and thus should *not* be
+<a name="line254"></a> *     propagated to other plugins or handleKeyboardShortcut.
+<a name="line255"></a> */
+<a name="line256"></a>goog.editor.Plugin.prototype.handleKeyDown;
+<a name="line257"></a>
+<a name="line258"></a>
+<a name="line259"></a>/**
+<a name="line260"></a> * Handles keypress. It is run before handleKeyboardShortcut and if it returns
+<a name="line261"></a> * true handleKeyboardShortcut will not be called.
+<a name="line262"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line263"></a> * @return {boolean} Whether the event was handled and thus should *not* be
+<a name="line264"></a> *     propagated to other plugins or handleKeyboardShortcut.
+<a name="line265"></a> */
+<a name="line266"></a>goog.editor.Plugin.prototype.handleKeyPress;
+<a name="line267"></a>
+<a name="line268"></a>
+<a name="line269"></a>/**
+<a name="line270"></a> * Handles keyup.
+<a name="line271"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line272"></a> * @return {boolean} Whether the event was handled and thus should *not* be
+<a name="line273"></a> *     propagated to other plugins.
+<a name="line274"></a> */
+<a name="line275"></a>goog.editor.Plugin.prototype.handleKeyUp;
+<a name="line276"></a>
+<a name="line277"></a>
+<a name="line278"></a>/**
+<a name="line279"></a> * Handles selection change.
+<a name="line280"></a> * @param {!goog.events.BrowserEvent=} opt_e The browser event.
+<a name="line281"></a> * @param {!Node=} opt_target The node the selection changed to.
+<a name="line282"></a> * @return {boolean} Whether the event was handled and thus should *not* be
+<a name="line283"></a> *     propagated to other plugins.
+<a name="line284"></a> */
+<a name="line285"></a>goog.editor.Plugin.prototype.handleSelectionChange;
+<a name="line286"></a>
+<a name="line287"></a>
+<a name="line288"></a>/**
+<a name="line289"></a> * Handles keyboard shortcuts.  Preferred to using handleKey* as it will use
+<a name="line290"></a> * the proper event based on browser and will be more performant. If
+<a name="line291"></a> * handleKeyPress/handleKeyDown returns true, this will not be called. If the
+<a name="line292"></a> * plugin handles the shortcut, it is responsible for dispatching appropriate
+<a name="line293"></a> * events (change, selection change at the time of this comment). If the plugin
+<a name="line294"></a> * calls execCommand on the editable field, then execCommand already takes care
+<a name="line295"></a> * of dispatching events.
+<a name="line296"></a> * NOTE: For performance reasons this is only called when any key is pressed
+<a name="line297"></a> * in conjunction with ctrl/meta keys OR when a small subset of keys (defined
+<a name="line298"></a> * in goog.editor.Field.POTENTIAL_SHORTCUT_KEYCODES_) are pressed without
+<a name="line299"></a> * ctrl/meta keys. We specifically don&#39;t invoke it when altKey is pressed since
+<a name="line300"></a> * alt key is used in many i8n UIs to enter certain characters.
+<a name="line301"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line302"></a> * @param {string} key The key pressed.
+<a name="line303"></a> * @param {boolean} isModifierPressed Whether the ctrl/meta key was pressed or
+<a name="line304"></a> *     not.
+<a name="line305"></a> * @return {boolean} Whether the event was handled and thus should *not* be
+<a name="line306"></a> *     propagated to other plugins. We also call preventDefault on the event if
+<a name="line307"></a> *     the return value is true.
+<a name="line308"></a> */
+<a name="line309"></a>goog.editor.Plugin.prototype.handleKeyboardShortcut;
+<a name="line310"></a>
+<a name="line311"></a>
+<a name="line312"></a>/**
+<a name="line313"></a> * Handles execCommand. This default implementation handles dispatching
+<a name="line314"></a> * BEFORECHANGE, CHANGE, and SELECTIONCHANGE events, and calls
+<a name="line315"></a> * execCommandInternal to perform the actual command. Plugins that want to
+<a name="line316"></a> * do their own event dispatching should override execCommand, otherwise
+<a name="line317"></a> * it is preferred to only override execCommandInternal.
+<a name="line318"></a> *
+<a name="line319"></a> * This version of execCommand will only work for single field plugins.
+<a name="line320"></a> * Multi-field plugins must override execCommand.
+<a name="line321"></a> *
+<a name="line322"></a> * @param {string} command The command to execute.
+<a name="line323"></a> * @param {...*} var_args Any additional parameters needed to
+<a name="line324"></a> *     execute the command.
+<a name="line325"></a> * @return {*} The result of the execCommand, if any.
+<a name="line326"></a> */
+<a name="line327"></a>goog.editor.Plugin.prototype.execCommand = function(command, var_args) {
+<a name="line328"></a>  // TODO(user): Replace all uses of isSilentCommand with plugins that just
+<a name="line329"></a>  // override this base execCommand method.
+<a name="line330"></a>  var silent = this.isSilentCommand(command);
+<a name="line331"></a>  if (!silent) {
+<a name="line332"></a>    // Stop listening to mutation events in Firefox while text formatting
+<a name="line333"></a>    // is happening.  This prevents us from trying to size the field in the
+<a name="line334"></a>    // middle of an execCommand, catching the field in a strange intermediary
+<a name="line335"></a>    // state where both replacement nodes and original nodes are appended to
+<a name="line336"></a>    // the dom.  Note that change events get turned back on by
+<a name="line337"></a>    // fieldObj.dispatchChange.
+<a name="line338"></a>    if (goog.userAgent.GECKO) {
+<a name="line339"></a>      this.fieldObject.stopChangeEvents(true, true);
+<a name="line340"></a>    }
+<a name="line341"></a>
+<a name="line342"></a>    this.fieldObject.dispatchBeforeChange();
+<a name="line343"></a>  }
+<a name="line344"></a>
+<a name="line345"></a>  try {
+<a name="line346"></a>    var result = this.execCommandInternal.apply(this, arguments);
+<a name="line347"></a>  } finally {
+<a name="line348"></a>    // If the above execCommandInternal call throws an exception, we still need
+<a name="line349"></a>    // to turn change events back on (see http://b/issue?id=1471355).
+<a name="line350"></a>    // NOTE: If if you add to or change the methods called in this finally
+<a name="line351"></a>    // block, please add them as expected calls to the unit test function
+<a name="line352"></a>    // testExecCommandException().
+<a name="line353"></a>    if (!silent) {
+<a name="line354"></a>      // dispatchChange includes a call to startChangeEvents, which unwinds the
+<a name="line355"></a>      // call to stopChangeEvents made before the try block.
+<a name="line356"></a>      this.fieldObject.dispatchChange();
+<a name="line357"></a>      // TODO(user): Remove this conditional.  We should always dispatch a
+<a name="line358"></a>      // a selection change event here, but link creation is wierd.  See
+<a name="line359"></a>      // TR_Editor.prototype.execute for more details
+<a name="line360"></a>      if (command != goog.editor.Command.LINK) {
+<a name="line361"></a>        this.fieldObject.dispatchSelectionChangeEvent();
+<a name="line362"></a>      }
+<a name="line363"></a>    }
+<a name="line364"></a>  }
+<a name="line365"></a>
+<a name="line366"></a>  return result;
+<a name="line367"></a>};
+<a name="line368"></a>
+<a name="line369"></a>
+<a name="line370"></a>/**
+<a name="line371"></a> * Handles execCommand. This default implementation does nothing, and is
+<a name="line372"></a> * called by execCommand, which handles event dispatching. This method should
+<a name="line373"></a> * be overriden by plugins that don&#39;t need to do their own event dispatching.
+<a name="line374"></a> * If custom event dispatching is needed, execCommand shoul be overriden
+<a name="line375"></a> * instead.
+<a name="line376"></a> *
+<a name="line377"></a> * @param {string} command The command to execute.
+<a name="line378"></a> * @param {...*} var_args Any additional parameters needed to
+<a name="line379"></a> *     execute the command.
+<a name="line380"></a> * @return {*} The result of the execCommand, if any.
+<a name="line381"></a> * @protected
+<a name="line382"></a> */
+<a name="line383"></a>goog.editor.Plugin.prototype.execCommandInternal;
+<a name="line384"></a>
+<a name="line385"></a>
+<a name="line386"></a>/**
+<a name="line387"></a> * Gets the state of this command if this plugin serves that command.
+<a name="line388"></a> * @param {string} command The command to check.
+<a name="line389"></a> * @return {*} The value of the command.
+<a name="line390"></a> */
+<a name="line391"></a>goog.editor.Plugin.prototype.queryCommandValue;
+<a name="line392"></a>
+<a name="line393"></a>
+<a name="line394"></a>/**
+<a name="line395"></a> * Prepares the given HTML for editing. Strips out content that should not
+<a name="line396"></a> * appear in an editor, and normalizes content as appropriate. The inverse
+<a name="line397"></a> * of cleanContentsHtml.
+<a name="line398"></a> *
+<a name="line399"></a> * This op is invoked even on disabled plugins.
+<a name="line400"></a> *
+<a name="line401"></a> * @param {string} originalHtml The original HTML.
+<a name="line402"></a> * @param {Object} styles A map of strings. If the plugin wants to add
+<a name="line403"></a> *     any styles to the field element, it should add them as key-value
+<a name="line404"></a> *     pairs to this object.
+<a name="line405"></a> * @return {string} New HTML that&#39;s ok for editing.
+<a name="line406"></a> */
+<a name="line407"></a>goog.editor.Plugin.prototype.prepareContentsHtml;
+<a name="line408"></a>
+<a name="line409"></a>
+<a name="line410"></a>/**
+<a name="line411"></a> * Cleans the contents of the node passed to it. The node contents are modified
+<a name="line412"></a> * directly, and the modifications will subsequently be used, for operations
+<a name="line413"></a> * such as saving the innerHTML of the editor etc. Since the plugins act on
+<a name="line414"></a> * the DOM directly, this method can be very expensive.
+<a name="line415"></a> *
+<a name="line416"></a> * This op is invoked even on disabled plugins.
+<a name="line417"></a> *
+<a name="line418"></a> * @param {!Element} fieldCopy The copy of the editable field which
+<a name="line419"></a> *     needs to be cleaned up.
+<a name="line420"></a> */
+<a name="line421"></a>goog.editor.Plugin.prototype.cleanContentsDom;
+<a name="line422"></a>
+<a name="line423"></a>
+<a name="line424"></a>/**
+<a name="line425"></a> * Cleans the html contents of Trogedit. Both cleanContentsDom and
+<a name="line426"></a> * and cleanContentsHtml will be called on contents extracted from Trogedit.
+<a name="line427"></a> * The inverse of prepareContentsHtml.
+<a name="line428"></a> *
+<a name="line429"></a> * This op is invoked even on disabled plugins.
+<a name="line430"></a> *
+<a name="line431"></a> * @param {string} originalHtml The trogedit HTML.
+<a name="line432"></a> * @return {string} Cleaned-up HTML.
+<a name="line433"></a> */
+<a name="line434"></a>goog.editor.Plugin.prototype.cleanContentsHtml;
+<a name="line435"></a>
+<a name="line436"></a>
+<a name="line437"></a>/**
+<a name="line438"></a> * Whether the string corresponds to a command this plugin handles.
+<a name="line439"></a> * @param {string} command Command string to check.
+<a name="line440"></a> * @return {boolean} Whether the plugin handles this type of command.
+<a name="line441"></a> */
+<a name="line442"></a>goog.editor.Plugin.prototype.isSupportedCommand = function(command) {
+<a name="line443"></a>  return false;
+<a name="line444"></a>};
+</pre>
+
+
+</body>
+</html>

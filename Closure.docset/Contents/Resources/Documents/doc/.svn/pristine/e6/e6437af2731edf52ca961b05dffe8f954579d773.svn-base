@@ -1,0 +1,437 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>dimensionpickerrenderer.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_dimensionpickerrenderer.js.html">dimensionpickerrenderer.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview The default renderer for a goog.dom.DimensionPicker.  A
+<a name="line17"></a> * dimension picker allows the user to visually select a row and column count.
+<a name="line18"></a> * It looks like a palette but in order to minimize DOM load it is rendered.
+<a name="line19"></a> * using CSS background tiling instead of as a grid of nodes.
+<a name="line20"></a> *
+<a name="line21"></a> * @author robbyw@google.com (Robby Walker)
+<a name="line22"></a> * @author abefettig@google.com (Abe Fettig)
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.ui.DimensionPickerRenderer&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line28"></a>goog.require(&#39;goog.dom.TagName&#39;);
+<a name="line29"></a>goog.require(&#39;goog.i18n.bidi&#39;);
+<a name="line30"></a>goog.require(&#39;goog.style&#39;);
+<a name="line31"></a>goog.require(&#39;goog.ui.ControlRenderer&#39;);
+<a name="line32"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>/**
+<a name="line37"></a> * Default renderer for {@link goog.ui.DimensionPicker}s.  Renders the
+<a name="line38"></a> * palette as two divs, one with the un-highlighted background, and one with the
+<a name="line39"></a> * highlighted background.
+<a name="line40"></a> *
+<a name="line41"></a> * @constructor
+<a name="line42"></a> * @extends {goog.ui.ControlRenderer}
+<a name="line43"></a> */
+<a name="line44"></a>goog.ui.DimensionPickerRenderer = function() {
+<a name="line45"></a>  goog.ui.ControlRenderer.call(this);
+<a name="line46"></a>};
+<a name="line47"></a>goog.inherits(goog.ui.DimensionPickerRenderer, goog.ui.ControlRenderer);
+<a name="line48"></a>goog.addSingletonGetter(goog.ui.DimensionPickerRenderer);
+<a name="line49"></a>
+<a name="line50"></a>
+<a name="line51"></a>/**
+<a name="line52"></a> * Default CSS class to be applied to the root element of components rendered
+<a name="line53"></a> * by this renderer.
+<a name="line54"></a> * @type {string}
+<a name="line55"></a> */
+<a name="line56"></a>goog.ui.DimensionPickerRenderer.CSS_CLASS =
+<a name="line57"></a>    goog.getCssName(&#39;goog-dimension-picker&#39;);
+<a name="line58"></a>
+<a name="line59"></a>
+<a name="line60"></a>/**
+<a name="line61"></a> * Return the underlying div for the given outer element.
+<a name="line62"></a> * @param {Element} element The root element.
+<a name="line63"></a> * @return {Element} The underlying div.
+<a name="line64"></a> * @private
+<a name="line65"></a> */
+<a name="line66"></a>goog.ui.DimensionPickerRenderer.prototype.getUnderlyingDiv_ = function(
+<a name="line67"></a>    element) {
+<a name="line68"></a>  return element.firstChild.childNodes[1];
+<a name="line69"></a>};
+<a name="line70"></a>
+<a name="line71"></a>
+<a name="line72"></a>/**
+<a name="line73"></a> * Return the highlight div for the given outer element.
+<a name="line74"></a> * @param {Element} element The root element.
+<a name="line75"></a> * @return {Element} The highlight div.
+<a name="line76"></a> * @private
+<a name="line77"></a> */
+<a name="line78"></a>goog.ui.DimensionPickerRenderer.prototype.getHighlightDiv_ = function(
+<a name="line79"></a>    element) {
+<a name="line80"></a>  return /** @type {Element} */ element.firstChild.lastChild;
+<a name="line81"></a>};
+<a name="line82"></a>
+<a name="line83"></a>
+<a name="line84"></a>/**
+<a name="line85"></a> * Return the status message div for the given outer element.
+<a name="line86"></a> * @param {Element} element The root element.
+<a name="line87"></a> * @return {Element} The status message div.
+<a name="line88"></a> * @private
+<a name="line89"></a> */
+<a name="line90"></a>goog.ui.DimensionPickerRenderer.prototype.getStatusDiv_ = function(
+<a name="line91"></a>    element) {
+<a name="line92"></a>  return /** @type {Element} */ (element.lastChild);
+<a name="line93"></a>};
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * Return the invisible mouse catching div for the given outer element.
+<a name="line98"></a> * @param {Element} element The root element.
+<a name="line99"></a> * @return {Element} The invisible mouse catching div.
+<a name="line100"></a> * @private
+<a name="line101"></a> */
+<a name="line102"></a>goog.ui.DimensionPickerRenderer.prototype.getMouseCatcher_ = function(
+<a name="line103"></a>    element) {
+<a name="line104"></a>  return /** @type {Element} */ element.firstChild.firstChild;
+<a name="line105"></a>};
+<a name="line106"></a>
+<a name="line107"></a>
+<a name="line108"></a>/**
+<a name="line109"></a> * Overrides {@link goog.ui.ControlRenderer#canDecorate} to allow decorating
+<a name="line110"></a> * empty DIVs only.
+<a name="line111"></a> * @param {Element} element The element to check.
+<a name="line112"></a> * @return {boolean} Whether if the element is an empty div.
+<a name="line113"></a> */
+<a name="line114"></a>goog.ui.DimensionPickerRenderer.prototype.canDecorate = function(
+<a name="line115"></a>    element) {
+<a name="line116"></a>  return element.tagName == goog.dom.TagName.DIV &amp;&amp; !element.firstChild;
+<a name="line117"></a>};
+<a name="line118"></a>
+<a name="line119"></a>
+<a name="line120"></a>/**
+<a name="line121"></a> * Overrides {@link goog.ui.ControlRenderer#decorate} to decorate empty DIVs.
+<a name="line122"></a> * @param {goog.ui.DimensionPicker} palette The palette object.
+<a name="line123"></a> * @param {Element} element The element to decorate.
+<a name="line124"></a> * @return {Element} The decorated element.
+<a name="line125"></a> */
+<a name="line126"></a>goog.ui.DimensionPickerRenderer.prototype.decorate = function(palette,
+<a name="line127"></a>    element) {
+<a name="line128"></a>  goog.ui.DimensionPickerRenderer.superClass_.decorate.call(this,
+<a name="line129"></a>      palette, element);
+<a name="line130"></a>
+<a name="line131"></a>  this.addElementContents_(palette, element);
+<a name="line132"></a>  this.updateSize(palette, element);
+<a name="line133"></a>
+<a name="line134"></a>  return element;
+<a name="line135"></a>};
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * Scales various elements in order to update the palette&#39;s size.
+<a name="line140"></a> * @param {goog.ui.DimensionPicker} palette The palette object.
+<a name="line141"></a> * @param {Element} element The element to set the style of.
+<a name="line142"></a> */
+<a name="line143"></a>goog.ui.DimensionPickerRenderer.prototype.updateSize =
+<a name="line144"></a>    function(palette, element) {
+<a name="line145"></a>  var size = palette.getSize();
+<a name="line146"></a>
+<a name="line147"></a>  element.style.width = size.width + &#39;em&#39;;
+<a name="line148"></a>
+<a name="line149"></a>  var underlyingDiv = this.getUnderlyingDiv_(element);
+<a name="line150"></a>  underlyingDiv.style.width = size.width + &#39;em&#39;;
+<a name="line151"></a>  underlyingDiv.style.height = size.height + &#39;em&#39;;
+<a name="line152"></a>
+<a name="line153"></a>  if (palette.isRightToLeft()) {
+<a name="line154"></a>      this.adjustParentDirection_(palette, element);
+<a name="line155"></a>  }
+<a name="line156"></a>};
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/**
+<a name="line160"></a> * Adds the appropriate content elements to the given outer DIV.
+<a name="line161"></a> * @param {goog.ui.DimensionPicker} palette The palette object.
+<a name="line162"></a> * @param {Element} element The element to decorate.
+<a name="line163"></a> * @private
+<a name="line164"></a> */
+<a name="line165"></a>goog.ui.DimensionPickerRenderer.prototype.addElementContents_ = function(
+<a name="line166"></a>    palette, element) {
+<a name="line167"></a>  // First we create a single div containing three stacked divs.  The bottom div
+<a name="line168"></a>  // catches mouse events.  We can&#39;t use document level mouse move detection as
+<a name="line169"></a>  // we could lose events to iframes.  This is especially important in Firefox 2
+<a name="line170"></a>  // in which TrogEdit creates iframes. The middle div uses a css tiled
+<a name="line171"></a>  // background image to represent deselected tiles.  The top div uses a
+<a name="line172"></a>  // different css tiled background image to represent selected tiles.
+<a name="line173"></a>  var mouseCatcherDiv = palette.getDomHelper().createDom(goog.dom.TagName.DIV,
+<a name="line174"></a>      goog.getCssName(this.getCssClass(), &#39;mousecatcher&#39;));
+<a name="line175"></a>  var unhighlightedDiv = palette.getDomHelper().createDom(goog.dom.TagName.DIV,
+<a name="line176"></a>    {
+<a name="line177"></a>      &#39;class&#39;: goog.getCssName(this.getCssClass(), &#39;unhighlighted&#39;),
+<a name="line178"></a>      &#39;style&#39;: &#39;width:100%;height:100%&#39;
+<a name="line179"></a>    });
+<a name="line180"></a>  var highlightedDiv = palette.getDomHelper().createDom(goog.dom.TagName.DIV,
+<a name="line181"></a>      goog.getCssName(this.getCssClass(), &#39;highlighted&#39;));
+<a name="line182"></a>  element.appendChild(
+<a name="line183"></a>      palette.getDomHelper().createDom(goog.dom.TagName.DIV,
+<a name="line184"></a>          {&#39;style&#39;: &#39;width:100%;height:100%&#39;},
+<a name="line185"></a>          mouseCatcherDiv, unhighlightedDiv, highlightedDiv));
+<a name="line186"></a>
+<a name="line187"></a>  // Lastly we add a div to store the text version of the current state.
+<a name="line188"></a>  element.appendChild(palette.getDomHelper().createDom(goog.dom.TagName.DIV,
+<a name="line189"></a>      goog.getCssName(this.getCssClass(), &#39;status&#39;),
+<a name="line190"></a>      goog.i18n.bidi.enforceLtrInText(&#39;0 x 0&#39;)));
+<a name="line191"></a>};
+<a name="line192"></a>
+<a name="line193"></a>
+<a name="line194"></a>/**
+<a name="line195"></a> * Creates a div and adds the appropriate contents to it.
+<a name="line196"></a> * @param {goog.ui.DimensionPicker} palette Palette to render.
+<a name="line197"></a> * @return {Element} Root element for the palette.
+<a name="line198"></a> */
+<a name="line199"></a>goog.ui.DimensionPickerRenderer.prototype.createDom = function(palette) {
+<a name="line200"></a>  var classNames = this.getClassNames(palette);
+<a name="line201"></a>  var element = palette.getDomHelper().createDom(goog.dom.TagName.DIV, {
+<a name="line202"></a>    &#39;class&#39; : classNames ? classNames.join(&#39; &#39;) : &#39;&#39;
+<a name="line203"></a>  });
+<a name="line204"></a>  this.addElementContents_(palette, element);
+<a name="line205"></a>  this.updateSize(palette, element);
+<a name="line206"></a>  return element;
+<a name="line207"></a>};
+<a name="line208"></a>
+<a name="line209"></a>
+<a name="line210"></a>/**
+<a name="line211"></a> * Initializes the control&#39;s DOM when the control enters the document.  Called
+<a name="line212"></a> * from {@link goog.ui.Control#enterDocument}.
+<a name="line213"></a> * @param {goog.ui.DimensionPicker} palette Palette whose DOM is to be
+<a name="line214"></a> *     initialized as it enters the document.
+<a name="line215"></a> */
+<a name="line216"></a>goog.ui.DimensionPickerRenderer.prototype.initializeDom = function(
+<a name="line217"></a>    palette) {
+<a name="line218"></a>  goog.ui.DimensionPickerRenderer.superClass_.initializeDom.call(this, palette);
+<a name="line219"></a>  this.positionMouseCatcher(palette);
+<a name="line220"></a>};
+<a name="line221"></a>
+<a name="line222"></a>
+<a name="line223"></a>/**
+<a name="line224"></a> * Get the element to listen for mouse move events on.
+<a name="line225"></a> * @param {goog.ui.DimensionPicker} palette The palette to listen on.
+<a name="line226"></a> * @return {Element} The element to listen for mouse move events on.
+<a name="line227"></a> */
+<a name="line228"></a>goog.ui.DimensionPickerRenderer.prototype.getMouseMoveElement = function(
+<a name="line229"></a>    palette) {
+<a name="line230"></a>  return /** @type {Element} */ (palette.getElement().firstChild);
+<a name="line231"></a>};
+<a name="line232"></a>
+<a name="line233"></a>
+<a name="line234"></a>/**
+<a name="line235"></a> * Returns the x offset in to the grid for the given mouse x position.
+<a name="line236"></a> * @param {goog.ui.DimensionPicker} palette The table size palette.
+<a name="line237"></a> * @param {number} x The mouse event x position.
+<a name="line238"></a> * @return {number} The x offset in to the grid.
+<a name="line239"></a> */
+<a name="line240"></a>goog.ui.DimensionPickerRenderer.prototype.getGridOffsetX = function(
+<a name="line241"></a>    palette, x) {
+<a name="line242"></a>  // TODO(robbyw): Don&#39;t rely on magic 18 - measure each palette&#39;s em size.
+<a name="line243"></a>  return Math.min(palette.maxColumns, Math.ceil(x / 18));
+<a name="line244"></a>};
+<a name="line245"></a>
+<a name="line246"></a>
+<a name="line247"></a>/**
+<a name="line248"></a> * Returns the y offset in to the grid for the given mouse y position.
+<a name="line249"></a> * @param {goog.ui.DimensionPicker} palette The table size palette.
+<a name="line250"></a> * @param {number} y The mouse event y position.
+<a name="line251"></a> * @return {number} The y offset in to the grid.
+<a name="line252"></a> */
+<a name="line253"></a>goog.ui.DimensionPickerRenderer.prototype.getGridOffsetY = function(
+<a name="line254"></a>    palette, y) {
+<a name="line255"></a>  return Math.min(palette.maxRows, Math.ceil(y / 18));
+<a name="line256"></a>};
+<a name="line257"></a>
+<a name="line258"></a>
+<a name="line259"></a>/**
+<a name="line260"></a> * Sets the highlighted size.
+<a name="line261"></a> * @param {goog.ui.DimensionPicker} palette The table size palette.
+<a name="line262"></a> * @param {number} columns The number of columns to highlight.
+<a name="line263"></a> * @param {number} rows The number of rows to highlight.
+<a name="line264"></a> */
+<a name="line265"></a>goog.ui.DimensionPickerRenderer.prototype.setHighlightedSize = function(
+<a name="line266"></a>    palette, columns, rows) {
+<a name="line267"></a>  var element = palette.getElement();
+<a name="line268"></a>
+<a name="line269"></a>  // Style the highlight div.
+<a name="line270"></a>  var style = this.getHighlightDiv_(element).style;
+<a name="line271"></a>  style.width = columns + &#39;em&#39;;
+<a name="line272"></a>  style.height = rows + &#39;em&#39;;
+<a name="line273"></a>
+<a name="line274"></a>  // Explicitly set style.right so the element grows to the left when increase
+<a name="line275"></a>  // in width.
+<a name="line276"></a>  if (palette.isRightToLeft()) {
+<a name="line277"></a>    style.right = &#39;0&#39;;
+<a name="line278"></a>  }
+<a name="line279"></a>
+<a name="line280"></a>  // Update the size text.
+<a name="line281"></a>  goog.dom.setTextContent(this.getStatusDiv_(element),
+<a name="line282"></a>      goog.i18n.bidi.enforceLtrInText(columns + &#39; x &#39; + rows));
+<a name="line283"></a>};
+<a name="line284"></a>
+<a name="line285"></a>
+<a name="line286"></a>/**
+<a name="line287"></a> * Position the mouse catcher such that it receives mouse events past the
+<a name="line288"></a> * selectedsize up to the maximum size.  Takes care to not introduce scrollbars.
+<a name="line289"></a> * Should be called on enter document and when the window changes size.
+<a name="line290"></a> * @param {goog.ui.DimensionPicker} palette The table size palette.
+<a name="line291"></a> */
+<a name="line292"></a>goog.ui.DimensionPickerRenderer.prototype.positionMouseCatcher = function(
+<a name="line293"></a>    palette) {
+<a name="line294"></a>  var mouseCatcher = this.getMouseCatcher_(palette.getElement());
+<a name="line295"></a>  var doc = goog.dom.getOwnerDocument(mouseCatcher);
+<a name="line296"></a>  var body = doc.body;
+<a name="line297"></a>
+<a name="line298"></a>  var position = goog.style.getRelativePosition(mouseCatcher, body);
+<a name="line299"></a>
+<a name="line300"></a>  // Hide the mouse catcher so it doesn&#39;t affect the body&#39;s scroll size.
+<a name="line301"></a>  mouseCatcher.style.display = &#39;none&#39;;
+<a name="line302"></a>
+<a name="line303"></a>  // Compute the maximum size the catcher can be without introducing scrolling.
+<a name="line304"></a>  var xAvailableEm = (palette.isRightToLeft() &amp;&amp; position.x &gt; 0) ?
+<a name="line305"></a>      Math.floor(position.x / 18) :
+<a name="line306"></a>      Math.floor((body.scrollWidth - position.x) / 18);
+<a name="line307"></a>
+<a name="line308"></a>  // Computing available height is more complicated - we need to check the
+<a name="line309"></a>  // window&#39;s inner height.
+<a name="line310"></a>  var height;
+<a name="line311"></a>  if (goog.userAgent.IE) {
+<a name="line312"></a>    // Offset 20px to make up for scrollbar size.
+<a name="line313"></a>    height = goog.style.getClientViewportElement(body).scrollHeight - 20;
+<a name="line314"></a>  } else {
+<a name="line315"></a>    var win = goog.dom.getWindow(doc);
+<a name="line316"></a>    // Offset 20px to make up for scrollbar size.
+<a name="line317"></a>    height = Math.max(win.innerHeight, body.scrollHeight) - 20;
+<a name="line318"></a>  }
+<a name="line319"></a>  var yAvailableEm = Math.floor((height - position.y) / 18);
+<a name="line320"></a>
+<a name="line321"></a>  // Resize and display the mouse catcher.
+<a name="line322"></a>  mouseCatcher.style.width = Math.min(palette.maxColumns, xAvailableEm) + &#39;em&#39;;
+<a name="line323"></a>  mouseCatcher.style.height = Math.min(palette.maxRows, yAvailableEm) + &#39;em&#39;;
+<a name="line324"></a>  mouseCatcher.style.display = &#39;&#39;;
+<a name="line325"></a>
+<a name="line326"></a>  // Explicitly set style.right so the mouse catcher is positioned on the left
+<a name="line327"></a>  // side instead of right.
+<a name="line328"></a>  if (palette.isRightToLeft()) {
+<a name="line329"></a>    mouseCatcher.style.right = &#39;0&#39;;
+<a name="line330"></a>  }
+<a name="line331"></a>};
+<a name="line332"></a>
+<a name="line333"></a>
+<a name="line334"></a>/**
+<a name="line335"></a> * Returns the CSS class to be applied to the root element of components
+<a name="line336"></a> * rendered using this renderer.
+<a name="line337"></a> * @return {string} Renderer-specific CSS class.
+<a name="line338"></a> */
+<a name="line339"></a>goog.ui.DimensionPickerRenderer.prototype.getCssClass = function() {
+<a name="line340"></a>  return goog.ui.DimensionPickerRenderer.CSS_CLASS;
+<a name="line341"></a>};
+<a name="line342"></a>
+<a name="line343"></a>
+<a name="line344"></a>/**
+<a name="line345"></a> * This function adjusts the positioning from &#39;left&#39; and &#39;top&#39; to &#39;right&#39; and
+<a name="line346"></a> * &#39;top&#39; as appropriate for RTL control.  This is so when the dimensionpicker
+<a name="line347"></a> * grow in width, the containing element grow to the left instead of right.
+<a name="line348"></a> * This won&#39;t be necessary if goog.ui.SubMenu rendering code would position RTL
+<a name="line349"></a> * control with &#39;right&#39; and &#39;top&#39;.
+<a name="line350"></a> * @private
+<a name="line351"></a> *
+<a name="line352"></a> * @param {goog.ui.DimensionPicker} palette The palette object.
+<a name="line353"></a> * @param {Element} element The palette&#39;s element.
+<a name="line354"></a> */
+<a name="line355"></a>goog.ui.DimensionPickerRenderer.prototype.adjustParentDirection_ =
+<a name="line356"></a>  function(palette, element) {
+<a name="line357"></a>  var parent = palette.getParent();
+<a name="line358"></a>  if (parent) {
+<a name="line359"></a>    var parentElement = parent.getElement();
+<a name="line360"></a>
+<a name="line361"></a>    // Anchors the containing element to the right so it grows to the left
+<a name="line362"></a>    // when it increase in width.
+<a name="line363"></a>    var right = goog.style.getStyle(parentElement, &#39;right&#39;);
+<a name="line364"></a>    if (right == &#39;&#39;) {
+<a name="line365"></a>      var parentPos = goog.style.getPosition(parentElement);
+<a name="line366"></a>      var parentSize = goog.style.getSize(parentElement);
+<a name="line367"></a>      if (parentSize.width != 0 &amp;&amp; parentPos.x != 0) {
+<a name="line368"></a>        var visibleRect = goog.style.getBounds(
+<a name="line369"></a>            goog.style.getClientViewportElement());
+<a name="line370"></a>        var visibleWidth = visibleRect.width;
+<a name="line371"></a>        right = visibleWidth - parentPos.x - parentSize.width;
+<a name="line372"></a>        goog.style.setStyle(parentElement, &#39;right&#39;, right + &#39;px&#39;);
+<a name="line373"></a>      }
+<a name="line374"></a>    }
+<a name="line375"></a>
+<a name="line376"></a>    // When a table is inserted, the containing elemet&#39;s position is
+<a name="line377"></a>    // recalculated the next time it shows, set left back to &#39;&#39; to prevent
+<a name="line378"></a>    // extra white space on the left.
+<a name="line379"></a>    var left = goog.style.getStyle(parentElement, &#39;left&#39;);
+<a name="line380"></a>    if (left != &#39;&#39;) {
+<a name="line381"></a>      goog.style.setStyle(parentElement, &#39;left&#39;, &#39;&#39;);
+<a name="line382"></a>    }
+<a name="line383"></a>  } else {
+<a name="line384"></a>    goog.style.setStyle(element, &#39;right&#39;, &#39;0px&#39;);
+<a name="line385"></a>  }
+<a name="line386"></a>};
+</pre>
+
+
+</body>
+</html>

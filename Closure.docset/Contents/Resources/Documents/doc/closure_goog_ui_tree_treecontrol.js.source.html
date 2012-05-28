@@ -1,0 +1,707 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>treecontrol.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_tree_treecontrol.js.html">treecontrol.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Definition of the goog.ui.tree.TreeControl class, which
+<a name="line17"></a> * provides a way to view a hierarchical set of data.
+<a name="line18"></a> *
+<a name="line19"></a> *
+<a name="line20"></a> * This is a based on the webfx tree control. It since been updated to add
+<a name="line21"></a> * typeahead support, as well as accessibility support using ARIA framework.
+<a name="line22"></a> *
+<a name="line23"></a> * @see ../../demos/tree/demo.html
+<a name="line24"></a> */
+<a name="line25"></a>
+<a name="line26"></a>goog.provide(&#39;goog.ui.tree.TreeControl&#39;);
+<a name="line27"></a>
+<a name="line28"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line29"></a>goog.require(&#39;goog.dom.a11y&#39;);
+<a name="line30"></a>goog.require(&#39;goog.dom.classes&#39;);
+<a name="line31"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line32"></a>goog.require(&#39;goog.events.FocusHandler&#39;);
+<a name="line33"></a>goog.require(&#39;goog.events.KeyHandler&#39;);
+<a name="line34"></a>goog.require(&#39;goog.events.KeyHandler.EventType&#39;);
+<a name="line35"></a>goog.require(&#39;goog.ui.tree.BaseNode&#39;);
+<a name="line36"></a>goog.require(&#39;goog.ui.tree.TreeNode&#39;);
+<a name="line37"></a>goog.require(&#39;goog.ui.tree.TypeAhead&#39;);
+<a name="line38"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line39"></a>
+<a name="line40"></a>
+<a name="line41"></a>
+<a name="line42"></a>/**
+<a name="line43"></a> * This creates a TreeControl object. A tree control provides a way to
+<a name="line44"></a> * view a hierarchical set of data.
+<a name="line45"></a> * @param {string} html The HTML content of the node label.
+<a name="line46"></a> * @param {Object=} opt_config The configuration for the tree. See
+<a name="line47"></a> *    goog.ui.tree.TreeControl.DefaultConfig. If not specified, a default config
+<a name="line48"></a> *    will be used.
+<a name="line49"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
+<a name="line50"></a> * @constructor
+<a name="line51"></a> * @extends {goog.ui.tree.BaseNode}
+<a name="line52"></a> */
+<a name="line53"></a>goog.ui.tree.TreeControl = function(html, opt_config, opt_domHelper) {
+<a name="line54"></a>  goog.ui.tree.BaseNode.call(this, html, opt_config, opt_domHelper);
+<a name="line55"></a>
+<a name="line56"></a>  // The root is open and selected by default.
+<a name="line57"></a>  this.setExpandedInternal(true);
+<a name="line58"></a>  this.setSelectedInternal(true);
+<a name="line59"></a>
+<a name="line60"></a>  this.selectedItem_ = this;
+<a name="line61"></a>
+<a name="line62"></a>  /**
+<a name="line63"></a>   * Used for typeahead support.
+<a name="line64"></a>   * @type {!goog.ui.tree.TypeAhead}
+<a name="line65"></a>   * @private
+<a name="line66"></a>   */
+<a name="line67"></a>  this.typeAhead_ = new goog.ui.tree.TypeAhead();
+<a name="line68"></a>
+<a name="line69"></a>  if (goog.userAgent.IE) {
+<a name="line70"></a>    /** @preserveTry */
+<a name="line71"></a>    try {
+<a name="line72"></a>      // works since IE6SP1
+<a name="line73"></a>      document.execCommand(&#39;BackgroundImageCache&#39;, false, true);
+<a name="line74"></a>    } catch (e) {
+<a name="line75"></a>      this.logger_.warning(&#39;Failed to enable background image cache&#39;);
+<a name="line76"></a>    }
+<a name="line77"></a>  }
+<a name="line78"></a>};
+<a name="line79"></a>goog.inherits(goog.ui.tree.TreeControl, goog.ui.tree.BaseNode);
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>/**
+<a name="line83"></a> * The object handling keyboard events.
+<a name="line84"></a> * @type {goog.events.KeyHandler}
+<a name="line85"></a> * @private
+<a name="line86"></a> */
+<a name="line87"></a>goog.ui.tree.TreeControl.prototype.keyHandler_ = null;
+<a name="line88"></a>
+<a name="line89"></a>
+<a name="line90"></a>/**
+<a name="line91"></a> * The object handling focus events.
+<a name="line92"></a> * @type {goog.events.FocusHandler}
+<a name="line93"></a> * @private
+<a name="line94"></a> */
+<a name="line95"></a>goog.ui.tree.TreeControl.prototype.focusHandler_ = null;
+<a name="line96"></a>
+<a name="line97"></a>
+<a name="line98"></a>/**
+<a name="line99"></a> * Logger
+<a name="line100"></a> * @type {goog.debug.Logger}
+<a name="line101"></a> * @private
+<a name="line102"></a> */
+<a name="line103"></a>goog.ui.tree.TreeControl.prototype.logger_ =
+<a name="line104"></a>    goog.debug.Logger.getLogger(&#39;goog.ui.tree.TreeControl&#39;);
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Whether the tree is focused.
+<a name="line109"></a> * @type {boolean}
+<a name="line110"></a> * @private
+<a name="line111"></a> */
+<a name="line112"></a>goog.ui.tree.TreeControl.prototype.focused_ = false;
+<a name="line113"></a>
+<a name="line114"></a>
+<a name="line115"></a>/**
+<a name="line116"></a> * Child node that currently has focus.
+<a name="line117"></a> * @type {goog.ui.tree.BaseNode}
+<a name="line118"></a> * @private
+<a name="line119"></a> */
+<a name="line120"></a>goog.ui.tree.TreeControl.prototype.focusedNode_ = null;
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>/**
+<a name="line124"></a> * Whether to show lines.
+<a name="line125"></a> * @type {boolean}
+<a name="line126"></a> * @private
+<a name="line127"></a> */
+<a name="line128"></a>goog.ui.tree.TreeControl.prototype.showLines_ = true;
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>/**
+<a name="line132"></a> * Whether to show expanded lines.
+<a name="line133"></a> * @type {boolean}
+<a name="line134"></a> * @private
+<a name="line135"></a> */
+<a name="line136"></a>goog.ui.tree.TreeControl.prototype.showExpandIcons_ = true;
+<a name="line137"></a>
+<a name="line138"></a>
+<a name="line139"></a>/**
+<a name="line140"></a> * Whether to show the root node.
+<a name="line141"></a> * @type {boolean}
+<a name="line142"></a> * @private
+<a name="line143"></a> */
+<a name="line144"></a>goog.ui.tree.TreeControl.prototype.showRootNode_ = true;
+<a name="line145"></a>
+<a name="line146"></a>
+<a name="line147"></a>/**
+<a name="line148"></a> * Whether to show the root lines.
+<a name="line149"></a> * @type {boolean}
+<a name="line150"></a> * @private
+<a name="line151"></a> */
+<a name="line152"></a>goog.ui.tree.TreeControl.prototype.showRootLines_ = true;
+<a name="line153"></a>
+<a name="line154"></a>
+<a name="line155"></a>/** @override */
+<a name="line156"></a>goog.ui.tree.TreeControl.prototype.getTree = function() {
+<a name="line157"></a>  return this;
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/** @override */
+<a name="line162"></a>goog.ui.tree.TreeControl.prototype.getDepth = function() {
+<a name="line163"></a>  return 0;
+<a name="line164"></a>};
+<a name="line165"></a>
+<a name="line166"></a>
+<a name="line167"></a>/**
+<a name="line168"></a> * Expands the parent chain of this node so that it is visible.
+<a name="line169"></a> */
+<a name="line170"></a>goog.ui.tree.TreeControl.prototype.reveal = function() {
+<a name="line171"></a>  // always expanded by default
+<a name="line172"></a>  // needs to be overriden so that we don&#39;t try to reveal our parent
+<a name="line173"></a>  // which is a generic component
+<a name="line174"></a>};
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * Handles focus on the tree.
+<a name="line179"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line180"></a> * @private
+<a name="line181"></a> */
+<a name="line182"></a>goog.ui.tree.TreeControl.prototype.handleFocus_ = function(e) {
+<a name="line183"></a>  this.focused_ = true;
+<a name="line184"></a>  goog.dom.classes.add(this.getElement(), &#39;focused&#39;);
+<a name="line185"></a>
+<a name="line186"></a>  if (this.selectedItem_) {
+<a name="line187"></a>    this.selectedItem_.select();
+<a name="line188"></a>  }
+<a name="line189"></a>};
+<a name="line190"></a>
+<a name="line191"></a>
+<a name="line192"></a>/**
+<a name="line193"></a> * Handles blur on the tree.
+<a name="line194"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line195"></a> * @private
+<a name="line196"></a> */
+<a name="line197"></a>goog.ui.tree.TreeControl.prototype.handleBlur_ = function(e) {
+<a name="line198"></a>  this.focused_ = false;
+<a name="line199"></a>  goog.dom.classes.remove(this.getElement(), &#39;focused&#39;);
+<a name="line200"></a>};
+<a name="line201"></a>
+<a name="line202"></a>
+<a name="line203"></a>/**
+<a name="line204"></a> * @return {boolean} Whether the tree has keyboard focus.
+<a name="line205"></a> */
+<a name="line206"></a>goog.ui.tree.TreeControl.prototype.hasFocus = function() {
+<a name="line207"></a>  return this.focused_;
+<a name="line208"></a>};
+<a name="line209"></a>
+<a name="line210"></a>
+<a name="line211"></a>/** @override */
+<a name="line212"></a>goog.ui.tree.TreeControl.prototype.getExpanded = function() {
+<a name="line213"></a>  return !this.showRootNode_ ||
+<a name="line214"></a>      goog.ui.tree.TreeControl.superClass_.getExpanded.call(this);
+<a name="line215"></a>};
+<a name="line216"></a>
+<a name="line217"></a>
+<a name="line218"></a>/** @override */
+<a name="line219"></a>goog.ui.tree.TreeControl.prototype.setExpanded = function(expanded) {
+<a name="line220"></a>  if (!this.showRootNode_) {
+<a name="line221"></a>    this.setExpandedInternal(expanded);
+<a name="line222"></a>  } else {
+<a name="line223"></a>    goog.ui.tree.TreeControl.superClass_.setExpanded.call(this, expanded);
+<a name="line224"></a>  }
+<a name="line225"></a>};
+<a name="line226"></a>
+<a name="line227"></a>
+<a name="line228"></a>/** @override */
+<a name="line229"></a>goog.ui.tree.TreeControl.prototype.getExpandIconHtml = function() {
+<a name="line230"></a>  // no expand icon for root element
+<a name="line231"></a>  return &#39;&#39;;
+<a name="line232"></a>};
+<a name="line233"></a>
+<a name="line234"></a>
+<a name="line235"></a>/** @override */
+<a name="line236"></a>goog.ui.tree.TreeControl.prototype.getIconElement = function() {
+<a name="line237"></a>  var el = this.getRowElement();
+<a name="line238"></a>  return el ? /** @type {Element} */ (el.firstChild) : null;
+<a name="line239"></a>};
+<a name="line240"></a>
+<a name="line241"></a>
+<a name="line242"></a>/** @override */
+<a name="line243"></a>goog.ui.tree.TreeControl.prototype.getExpandIconElement = function() {
+<a name="line244"></a>  // no expand icon for root element
+<a name="line245"></a>  return null;
+<a name="line246"></a>};
+<a name="line247"></a>
+<a name="line248"></a>
+<a name="line249"></a>/** @override */
+<a name="line250"></a>goog.ui.tree.TreeControl.prototype.updateExpandIcon = function() {
+<a name="line251"></a>  // no expand icon
+<a name="line252"></a>};
+<a name="line253"></a>
+<a name="line254"></a>
+<a name="line255"></a>/** @override */
+<a name="line256"></a>goog.ui.tree.TreeControl.prototype.getRowClassName = function() {
+<a name="line257"></a>  return goog.ui.tree.TreeControl.superClass_.getRowClassName.call(this) +
+<a name="line258"></a>      (this.showRootNode_ ? &#39;&#39; : &#39; &#39; + this.getConfig().cssHideRoot);
+<a name="line259"></a>};
+<a name="line260"></a>
+<a name="line261"></a>
+<a name="line262"></a>/**
+<a name="line263"></a> * Returns the source for the icon.
+<a name="line264"></a> * @return {string} Src for the icon.
+<a name="line265"></a> */
+<a name="line266"></a>goog.ui.tree.TreeControl.prototype.getCalculatedIconClass = function() {
+<a name="line267"></a>  var expanded = this.getExpanded();
+<a name="line268"></a>  if (expanded &amp;&amp; this.expandedIconClass_) {
+<a name="line269"></a>    return this.expandedIconClass_;
+<a name="line270"></a>  }
+<a name="line271"></a>  if (!expanded &amp;&amp; this.iconClass_) {
+<a name="line272"></a>    return this.iconClass_;
+<a name="line273"></a>  }
+<a name="line274"></a>
+<a name="line275"></a>  // fall back on default icons
+<a name="line276"></a>  var config = this.getConfig();
+<a name="line277"></a>  if (expanded &amp;&amp; config.cssExpandedRootIcon) {
+<a name="line278"></a>    return config.cssTreeIcon + &#39; &#39; + config.cssExpandedRootIcon;
+<a name="line279"></a>  } else if (!expanded &amp;&amp; config.cssCollapsedRootIcon) {
+<a name="line280"></a>    return config.cssTreeIcon + &#39; &#39; + config.cssCollapsedRootIcon;
+<a name="line281"></a>  }
+<a name="line282"></a>  return &#39;&#39;;
+<a name="line283"></a>};
+<a name="line284"></a>
+<a name="line285"></a>
+<a name="line286"></a>/**
+<a name="line287"></a> * Sets the selected item.
+<a name="line288"></a> * @param {goog.ui.tree.BaseNode} node The item to select.
+<a name="line289"></a> */
+<a name="line290"></a>goog.ui.tree.TreeControl.prototype.setSelectedItem = function(node) {
+<a name="line291"></a>  if (this.selectedItem_ == node) {
+<a name="line292"></a>    return;
+<a name="line293"></a>  }
+<a name="line294"></a>
+<a name="line295"></a>  var hadFocus = false;
+<a name="line296"></a>  if (this.selectedItem_) {
+<a name="line297"></a>    hadFocus = this.selectedItem_ == this.focusedNode_;
+<a name="line298"></a>    this.selectedItem_.setSelectedInternal(false);
+<a name="line299"></a>  }
+<a name="line300"></a>
+<a name="line301"></a>  this.selectedItem_ = node;
+<a name="line302"></a>
+<a name="line303"></a>  if (node) {
+<a name="line304"></a>    node.setSelectedInternal(true);
+<a name="line305"></a>    if (hadFocus) {
+<a name="line306"></a>      node.select();
+<a name="line307"></a>    }
+<a name="line308"></a>  }
+<a name="line309"></a>
+<a name="line310"></a>  this.dispatchEvent(goog.events.EventType.CHANGE);
+<a name="line311"></a>};
+<a name="line312"></a>
+<a name="line313"></a>
+<a name="line314"></a>/**
+<a name="line315"></a> * Returns the selected item.
+<a name="line316"></a> * @return {goog.ui.tree.BaseNode} The currently selected item.
+<a name="line317"></a> */
+<a name="line318"></a>goog.ui.tree.TreeControl.prototype.getSelectedItem = function() {
+<a name="line319"></a>  return this.selectedItem_;
+<a name="line320"></a>};
+<a name="line321"></a>
+<a name="line322"></a>
+<a name="line323"></a>/**
+<a name="line324"></a> * Sets whether to show lines.
+<a name="line325"></a> * @param {boolean} b Whether to show lines.
+<a name="line326"></a> */
+<a name="line327"></a>goog.ui.tree.TreeControl.prototype.setShowLines = function(b) {
+<a name="line328"></a>  if (this.showLines_ != b) {
+<a name="line329"></a>    this.showLines_ = b;
+<a name="line330"></a>    if (this.isInDocument()) {
+<a name="line331"></a>      this.updateLinesAndExpandIcons_();
+<a name="line332"></a>    }
+<a name="line333"></a>  }
+<a name="line334"></a>};
+<a name="line335"></a>
+<a name="line336"></a>
+<a name="line337"></a>/**
+<a name="line338"></a> * @return {boolean} Whether to show lines.
+<a name="line339"></a> */
+<a name="line340"></a>goog.ui.tree.TreeControl.prototype.getShowLines = function() {
+<a name="line341"></a>  return this.showLines_;
+<a name="line342"></a>};
+<a name="line343"></a>
+<a name="line344"></a>
+<a name="line345"></a>/**
+<a name="line346"></a> * Updates the lines after the tree has been drawn.
+<a name="line347"></a> * @private
+<a name="line348"></a> */
+<a name="line349"></a>goog.ui.tree.TreeControl.prototype.updateLinesAndExpandIcons_ = function() {
+<a name="line350"></a>  var tree = this;
+<a name="line351"></a>  var showLines = tree.getShowLines();
+<a name="line352"></a>  var showRootLines = tree.getShowRootLines();
+<a name="line353"></a>  // Recursively walk through all nodes and update the class names of the
+<a name="line354"></a>  // expand icon and the children element.
+<a name="line355"></a>  function updateShowLines(node) {
+<a name="line356"></a>    var childrenEl = node.getChildrenElement();
+<a name="line357"></a>    if (childrenEl) {
+<a name="line358"></a>      var hideLines = !showLines || tree == node.getParent() &amp;&amp; !showRootLines;
+<a name="line359"></a>      var childClass = hideLines ? node.getConfig().cssChildrenNoLines :
+<a name="line360"></a>          node.getConfig().cssChildren;
+<a name="line361"></a>      childrenEl.className = childClass;
+<a name="line362"></a>
+<a name="line363"></a>      var expandIconEl = node.getExpandIconElement();
+<a name="line364"></a>      if (expandIconEl) {
+<a name="line365"></a>        expandIconEl.className = node.getExpandIconClass();
+<a name="line366"></a>      }
+<a name="line367"></a>    }
+<a name="line368"></a>    node.forEachChild(updateShowLines);
+<a name="line369"></a>  }
+<a name="line370"></a>  updateShowLines(this);
+<a name="line371"></a>};
+<a name="line372"></a>
+<a name="line373"></a>
+<a name="line374"></a>/**
+<a name="line375"></a> * Sets whether to show root lines.
+<a name="line376"></a> * @param {boolean} b Whether to show root lines.
+<a name="line377"></a> */
+<a name="line378"></a>goog.ui.tree.TreeControl.prototype.setShowRootLines = function(b) {
+<a name="line379"></a>  if (this.showRootLines_ != b) {
+<a name="line380"></a>    this.showRootLines_ = b;
+<a name="line381"></a>    if (this.isInDocument()) {
+<a name="line382"></a>      this.updateLinesAndExpandIcons_();
+<a name="line383"></a>    }
+<a name="line384"></a>  }
+<a name="line385"></a>};
+<a name="line386"></a>
+<a name="line387"></a>
+<a name="line388"></a>/**
+<a name="line389"></a> * @return {boolean} Whether to show root lines.
+<a name="line390"></a> */
+<a name="line391"></a>goog.ui.tree.TreeControl.prototype.getShowRootLines = function() {
+<a name="line392"></a>  return this.showRootLines_;
+<a name="line393"></a>};
+<a name="line394"></a>
+<a name="line395"></a>
+<a name="line396"></a>/**
+<a name="line397"></a> * Sets whether to show expand icons.
+<a name="line398"></a> * @param {boolean} b Whether to show expand icons.
+<a name="line399"></a> */
+<a name="line400"></a>goog.ui.tree.TreeControl.prototype.setShowExpandIcons = function(b) {
+<a name="line401"></a>  if (this.showExpandIcons_ != b) {
+<a name="line402"></a>    this.showExpandIcons_ = b;
+<a name="line403"></a>    if (this.isInDocument()) {
+<a name="line404"></a>      this.updateLinesAndExpandIcons_();
+<a name="line405"></a>    }
+<a name="line406"></a>  }
+<a name="line407"></a>};
+<a name="line408"></a>
+<a name="line409"></a>
+<a name="line410"></a>/**
+<a name="line411"></a> * @return {boolean} Whether to show expand icons.
+<a name="line412"></a> */
+<a name="line413"></a>goog.ui.tree.TreeControl.prototype.getShowExpandIcons = function() {
+<a name="line414"></a>  return this.showExpandIcons_;
+<a name="line415"></a>};
+<a name="line416"></a>
+<a name="line417"></a>
+<a name="line418"></a>/**
+<a name="line419"></a> * Sets whether to show the root node.
+<a name="line420"></a> * @param {boolean} b Whether to show the root node.
+<a name="line421"></a> */
+<a name="line422"></a>goog.ui.tree.TreeControl.prototype.setShowRootNode = function(b) {
+<a name="line423"></a>  if (this.showRootNode_ != b) {
+<a name="line424"></a>    this.showRootNode_ = b;
+<a name="line425"></a>    if (this.isInDocument()) {
+<a name="line426"></a>      var el = this.getRowElement();
+<a name="line427"></a>      if (el) {
+<a name="line428"></a>        el.className = this.getRowClassName();
+<a name="line429"></a>      }
+<a name="line430"></a>    }
+<a name="line431"></a>    // Ensure that we do not hide the selected item.
+<a name="line432"></a>    if (!b &amp;&amp; this.getSelectedItem() == this &amp;&amp; this.getFirstChild()) {
+<a name="line433"></a>      this.setSelectedItem(this.getFirstChild());
+<a name="line434"></a>    }
+<a name="line435"></a>  }
+<a name="line436"></a>};
+<a name="line437"></a>
+<a name="line438"></a>
+<a name="line439"></a>/**
+<a name="line440"></a> * @return {boolean} Whether to show the root node.
+<a name="line441"></a> */
+<a name="line442"></a>goog.ui.tree.TreeControl.prototype.getShowRootNode = function() {
+<a name="line443"></a>  return this.showRootNode_;
+<a name="line444"></a>};
+<a name="line445"></a>
+<a name="line446"></a>
+<a name="line447"></a>/**
+<a name="line448"></a> * Add roles and states.
+<a name="line449"></a> * @protected
+<a name="line450"></a> */
+<a name="line451"></a>goog.ui.tree.TreeControl.prototype.initAccessibility = function() {
+<a name="line452"></a>  goog.ui.tree.TreeControl.superClass_.initAccessibility.call(this);
+<a name="line453"></a>
+<a name="line454"></a>  var elt = this.getElement();
+<a name="line455"></a>  goog.dom.a11y.setRole(elt, &#39;tree&#39;);
+<a name="line456"></a>  goog.dom.a11y.setState(elt, &#39;labelledby&#39;, this.getLabelElement().id);
+<a name="line457"></a>};
+<a name="line458"></a>
+<a name="line459"></a>
+<a name="line460"></a>/** @override */
+<a name="line461"></a>goog.ui.tree.TreeControl.prototype.enterDocument = function() {
+<a name="line462"></a>  goog.ui.tree.TreeControl.superClass_.enterDocument.call(this);
+<a name="line463"></a>  var el = this.getElement();
+<a name="line464"></a>  el.className = this.getConfig().cssRoot;
+<a name="line465"></a>  el.setAttribute(&#39;hideFocus&#39;, &#39;true&#39;);
+<a name="line466"></a>  this.attachEvents_();
+<a name="line467"></a>  this.initAccessibility();
+<a name="line468"></a>};
+<a name="line469"></a>
+<a name="line470"></a>
+<a name="line471"></a>/** @override */
+<a name="line472"></a>goog.ui.tree.TreeControl.prototype.exitDocument = function() {
+<a name="line473"></a>  goog.ui.tree.TreeControl.superClass_.exitDocument.call(this);
+<a name="line474"></a>  this.detachEvents_();
+<a name="line475"></a>};
+<a name="line476"></a>
+<a name="line477"></a>
+<a name="line478"></a>/**
+<a name="line479"></a> * Adds the event listeners to the tree.
+<a name="line480"></a> * @private
+<a name="line481"></a> */
+<a name="line482"></a>goog.ui.tree.TreeControl.prototype.attachEvents_ = function() {
+<a name="line483"></a>  var el = this.getElement();
+<a name="line484"></a>  el.tabIndex = 0;
+<a name="line485"></a>
+<a name="line486"></a>  var kh = this.keyHandler_ = new goog.events.KeyHandler(el);
+<a name="line487"></a>  var fh = this.focusHandler_ = new goog.events.FocusHandler(el);
+<a name="line488"></a>
+<a name="line489"></a>  this.getHandler().
+<a name="line490"></a>      listen(fh, goog.events.FocusHandler.EventType.FOCUSOUT, this.handleBlur_).
+<a name="line491"></a>      listen(fh, goog.events.FocusHandler.EventType.FOCUSIN, this.handleFocus_).
+<a name="line492"></a>      listen(kh, goog.events.KeyHandler.EventType.KEY, this.handleKeyEvent).
+<a name="line493"></a>      listen(el, goog.events.EventType.MOUSEDOWN, this.handleMouseEvent_).
+<a name="line494"></a>      listen(el, goog.events.EventType.CLICK, this.handleMouseEvent_).
+<a name="line495"></a>      listen(el, goog.events.EventType.DBLCLICK, this.handleMouseEvent_);
+<a name="line496"></a>};
+<a name="line497"></a>
+<a name="line498"></a>
+<a name="line499"></a>/**
+<a name="line500"></a> * Removes the event listeners from the tree.
+<a name="line501"></a> * @private
+<a name="line502"></a> */
+<a name="line503"></a>goog.ui.tree.TreeControl.prototype.detachEvents_ = function() {
+<a name="line504"></a>  this.keyHandler_.dispose();
+<a name="line505"></a>  this.keyHandler_ = null;
+<a name="line506"></a>  this.focusHandler_.dispose();
+<a name="line507"></a>  this.focusHandler_ = null;
+<a name="line508"></a>};
+<a name="line509"></a>
+<a name="line510"></a>
+<a name="line511"></a>/**
+<a name="line512"></a> * Handles mouse events.
+<a name="line513"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line514"></a> * @private
+<a name="line515"></a> */
+<a name="line516"></a>goog.ui.tree.TreeControl.prototype.handleMouseEvent_ = function(e) {
+<a name="line517"></a>  this.logger_.fine(&#39;Received event &#39; + e.type);
+<a name="line518"></a>  var node = this.getNodeFromEvent_(e);
+<a name="line519"></a>  if (node) {
+<a name="line520"></a>    switch (e.type) {
+<a name="line521"></a>      case goog.events.EventType.MOUSEDOWN:
+<a name="line522"></a>        node.onMouseDown(e);
+<a name="line523"></a>        break;
+<a name="line524"></a>      case goog.events.EventType.CLICK:
+<a name="line525"></a>        node.onClick_(e);
+<a name="line526"></a>        break;
+<a name="line527"></a>      case goog.events.EventType.DBLCLICK:
+<a name="line528"></a>        node.onDoubleClick_(e);
+<a name="line529"></a>        break;
+<a name="line530"></a>    }
+<a name="line531"></a>  }
+<a name="line532"></a>};
+<a name="line533"></a>
+<a name="line534"></a>
+<a name="line535"></a>/**
+<a name="line536"></a> * Handles key down on the tree.
+<a name="line537"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line538"></a> * @return {boolean} The handled value.
+<a name="line539"></a> */
+<a name="line540"></a>goog.ui.tree.TreeControl.prototype.handleKeyEvent = function(e) {
+<a name="line541"></a>  var handled = false;
+<a name="line542"></a>
+<a name="line543"></a>  // Handle typeahead and navigation keystrokes.
+<a name="line544"></a>  handled = this.typeAhead_.handleNavigation(e) ||
+<a name="line545"></a>            (this.selectedItem_ &amp;&amp; this.selectedItem_.onKeyDown(e)) ||
+<a name="line546"></a>            this.typeAhead_.handleTypeAheadChar(e);
+<a name="line547"></a>
+<a name="line548"></a>  if (handled) {
+<a name="line549"></a>    e.preventDefault();
+<a name="line550"></a>  }
+<a name="line551"></a>
+<a name="line552"></a>  return handled;
+<a name="line553"></a>};
+<a name="line554"></a>
+<a name="line555"></a>
+<a name="line556"></a>/**
+<a name="line557"></a> * Finds the containing node given an event.
+<a name="line558"></a> * @param {!goog.events.BrowserEvent} e The browser event.
+<a name="line559"></a> * @return {goog.ui.tree.BaseNode} The containing node or null if no node is
+<a name="line560"></a> *     found.
+<a name="line561"></a> * @private
+<a name="line562"></a> */
+<a name="line563"></a>goog.ui.tree.TreeControl.prototype.getNodeFromEvent_ = function(e) {
+<a name="line564"></a>  // find the right node
+<a name="line565"></a>  var node = null;
+<a name="line566"></a>  var target = e.target;
+<a name="line567"></a>  while (target != null) {
+<a name="line568"></a>    var id = target.id;
+<a name="line569"></a>    node = goog.ui.tree.BaseNode.allNodes[id];
+<a name="line570"></a>    if (node) {
+<a name="line571"></a>      return node;
+<a name="line572"></a>    }
+<a name="line573"></a>    if (target == this.getElement()) {
+<a name="line574"></a>      break;
+<a name="line575"></a>    }
+<a name="line576"></a>    target = target.parentNode;
+<a name="line577"></a>  }
+<a name="line578"></a>  return null;
+<a name="line579"></a>};
+<a name="line580"></a>
+<a name="line581"></a>
+<a name="line582"></a>/**
+<a name="line583"></a> * Creates a new tree node using the same config as the root.
+<a name="line584"></a> * @param {string} html The html content of the node label.
+<a name="line585"></a> * @return {goog.ui.tree.TreeNode} The new item.
+<a name="line586"></a> */
+<a name="line587"></a>goog.ui.tree.TreeControl.prototype.createNode = function(html) {
+<a name="line588"></a>  // Some projects call createNode without arguments which causes failure.
+<a name="line589"></a>  // See http://goto/misuse-createnode
+<a name="line590"></a>  // TODO(user): Fix them and remove the html || &#39;&#39; workaround.
+<a name="line591"></a>  return new goog.ui.tree.TreeNode(html || &#39;&#39;, this.getConfig(),
+<a name="line592"></a>      this.getDomHelper());
+<a name="line593"></a>};
+<a name="line594"></a>
+<a name="line595"></a>
+<a name="line596"></a>/**
+<a name="line597"></a> * Allows the caller to notify that the given node has been added or just had
+<a name="line598"></a> * been updated in the tree.
+<a name="line599"></a> * @param {goog.ui.tree.BaseNode} node New node being added or existing node
+<a name="line600"></a> *    that just had been updated.
+<a name="line601"></a> */
+<a name="line602"></a>goog.ui.tree.TreeControl.prototype.setNode = function(node) {
+<a name="line603"></a>  this.typeAhead_.setNodeInMap(node);
+<a name="line604"></a>};
+<a name="line605"></a>
+<a name="line606"></a>
+<a name="line607"></a>/**
+<a name="line608"></a> * Allows the caller to notify that the given node is being removed from the
+<a name="line609"></a> * tree.
+<a name="line610"></a> * @param {goog.ui.tree.BaseNode} node Node being removed.
+<a name="line611"></a> */
+<a name="line612"></a>goog.ui.tree.TreeControl.prototype.removeNode = function(node) {
+<a name="line613"></a>  this.typeAhead_.removeNodeFromMap(node);
+<a name="line614"></a>};
+<a name="line615"></a>
+<a name="line616"></a>
+<a name="line617"></a>/**
+<a name="line618"></a> * Clear the typeahead buffer.
+<a name="line619"></a> */
+<a name="line620"></a>goog.ui.tree.TreeControl.prototype.clearTypeAhead = function() {
+<a name="line621"></a>  this.typeAhead_.clear();
+<a name="line622"></a>};
+<a name="line623"></a>
+<a name="line624"></a>
+<a name="line625"></a>/**
+<a name="line626"></a> * A default configuration for the tree.
+<a name="line627"></a> */
+<a name="line628"></a>goog.ui.tree.TreeControl.defaultConfig = {
+<a name="line629"></a>  cleardotPath: &#39;images/cleardot.gif&#39;,
+<a name="line630"></a>  indentWidth: 19,
+<a name="line631"></a>  cssRoot: goog.getCssName(&#39;goog-tree-root&#39;) + &#39; &#39; +
+<a name="line632"></a>      goog.getCssName(&#39;goog-tree-item&#39;),
+<a name="line633"></a>  cssHideRoot: goog.getCssName(&#39;goog-tree-hide-root&#39;),
+<a name="line634"></a>  cssItem: goog.getCssName(&#39;goog-tree-item&#39;),
+<a name="line635"></a>  cssChildren: goog.getCssName(&#39;goog-tree-children&#39;),
+<a name="line636"></a>  cssChildrenNoLines: goog.getCssName(&#39;goog-tree-children-nolines&#39;),
+<a name="line637"></a>  cssTreeRow: goog.getCssName(&#39;goog-tree-row&#39;),
+<a name="line638"></a>  cssItemLabel: goog.getCssName(&#39;goog-tree-item-label&#39;),
+<a name="line639"></a>  cssTreeIcon: goog.getCssName(&#39;goog-tree-icon&#39;),
+<a name="line640"></a>  cssExpandTreeIcon: goog.getCssName(&#39;goog-tree-expand-icon&#39;),
+<a name="line641"></a>  cssExpandTreeIconPlus: goog.getCssName(&#39;goog-tree-expand-icon-plus&#39;),
+<a name="line642"></a>  cssExpandTreeIconMinus: goog.getCssName(&#39;goog-tree-expand-icon-minus&#39;),
+<a name="line643"></a>  cssExpandTreeIconTPlus: goog.getCssName(&#39;goog-tree-expand-icon-tplus&#39;),
+<a name="line644"></a>  cssExpandTreeIconTMinus: goog.getCssName(&#39;goog-tree-expand-icon-tminus&#39;),
+<a name="line645"></a>  cssExpandTreeIconLPlus: goog.getCssName(&#39;goog-tree-expand-icon-lplus&#39;),
+<a name="line646"></a>  cssExpandTreeIconLMinus: goog.getCssName(&#39;goog-tree-expand-icon-lminus&#39;),
+<a name="line647"></a>  cssExpandTreeIconT: goog.getCssName(&#39;goog-tree-expand-icon-t&#39;),
+<a name="line648"></a>  cssExpandTreeIconL: goog.getCssName(&#39;goog-tree-expand-icon-l&#39;),
+<a name="line649"></a>  cssExpandTreeIconBlank: goog.getCssName(&#39;goog-tree-expand-icon-blank&#39;),
+<a name="line650"></a>  cssExpandedFolderIcon: goog.getCssName(&#39;goog-tree-expanded-folder-icon&#39;),
+<a name="line651"></a>  cssCollapsedFolderIcon: goog.getCssName(&#39;goog-tree-collapsed-folder-icon&#39;),
+<a name="line652"></a>  cssFileIcon: goog.getCssName(&#39;goog-tree-file-icon&#39;),
+<a name="line653"></a>  cssExpandedRootIcon: goog.getCssName(&#39;goog-tree-expanded-folder-icon&#39;),
+<a name="line654"></a>  cssCollapsedRootIcon: goog.getCssName(&#39;goog-tree-collapsed-folder-icon&#39;),
+<a name="line655"></a>  cssSelectedRow: goog.getCssName(&#39;selected&#39;)
+<a name="line656"></a>};
+</pre>
+
+
+</body>
+</html>

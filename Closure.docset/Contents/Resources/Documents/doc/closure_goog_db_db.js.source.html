@@ -1,0 +1,128 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>db.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_db_db.js.html">db.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Wrappers for the HTML5 IndexedDB. The wrappers export nearly
+<a name="line17"></a> * the same interface as the standard API, but return goog.async.Deferred
+<a name="line18"></a> * objects instead of request objects and use Closure events. The wrapper works
+<a name="line19"></a> * and has been tested on Chrome version 14+. Though they should work in theory,
+<a name="line20"></a> * the wrapper tests fail in strange, non-deterministic ways on Firefox 6,
+<a name="line21"></a> * unfortunately.
+<a name="line22"></a> *
+<a name="line23"></a> * Example usage:
+<a name="line24"></a> *
+<a name="line25"></a> *  &lt;code&gt;
+<a name="line26"></a> *  goog.db.openDatabase(&#39;mydb&#39;).addCallback(function(db) {
+<a name="line27"></a> *    return db.setVersion(&#39;1.0&#39;).addCallback(function(tx) {
+<a name="line28"></a> *      db.createObjectStore(&#39;mystore&#39;);
+<a name="line29"></a> *      // restart to see our structure changes
+<a name="line30"></a> *      return goog.db.openDatabase(&#39;mydb&#39;);
+<a name="line31"></a> *    });
+<a name="line32"></a> *  }).addCallback(function(db) {
+<a name="line33"></a> *    var putTx = db.createTransaction(
+<a name="line34"></a> *        [],
+<a name="line35"></a> *        goog.db.Transaction.TransactionMode.READ_WRITE);
+<a name="line36"></a> *    var store = putTx.objectStore(&#39;mystore&#39;);
+<a name="line37"></a> *    store.put(&#39;value&#39;, &#39;key&#39;);
+<a name="line38"></a> *    goog.listen(putTx, goog.db.Transaction.EventTypes.COMPLETE, function() {
+<a name="line39"></a> *      var getTx = db.createTransaction([]);
+<a name="line40"></a> *      var request = getTx.objectStore(&#39;mystore&#39;).get(&#39;key&#39;);
+<a name="line41"></a> *      request.addCallback(function(result) {
+<a name="line42"></a> *        ...
+<a name="line43"></a> *      });
+<a name="line44"></a> *  });
+<a name="line45"></a> *  &lt;/code&gt;
+<a name="line46"></a> *
+<a name="line47"></a> */
+<a name="line48"></a>
+<a name="line49"></a>
+<a name="line50"></a>goog.provide(&#39;goog.db&#39;);
+<a name="line51"></a>
+<a name="line52"></a>goog.require(&#39;goog.async.Deferred&#39;);
+<a name="line53"></a>goog.require(&#39;goog.db.IndexedDb&#39;);
+<a name="line54"></a>
+<a name="line55"></a>
+<a name="line56"></a>/**
+<a name="line57"></a> * Opens a database connection and wraps it.
+<a name="line58"></a> *
+<a name="line59"></a> * @param {string} name The name of the database to open.
+<a name="line60"></a> * @return {!goog.async.Deferred} The deferred database object.
+<a name="line61"></a> */
+<a name="line62"></a>goog.db.openDatabase = function(name) {
+<a name="line63"></a>  var indexedDb = goog.global.indexedDB || goog.global.mozIndexedDB ||
+<a name="line64"></a>      goog.global.webkitIndexedDB || goog.global.moz_indexedDB;
+<a name="line65"></a>
+<a name="line66"></a>  var d = new goog.async.Deferred();
+<a name="line67"></a>  var openRequest = indexedDb.open(name);
+<a name="line68"></a>  openRequest.onsuccess = function(ev) {
+<a name="line69"></a>    var db = new goog.db.IndexedDb(ev.target.result);
+<a name="line70"></a>    d.callback(db);
+<a name="line71"></a>  };
+<a name="line72"></a>  openRequest.onerror = function(ev) {
+<a name="line73"></a>    var msg = &#39;opening database &#39; + name;
+<a name="line74"></a>    d.errback(new goog.db.Error(ev.target.code, msg));
+<a name="line75"></a>  };
+<a name="line76"></a>  return d;
+<a name="line77"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>cssom.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_cssom_cssom.js.html">cssom.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview CSS Object Model helper functions.
+<a name="line17"></a> * References:
+<a name="line18"></a> * - W3C: http://dev.w3.org/csswg/cssom/
+<a name="line19"></a> * - MSDN: http://msdn.microsoft.com/en-us/library/ms531209(VS.85).aspx.
+<a name="line20"></a> * @supported in FF3, IE6, IE7, Safari 3.1.2, Chrome
+<a name="line21"></a> * TODO(user): Fix in Opera.
+<a name="line22"></a> * TODO(user): Consider hacking page, media, etc.. to work.
+<a name="line23"></a> *     This would be pretty challenging. IE returns the text for any rule
+<a name="line24"></a> *     regardless of whether or not the media is correct or not. Firefox at
+<a name="line25"></a> *     least supports CSSRule.type to figure out if it&#39;s a media type and then
+<a name="line26"></a> *     we could do something interesting, but IE offers no way for us to tell.
+<a name="line27"></a> */
+<a name="line28"></a>
+<a name="line29"></a>goog.provide(&#39;goog.cssom&#39;);
+<a name="line30"></a>goog.provide(&#39;goog.cssom.CssRuleType&#39;);
+<a name="line31"></a>
+<a name="line32"></a>goog.require(&#39;goog.array&#39;);
+<a name="line33"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>/**
+<a name="line37"></a> * Enumeration of {@code CSSRule} types.
+<a name="line38"></a> * @enum {number}
+<a name="line39"></a> */
+<a name="line40"></a>goog.cssom.CssRuleType = {
+<a name="line41"></a>  STYLE: 1,
+<a name="line42"></a>  IMPORT: 3,
+<a name="line43"></a>  MEDIA: 4,
+<a name="line44"></a>  FONT_FACE: 5,
+<a name="line45"></a>  PAGE: 6,
+<a name="line46"></a>  NAMESPACE: 7
+<a name="line47"></a>};
+<a name="line48"></a>
+<a name="line49"></a>
+<a name="line50"></a>/**
+<a name="line51"></a> * Recursively gets all CSS as text, optionally starting from a given
+<a name="line52"></a> * CSSStyleSheet.
+<a name="line53"></a> * @param {CSSStyleSheet=} opt_styleSheet The CSSStyleSheet.
+<a name="line54"></a> * @return {string} css text.
+<a name="line55"></a> */
+<a name="line56"></a>goog.cssom.getAllCssText = function(opt_styleSheet) {
+<a name="line57"></a>  var styleSheet = opt_styleSheet || document.styleSheets;
+<a name="line58"></a>  return /** @type {string} */ (goog.cssom.getAllCss_(styleSheet, true));
+<a name="line59"></a>};
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Recursively gets all CSSStyleRules, optionally starting from a given
+<a name="line64"></a> * CSSStyleSheet.
+<a name="line65"></a> * Note that this excludes any CSSImportRules, CSSMediaRules, etc..
+<a name="line66"></a> * @param {CSSStyleSheet=} opt_styleSheet The CSSStyleSheet.
+<a name="line67"></a> * @return {Array.&lt;CSSStyleRule&gt;} A list of CSSStyleRules.
+<a name="line68"></a> */
+<a name="line69"></a>goog.cssom.getAllCssStyleRules = function(opt_styleSheet) {
+<a name="line70"></a>  var styleSheet = opt_styleSheet || document.styleSheets;
+<a name="line71"></a>  return /** @type {Array.&lt;CSSStyleRule&gt;} */ (
+<a name="line72"></a>      goog.cssom.getAllCss_(styleSheet, false));
+<a name="line73"></a>};
+<a name="line74"></a>
+<a name="line75"></a>
+<a name="line76"></a>/**
+<a name="line77"></a> * Returns the CSSRules from a styleSheet.
+<a name="line78"></a> * Worth noting here is that IE and FF differ in terms of what they will return.
+<a name="line79"></a> * Firefox will return styleSheet.cssRules, which includes ImportRules and
+<a name="line80"></a> * anything which implements the CSSRules interface. IE returns simply a list of
+<a name="line81"></a> * CSSRules.
+<a name="line82"></a> * @param {CSSStyleSheet} styleSheet The CSSStyleSheet.
+<a name="line83"></a> * @throws {Error} If we cannot access the rules on a stylesheet object - this
+<a name="line84"></a> *     can  happen if a stylesheet object&#39;s rules are accessed before the rules
+<a name="line85"></a> *     have been downloaded and parsed and are &quot;ready&quot;.
+<a name="line86"></a> * @return {CSSRuleList} An array of CSSRules or null.
+<a name="line87"></a> */
+<a name="line88"></a>goog.cssom.getCssRulesFromStyleSheet = function(styleSheet) {
+<a name="line89"></a>  var cssRuleList = null;
+<a name="line90"></a>  try {
+<a name="line91"></a>    // IE is .rules, W3c is cssRules.
+<a name="line92"></a>    cssRuleList = styleSheet.rules || styleSheet.cssRules;
+<a name="line93"></a>  } catch (e) {
+<a name="line94"></a>    // This can happen if we try to access the CSSOM before it&#39;s &quot;ready&quot;.
+<a name="line95"></a>    if (e.code == 15) {
+<a name="line96"></a>      // Firefox throws an NS_ERROR_DOM_INVALID_ACCESS_ERR error if a stylesheet
+<a name="line97"></a>      // is read before it has been fully parsed. Let the caller know which
+<a name="line98"></a>      // stylesheet failed.
+<a name="line99"></a>      e.styleSheet = styleSheet;
+<a name="line100"></a>      throw e;
+<a name="line101"></a>    }
+<a name="line102"></a>  }
+<a name="line103"></a>  return cssRuleList;
+<a name="line104"></a>};
+<a name="line105"></a>
+<a name="line106"></a>
+<a name="line107"></a>/**
+<a name="line108"></a> * Gets all CSSStyleSheet objects starting from some CSSStyleSheet. Note that we
+<a name="line109"></a> * want to return the sheets in the order of the cascade, therefore if we
+<a name="line110"></a> * encounter an import, we will splice that CSSStyleSheet object in front of
+<a name="line111"></a> * the CSSStyleSheet that contains it in the returned array of CSSStyleSheets.
+<a name="line112"></a> * @param {CSSStyleSheet=} opt_styleSheet A CSSStyleSheet.
+<a name="line113"></a> * @param {boolean=} opt_includeDisabled If true, includes disabled stylesheets,
+<a name="line114"></a> *    defaults to false.
+<a name="line115"></a> * @return {Array.&lt;CSSStyleSheet&gt;} A list of CSSStyleSheet objects.
+<a name="line116"></a> */
+<a name="line117"></a>goog.cssom.getAllCssStyleSheets = function(opt_styleSheet,
+<a name="line118"></a>    opt_includeDisabled) {
+<a name="line119"></a>  var styleSheetsOutput = [];
+<a name="line120"></a>  var styleSheet = opt_styleSheet || document.styleSheets;
+<a name="line121"></a>  var includeDisabled = goog.isDef(opt_includeDisabled) ? opt_includeDisabled :
+<a name="line122"></a>      false;
+<a name="line123"></a>
+<a name="line124"></a>  // Imports need to go first.
+<a name="line125"></a>  if (styleSheet.imports &amp;&amp; styleSheet.imports.length) {
+<a name="line126"></a>    for (var i = 0, n = styleSheet.imports.length; i &lt; n; i++) {
+<a name="line127"></a>      goog.array.extend(styleSheetsOutput,
+<a name="line128"></a>          goog.cssom.getAllCssStyleSheets(styleSheet.imports[i]));
+<a name="line129"></a>    }
+<a name="line130"></a>
+<a name="line131"></a>  } else if (styleSheet.length) {
+<a name="line132"></a>    // In case we get a StyleSheetList object.
+<a name="line133"></a>    // http://dev.w3.org/csswg/cssom/#the-stylesheetlist
+<a name="line134"></a>    for (var i = 0, n = styleSheet.length; i &lt; n; i++) {
+<a name="line135"></a>      goog.array.extend(styleSheetsOutput,
+<a name="line136"></a>          goog.cssom.getAllCssStyleSheets(styleSheet[i]));
+<a name="line137"></a>    }
+<a name="line138"></a>  } else {
+<a name="line139"></a>    // We need to walk through rules in browsers which implement .cssRules
+<a name="line140"></a>    // to see if there are styleSheets buried in there.
+<a name="line141"></a>    // If we have a CSSStyleSheet within CssRules.
+<a name="line142"></a>    var cssRuleList = goog.cssom.getCssRulesFromStyleSheet(styleSheet);
+<a name="line143"></a>    if (cssRuleList &amp;&amp; cssRuleList.length) {
+<a name="line144"></a>      // Chrome does not evaluate cssRuleList[i] to undefined when i &gt;=n;
+<a name="line145"></a>      // so we use a (i &lt; n) check instead of cssRuleList[i] in the loop below
+<a name="line146"></a>      // and in other places where we iterate over a rules list.
+<a name="line147"></a>      // See issue # 5917 in Chromium.
+<a name="line148"></a>      for (var i = 0, n = cssRuleList.length, cssRule; i &lt; n; i++) {
+<a name="line149"></a>        cssRule = cssRuleList[i];
+<a name="line150"></a>        // There are more stylesheets to get on this object..
+<a name="line151"></a>        if (cssRule.styleSheet) {
+<a name="line152"></a>          goog.array.extend(styleSheetsOutput,
+<a name="line153"></a>              goog.cssom.getAllCssStyleSheets(cssRule.styleSheet));
+<a name="line154"></a>        }
+<a name="line155"></a>      }
+<a name="line156"></a>    }
+<a name="line157"></a>  }
+<a name="line158"></a>
+<a name="line159"></a>  // This is a CSSStyleSheet. (IE uses .rules, W3c and Opera cssRules.)
+<a name="line160"></a>  if ((styleSheet.type || styleSheet.rules || styleSheet.cssRules) &amp;&amp;
+<a name="line161"></a>      (!styleSheet.disabled || includeDisabled)) {
+<a name="line162"></a>    styleSheetsOutput.push(styleSheet);
+<a name="line163"></a>  }
+<a name="line164"></a>
+<a name="line165"></a>  return styleSheetsOutput;
+<a name="line166"></a>};
+<a name="line167"></a>
+<a name="line168"></a>
+<a name="line169"></a>/**
+<a name="line170"></a> * Gets the cssText from a CSSRule object cross-browserly.
+<a name="line171"></a> * @param {CSSRule} cssRule A CSSRule.
+<a name="line172"></a> * @return {string} cssText The text for the rule, including the selector.
+<a name="line173"></a> */
+<a name="line174"></a>goog.cssom.getCssTextFromCssRule = function(cssRule) {
+<a name="line175"></a>  var cssText = &#39;&#39;;
+<a name="line176"></a>
+<a name="line177"></a>  if (cssRule.cssText) {
+<a name="line178"></a>    // W3C.
+<a name="line179"></a>    cssText = cssRule.cssText;
+<a name="line180"></a>  } else if (cssRule.style &amp;&amp; cssRule.style.cssText &amp;&amp; cssRule.selectorText) {
+<a name="line181"></a>    // IE: The spacing here is intended to make the result consistent with
+<a name="line182"></a>    // FF and Webkit.
+<a name="line183"></a>    // We also remove the special properties that we may have added in
+<a name="line184"></a>    // getAllCssStyleRules since IE includes those in the cssText.
+<a name="line185"></a>    var styleCssText = cssRule.style.cssText.
+<a name="line186"></a>        replace(/\s*-closure-parent-stylesheet:\s*\[object\];?\s*/gi, &#39;&#39;).
+<a name="line187"></a>        replace(/\s*-closure-rule-index:\s*[\d]+;?\s*/gi, &#39;&#39;);
+<a name="line188"></a>    var thisCssText = cssRule.selectorText + &#39; { &#39; + styleCssText + &#39; }&#39;;
+<a name="line189"></a>    cssText = thisCssText;
+<a name="line190"></a>  }
+<a name="line191"></a>
+<a name="line192"></a>  return cssText;
+<a name="line193"></a>};
+<a name="line194"></a>
+<a name="line195"></a>
+<a name="line196"></a>/**
+<a name="line197"></a> * Get the index of the CSSRule in it&#39;s CSSStyleSheet.
+<a name="line198"></a> * @param {CSSRule} cssRule A CSSRule.
+<a name="line199"></a> * @param {CSSStyleSheet=} opt_parentStyleSheet A reference to the stylesheet
+<a name="line200"></a> *     object this cssRule belongs to.
+<a name="line201"></a> * @throws {Error} When we cannot get the parentStyleSheet.
+<a name="line202"></a> * @return {number} The index of the CSSRule, or -1.
+<a name="line203"></a> */
+<a name="line204"></a>goog.cssom.getCssRuleIndexInParentStyleSheet = function(cssRule,
+<a name="line205"></a>    opt_parentStyleSheet) {
+<a name="line206"></a>  // Look for our special style.ruleIndex property from getAllCss.
+<a name="line207"></a>  if (cssRule.style &amp;&amp; cssRule.style[&#39;-closure-rule-index&#39;]) {
+<a name="line208"></a>    return cssRule.style[&#39;-closure-rule-index&#39;];
+<a name="line209"></a>  }
+<a name="line210"></a>
+<a name="line211"></a>  var parentStyleSheet = opt_parentStyleSheet ||
+<a name="line212"></a>      goog.cssom.getParentStyleSheet(cssRule);
+<a name="line213"></a>
+<a name="line214"></a>  if (!parentStyleSheet) {
+<a name="line215"></a>    // We could call getAllCssStyleRules() here to get our special indexes on
+<a name="line216"></a>    // the style object, but that seems like it could be wasteful.
+<a name="line217"></a>    throw Error(&#39;Cannot find a parentStyleSheet.&#39;);
+<a name="line218"></a>  }
+<a name="line219"></a>
+<a name="line220"></a>  var cssRuleList = goog.cssom.getCssRulesFromStyleSheet(parentStyleSheet);
+<a name="line221"></a>  if (cssRuleList &amp;&amp; cssRuleList.length) {
+<a name="line222"></a>    for (var i = 0, n = cssRuleList.length, thisCssRule; i &lt; n; i++) {
+<a name="line223"></a>      thisCssRule = cssRuleList[i];
+<a name="line224"></a>      if (thisCssRule == cssRule) {
+<a name="line225"></a>        return i;
+<a name="line226"></a>      }
+<a name="line227"></a>    }
+<a name="line228"></a>  }
+<a name="line229"></a>  return -1;
+<a name="line230"></a>};
+<a name="line231"></a>
+<a name="line232"></a>
+<a name="line233"></a>/**
+<a name="line234"></a> * We do some trickery in getAllCssStyleRules that hacks this in for IE.
+<a name="line235"></a> * If the cssRule object isn&#39;t coming from a result of that function call, this
+<a name="line236"></a> * method will return undefined in IE.
+<a name="line237"></a> * @param {CSSRule} cssRule The CSSRule.
+<a name="line238"></a> * @return {CSSStyleSheet} A styleSheet object.
+<a name="line239"></a> */
+<a name="line240"></a>goog.cssom.getParentStyleSheet = function(cssRule) {
+<a name="line241"></a>  return cssRule.parentStyleSheet ||
+<a name="line242"></a>      cssRule.style[&#39;-closure-parent-stylesheet&#39;];
+<a name="line243"></a>};
+<a name="line244"></a>
+<a name="line245"></a>
+<a name="line246"></a>/**
+<a name="line247"></a> * Replace a cssRule with some cssText for a new rule.
+<a name="line248"></a> * If the cssRule object is not one of objects returned by
+<a name="line249"></a> * getAllCssStyleRules, then you&#39;ll need to provide both the styleSheet and
+<a name="line250"></a> * possibly the index, since we can&#39;t infer them from the standard cssRule
+<a name="line251"></a> * object in IE. We do some trickery in getAllCssStyleRules to hack this in.
+<a name="line252"></a> * @param {CSSRule} cssRule A CSSRule.
+<a name="line253"></a> * @param {string} cssText The text for the new CSSRule.
+<a name="line254"></a> * @param {CSSStyleSheet=} opt_parentStyleSheet A reference to the stylesheet
+<a name="line255"></a> *     object this cssRule belongs to.
+<a name="line256"></a> * @param {number=} opt_index The index of the cssRule in its parentStylesheet.
+<a name="line257"></a> * @throws {Error} If we cannot find a parentStyleSheet.
+<a name="line258"></a> * @throws {Error} If we cannot find a css rule index.
+<a name="line259"></a> */
+<a name="line260"></a>goog.cssom.replaceCssRule = function(cssRule, cssText, opt_parentStyleSheet,
+<a name="line261"></a>    opt_index) {
+<a name="line262"></a>  var parentStyleSheet = opt_parentStyleSheet ||
+<a name="line263"></a>      goog.cssom.getParentStyleSheet(cssRule);
+<a name="line264"></a>  if (parentStyleSheet) {
+<a name="line265"></a>    var index = opt_index &gt;= 0 ? opt_index :
+<a name="line266"></a>        goog.cssom.getCssRuleIndexInParentStyleSheet(cssRule, parentStyleSheet);
+<a name="line267"></a>    if (index &gt;= 0) {
+<a name="line268"></a>      goog.cssom.removeCssRule(parentStyleSheet, index);
+<a name="line269"></a>      goog.cssom.addCssRule(parentStyleSheet, cssText, index);
+<a name="line270"></a>    } else {
+<a name="line271"></a>      throw Error(&#39;Cannot proceed without the index of the cssRule.&#39;);
+<a name="line272"></a>    }
+<a name="line273"></a>  } else {
+<a name="line274"></a>    throw Error(&#39;Cannot proceed without the parentStyleSheet.&#39;);
+<a name="line275"></a>  }
+<a name="line276"></a>};
+<a name="line277"></a>
+<a name="line278"></a>
+<a name="line279"></a>/**
+<a name="line280"></a> * Cross browser function to add a CSSRule into a CSSStyleSheet, optionally
+<a name="line281"></a> * at a given index.
+<a name="line282"></a> * @param {CSSStyleSheet} cssStyleSheet The CSSRule&#39;s parentStyleSheet.
+<a name="line283"></a> * @param {string} cssText The text for the new CSSRule.
+<a name="line284"></a> * @param {number=} opt_index The index of the cssRule in its parentStylesheet.
+<a name="line285"></a> * @throws {Error} If the css rule text appears to be ill-formatted.
+<a name="line286"></a> * TODO(bowdidge): Inserting at index 0 fails on Firefox 2 and 3 with an
+<a name="line287"></a> *     exception warning &quot;Node cannot be inserted at the specified point in
+<a name="line288"></a> *     the hierarchy.&quot;
+<a name="line289"></a> */
+<a name="line290"></a>goog.cssom.addCssRule = function(cssStyleSheet, cssText, opt_index) {
+<a name="line291"></a>  var index = opt_index;
+<a name="line292"></a>  if (index &lt; 0 || index == undefined) {
+<a name="line293"></a>    // If no index specified, insert at the end of the current list
+<a name="line294"></a>    // of rules.
+<a name="line295"></a>    // If on IE, use rules property, otherwise use cssRules property.
+<a name="line296"></a>    var rules = cssStyleSheet.rules || cssStyleSheet.cssRules;
+<a name="line297"></a>    index = rules.length;
+<a name="line298"></a>  }
+<a name="line299"></a>  if (cssStyleSheet.insertRule) {
+<a name="line300"></a>    // W3C.
+<a name="line301"></a>    cssStyleSheet.insertRule(cssText, index);
+<a name="line302"></a>
+<a name="line303"></a>  } else {
+<a name="line304"></a>    // IE: We have to parse the cssRule text to get the selector separated
+<a name="line305"></a>    // from the style text.
+<a name="line306"></a>    // aka Everything that isn&#39;t a colon, followed by a colon, then
+<a name="line307"></a>    // the rest is the style part.
+<a name="line308"></a>    var matches = /^([^\{]+)\{([^\{]+)\}/.exec(cssText);
+<a name="line309"></a>    if (matches.length == 3) {
+<a name="line310"></a>      var selector = matches[1];
+<a name="line311"></a>      var style = matches[2];
+<a name="line312"></a>      cssStyleSheet.addRule(selector, style, index);
+<a name="line313"></a>    } else {
+<a name="line314"></a>      throw Error(&#39;Your CSSRule appears to be ill-formatted.&#39;);
+<a name="line315"></a>    }
+<a name="line316"></a>  }
+<a name="line317"></a>};
+<a name="line318"></a>
+<a name="line319"></a>
+<a name="line320"></a>/**
+<a name="line321"></a> * Cross browser function to remove a CSSRule in a CSSStyleSheet at an index.
+<a name="line322"></a> * @param {CSSStyleSheet} cssStyleSheet The CSSRule&#39;s parentStyleSheet.
+<a name="line323"></a> * @param {number} index The CSSRule&#39;s index in the parentStyleSheet.
+<a name="line324"></a> */
+<a name="line325"></a>goog.cssom.removeCssRule = function(cssStyleSheet, index) {
+<a name="line326"></a>  if (cssStyleSheet.deleteRule) {
+<a name="line327"></a>    // W3C.
+<a name="line328"></a>    cssStyleSheet.deleteRule(index);
+<a name="line329"></a>
+<a name="line330"></a>  } else {
+<a name="line331"></a>    // IE.
+<a name="line332"></a>    cssStyleSheet.removeRule(index);
+<a name="line333"></a>  }
+<a name="line334"></a>};
+<a name="line335"></a>
+<a name="line336"></a>
+<a name="line337"></a>/**
+<a name="line338"></a> * Appends a DOM node to HEAD containing the css text that&#39;s passed in.
+<a name="line339"></a> * @param {string} cssText CSS to add to the end of the document.
+<a name="line340"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper user for
+<a name="line341"></a> *     document interactions.
+<a name="line342"></a> * @return {Element} The newly created STYLE element.
+<a name="line343"></a> */
+<a name="line344"></a>goog.cssom.addCssText = function(cssText, opt_domHelper) {
+<a name="line345"></a>  var document = opt_domHelper ? opt_domHelper.getDocument() :
+<a name="line346"></a>      goog.dom.getDocument();
+<a name="line347"></a>  var cssNode = document.createElement(&#39;style&#39;);
+<a name="line348"></a>  cssNode.type = &#39;text/css&#39;;
+<a name="line349"></a>  var head = document.getElementsByTagName(&#39;head&#39;)[0];
+<a name="line350"></a>  head.appendChild(cssNode);
+<a name="line351"></a>  if (cssNode.styleSheet) {
+<a name="line352"></a>    // IE.
+<a name="line353"></a>    cssNode.styleSheet.cssText = cssText;
+<a name="line354"></a>  } else {
+<a name="line355"></a>    // W3C.
+<a name="line356"></a>    var cssTextNode = document.createTextNode(cssText);
+<a name="line357"></a>    cssNode.appendChild(cssTextNode);
+<a name="line358"></a>  }
+<a name="line359"></a>  return cssNode;
+<a name="line360"></a>};
+<a name="line361"></a>
+<a name="line362"></a>
+<a name="line363"></a>/**
+<a name="line364"></a> * Cross browser method to get the filename from the StyleSheet&#39;s href.
+<a name="line365"></a> * Explorer only returns the filename in the href, while other agents return
+<a name="line366"></a> * the full path.
+<a name="line367"></a> * @param {!StyleSheet} styleSheet Any valid StyleSheet object with an href.
+<a name="line368"></a> * @throws {Error} When there&#39;s no href property found.
+<a name="line369"></a> * @return {?string} filename The filename, or null if not an external
+<a name="line370"></a> *    styleSheet.
+<a name="line371"></a> */
+<a name="line372"></a>goog.cssom.getFileNameFromStyleSheet = function(styleSheet) {
+<a name="line373"></a>  var href = styleSheet.href;
+<a name="line374"></a>
+<a name="line375"></a>  // Another IE/FF difference. IE returns an empty string, while FF and others
+<a name="line376"></a>  // return null for CSSStyleSheets not from an external file.
+<a name="line377"></a>  if (!href) {
+<a name="line378"></a>    return null;
+<a name="line379"></a>  }
+<a name="line380"></a>
+<a name="line381"></a>  // We need the regexp to ensure we get the filename minus any query params.
+<a name="line382"></a>  var matches = /([^\/\?]+)[^\/]*$/.exec(href);
+<a name="line383"></a>  var filename = matches[1];
+<a name="line384"></a>  return filename;
+<a name="line385"></a>};
+<a name="line386"></a>
+<a name="line387"></a>
+<a name="line388"></a>/**
+<a name="line389"></a> * Recursively gets all CSS text or rules.
+<a name="line390"></a> * @param {CSSStyleSheet} styleSheet The CSSStyleSheet.
+<a name="line391"></a> * @param {boolean} isTextOutput If true, output is cssText, otherwise cssRules.
+<a name="line392"></a> * @return {string|Array.&lt;CSSRule&gt;} cssText or cssRules.
+<a name="line393"></a> * @private
+<a name="line394"></a> */
+<a name="line395"></a>goog.cssom.getAllCss_ = function(styleSheet, isTextOutput) {
+<a name="line396"></a>  var cssOut = [];
+<a name="line397"></a>  var styleSheets = goog.cssom.getAllCssStyleSheets(styleSheet);
+<a name="line398"></a>
+<a name="line399"></a>  for (var i = 0; styleSheet = styleSheets[i]; i++) {
+<a name="line400"></a>    var cssRuleList = goog.cssom.getCssRulesFromStyleSheet(styleSheet);
+<a name="line401"></a>
+<a name="line402"></a>    if (cssRuleList &amp;&amp; cssRuleList.length) {
+<a name="line403"></a>
+<a name="line404"></a>      // We&#39;re going to track cssRule index if we want rule output.
+<a name="line405"></a>      if (!isTextOutput) {
+<a name="line406"></a>        var ruleIndex = 0;
+<a name="line407"></a>      }
+<a name="line408"></a>
+<a name="line409"></a>      for (var j = 0, n = cssRuleList.length, cssRule; j &lt; n; j++) {
+<a name="line410"></a>        cssRule = cssRuleList[j];
+<a name="line411"></a>        // Gets cssText output, ignoring CSSImportRules.
+<a name="line412"></a>        if (isTextOutput &amp;&amp; !cssRule.href) {
+<a name="line413"></a>          var res = goog.cssom.getCssTextFromCssRule(cssRule);
+<a name="line414"></a>          cssOut.push(res);
+<a name="line415"></a>
+<a name="line416"></a>        } else if (!cssRule.href) {
+<a name="line417"></a>          // Gets cssRules output, ignoring CSSImportRules.
+<a name="line418"></a>          if (cssRule.style) {
+<a name="line419"></a>            // This is a fun little hack to get parentStyleSheet into the rule
+<a name="line420"></a>            // object for IE since it failed to implement rule.parentStyleSheet.
+<a name="line421"></a>            // We can later read this property when doing things like hunting
+<a name="line422"></a>            // for indexes in order to delete a given CSSRule.
+<a name="line423"></a>            // Unfortunately we have to use the style object to store these
+<a name="line424"></a>            // pieces of info since the rule object is read-only.
+<a name="line425"></a>            if (!cssRule.parentStyleSheet) {
+<a name="line426"></a>              cssRule.style[&#39;-closure-parent-stylesheet&#39;] = styleSheet;
+<a name="line427"></a>            }
+<a name="line428"></a>
+<a name="line429"></a>            // This is a hack to help with possible removal of the rule later,
+<a name="line430"></a>            // where we just append the rule&#39;s index in its parentStyleSheet
+<a name="line431"></a>            // onto the style object as a property.
+<a name="line432"></a>            // Unfortunately we have to use the style object to store these
+<a name="line433"></a>            // pieces of info since the rule object is read-only.
+<a name="line434"></a>            cssRule.style[&#39;-closure-rule-index&#39;] = ruleIndex;
+<a name="line435"></a>          }
+<a name="line436"></a>          cssOut.push(cssRule);
+<a name="line437"></a>        }
+<a name="line438"></a>
+<a name="line439"></a>        if (!isTextOutput) {
+<a name="line440"></a>          ruleIndex++;
+<a name="line441"></a>        }
+<a name="line442"></a>      }
+<a name="line443"></a>    }
+<a name="line444"></a>  }
+<a name="line445"></a>  return isTextOutput ? cssOut.join(&#39; &#39;) : cssOut;
+<a name="line446"></a>};
+</pre>
+
+
+</body>
+</html>

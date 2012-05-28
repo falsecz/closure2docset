@@ -1,0 +1,2261 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>WebSocket (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+     google.load("visualization", "1", {packages:["orgchart"]});
+     var _loadingVisualizations = true;
+  </script>
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+        <span class="fn">net.WebSocket</span>
+        <span>Extends</span>
+        <span class="fn-name">
+          <a href="class_goog_events_EventTarget.html">
+          goog.events.EventTarget
+</a>
+        </span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Class encapsulating the logic for using a WebSocket.
+  </div>
+
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_goog_net_websocket.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/net/websocket.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+
+
+
+
+
+<h2 class="g-first">Inheritance</h2>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+  <tr><td><span class="type"><a href="class_goog_Disposable.html">goog.Disposable</a></span></td><td></td></tr>
+  <tr><td><span class="type"><a href="class_goog_events_EventTarget.html">goog.events.EventTarget</a></span></td><td><span class="type"><a href="class_goog_Disposable.html">goog.Disposable</a></span></td></tr>
+  <tr><td>goog.net.WebSocket</td><td><span class="type"><a href="class_goog_events_EventTarget.html">goog.events.EventTarget</a></span></td></tr>
+</table>
+</div>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+</table>
+</div>
+
+
+
+
+  <h2>Constructor</h2>
+      <div class="fn-constructor">
+    goog.net.WebSocket(<span><span class="arg">opt_autoReconnect</span>,&nbsp;<span class="arg">opt_getNextReconnect</span></span>)
+  </div>
+
+   <h3>Parameters</h3>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_autoReconnect</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">True if the web socket should automatically reconnect or not.  This is true by default.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_getNextReconnect</span>
+        : <div class="fullType">(<span class="type">function (number): number</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">A function for obtaining the time until the next reconnect attempt. Given the reconnect attempt count (which is a positive integer), the function should return a positive integer representing the milliseconds to the next reconnect attempt.  The default function used is an exponential back-off. Note that this function is never called if auto reconnect is disabled.</div>
+     </td>
+   </tr>
+  </table>
+
+
+<h2>Instance Methods</h2>
+
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_net_WebSocket.html">
+              goog.net.WebSocket
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.clearReconnectTimer_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">clearReconnectTimer_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Clears the reconnect timer.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line432">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.close"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">close<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Closes the web socket connection.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line297">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.disposeInternal"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeInternal<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line441">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.getNextReconnect_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getNextReconnect_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       A function for obtaining the time until the next reconnect attempt.
+Given the reconnect attempt count (which is a positive integer), the
+function should return a positive integer representing the milliseconds to
+the next reconnect attempt.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line86">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.isOpen"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">isOpen<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Checks to see if the web socket is open or not.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            True if the web socket is open, false otherwise.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line335">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.onClose_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">onClose_<span class="args">(<span class="arg">event</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called when the web socket has closed.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">event</span>
+        : <div class="fullType"><span class="type">Event</span></div>
+        <div class="entryOverview">The close event.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line362">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.onError_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">onError_<span class="args">(<span class="arg">event</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called when there is any error in communication.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">event</span>
+        : <div class="fullType">(<span class="type">Event</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The error event containing the error data.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line420">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.onMessage_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">onMessage_<span class="args">(<span class="arg">event</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called when a new message arrives from the server.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">event</span>
+        : <div class="fullType">(<span class="type">MessageEvent</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The web socket message event.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line408">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.onOpen_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">onOpen_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called when the web socket has connected.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line346">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.open"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">open<span class="args">(<span class="arg">url</span>,&nbsp;<span class="arg">opt_protocol</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates and opens the actual WebSocket.  Only call this after attaching the
+appropriate listeners to this object.  If listeners aren&amp;#39;t registered, then
+the <code>goog.net.WebSocket.EventType.OPENED</code> event might be missed.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">url</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The URL to which to connect.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_protocol</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">The subprotocol to use.  The connection will only be established if the server reports that it has selected this subprotocol. The subprotocol name must all be a non-empty ASCII string with no control characters and no spaces in them (i.e. only characters in the range U+0021 to U+007E).</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line256">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.prototype.send"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">send<span class="args">(<span class="arg">message</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sends the message over the web socket.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">message</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The message to send.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line321">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_events_EventTarget.html">
+              goog.events.EventTarget
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.prototype.addEventListener"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addEventListener<span class="args">(<span class="arg">type</span>,&nbsp;<span class="arg">handler</span>,&nbsp;<span class="arg">opt_capture</span>,&nbsp;<span class="arg">opt_handlerScope</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Adds an event listener to the event target. The same handler can only be
+added once per the type. Even if you add the same handler multiple times
+using the same type then it will only be called once when the event is
+dispatched.
+
+Supported for legacy but use goog.events.listen(src, type, handler) instead.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">type</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The type of the event to listen for.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">handler</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The function to handle the event. The handler can also be an object that implements the handleEvent method which takes the event object as argument.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_capture</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">In DOM-compliant browsers, this determines whether the listener is fired during the capture or bubble phase of the event.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_handlerScope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Object in whose scope to call the listener.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line140">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.prototype.dispatchEvent"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dispatchEvent<span class="args">(<span class="arg">e</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Dispatches an event (or event like object) and calls all listeners
+listening for events of this type. The type of the event is decided by the
+type property on the event object.
+
+If any of the listeners returns false OR calls preventDefault then this
+function will return false.  If one of the capture listeners calls
+stopPropagation, then the bubble listeners won't fire.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">e</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type"><a href="class_goog_events_Event.html">goog.events.Event</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+        <div class="entryOverview">Event object.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            If anyone called preventDefault on the event object (or if any of the handlers returns false this will also return false.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line178">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry protected">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.prototype.disposeInternal"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeInternal<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Unattach listeners from this object.  Classes that extend EventTarget may
+need to override this method in order to remove references to DOM Elements
+and additional listeners, it should be something like this:
+<pre class="lang-js prettyprint">
+MyClass.prototype.disposeInternal = function() {
+MyClass.superClass_.disposeInternal.call(this);
+// Dispose logic for MyClass
+};
+</pre>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line196">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.prototype.getParentEventTarget"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getParentEventTarget<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="class_goog_events_EventTarget.html">goog.events.EventTarget</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Returns the parent of this event target to use for bubbling.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="class_goog_events_EventTarget.html">goog.events.EventTarget</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>&nbsp;
+            The parent EventTarget or null if there is no parent.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line108">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.prototype.removeEventListener"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">removeEventListener<span class="args">(<span class="arg">type</span>,&nbsp;<span class="arg">handler</span>,&nbsp;<span class="arg">opt_capture</span>,&nbsp;<span class="arg">opt_handlerScope</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Removes an event listener from the event target. The handler must be the
+same object as the one added. If the handler has not been added then
+nothing is done.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">type</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The type of the event to listen for.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">handler</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The function to handle the event. The handler can also be an object that implements the handleEvent method which takes the event object as argument.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_capture</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">In DOM-compliant browsers, this determines whether the listener is fired during the capture or bubble phase of the event.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_handlerScope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Object in whose scope to call the listener.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line159">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.events.EventTarget.prototype.setParentEventTarget"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">setParentEventTarget<span class="args">(<span class="arg">parent</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the parent of this event target to use for bubbling.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">parent</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_events_EventTarget.html">goog.events.EventTarget</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">Parent EventTarget (null if none).</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line118">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_Disposable.html">
+              goog.Disposable
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.dispose"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dispose<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">undefined</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Disposes of the object. If the object hasn&amp;amp;#39;t already been disposed of, calls
+#disposeInternal. Classes that extend <code>goog.Disposable</code> should
+override #disposeInternal in order to delete references to COM
+objects, DOM nodes, and other disposable objects. Reentrant.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">undefined</span></div>&nbsp;
+            Nothing.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line125">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry protected">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.disposeInternal"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeInternal<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Deletes or nulls out any references to COM objects, DOM nodes, or other
+disposable objects. Classes that extend <code>goog.Disposable</code> should
+override this method.
+Not reentrant. To avoid calling it twice, it must only be called from the
+subclass&amp;amp;#39; <code>disposeInternal</code> method. Everywhere else the public
+<code>dispose</code> method must be used.
+For example:
+<pre class="lang-js prettyprint">
+mypackage.MyClass = function() {
+goog.base(this);
+// Constructor logic specific to MyClass.
+...
+};
+goog.inherits(mypackage.MyClass, goog.Disposable);
+
+mypackage.MyClass.prototype.disposeInternal = function() {
+goog.base(this, &amp;#39;disposeInternal&amp;#39;);
+// Dispose logic specific to MyClass.
+...
+};
+</pre>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line182">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td class="deprecated">
+    <a name="goog.Disposable.prototype.getDisposed"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getDisposed<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class="deprecatedMessage">Use #isDisposed instead.</span>
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether the object has been disposed of.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line114">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.isDisposed"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">isDisposed<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether the object has been disposed of.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line105">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.registerDisposable"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">registerDisposable<span class="args">(<span class="arg">disposable</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Associates a disposable object with this object so that they will be disposed
+together.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">disposable</span>
+        : <div class="fullType">(<span class="type"><a href="interface_goog_disposable_IDisposable.html">goog.disposable.IDisposable</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">that will be disposed when this object is disposed.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line150">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Instance Properties</h2>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_net_WebSocket.html">
+              goog.net.WebSocket
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.autoReconnect_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">autoReconnect_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       True if the web socket should automatically reconnect or not.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line75">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.closeExpected_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">closeExpected_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       True if a call to the close callback is expected or not.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line129">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.logger_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">logger_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_debug_Logger.html">goog.debug.Logger</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The logger for this class.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line146">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.nextReconnect_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">nextReconnect_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The time, in milliseconds, that must elapse before the next attempt to
+reconnect.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line95">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.protocol_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">protocol_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The subprotocol name used when establishing the web socket connection.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line121">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.reconnectAttempt_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">reconnectAttempt_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Keeps track of the number of reconnect attempts made since the last
+successful connection.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line138">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.url_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">url_</span>
+        : <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The URL to which the web socket will connect.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line113">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.prototype.webSocket_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">webSocket_</span>
+        : <div class="fullType">(<span class="type">WebSocket</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The actual web socket that will be used to send/receive messages.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line105">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_events_EventTarget.html">
+              goog.events.EventTarget
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.events.EventTarget.prototype.customEvent_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">customEvent_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Used to tell if an event is a real event in goog.events.listen() so we don't
+get listen() calling addEventListener() and vice-versa.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line91">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.events.EventTarget.prototype.parentEventTarget_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">parentEventTarget_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_events_EventTarget.html">goog.events.EventTarget</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Parent event target, used during event bubbling.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_events_eventtarget.js.source.html#line99">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_Disposable.html">
+              goog.Disposable
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.Disposable.prototype.dependentDisposables_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dependentDisposables_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Disposables that should be disposed when this object is disposed.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line99">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.Disposable.prototype.disposed_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposed_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether the object has been disposed of.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line91">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Static Methods</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.EXPONENTIAL_BACKOFF_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.WebSocket.</span><span class="entryName">EXPONENTIAL_BACKOFF_<span class="args">(<span class="arg">attempt</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Computes the next reconnect time given the number of reconnect attempts since
+the last successful connection.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">attempt</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The number of reconnect attempts since the last connection.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>&nbsp;
+            The time, in milliseconds, until the next reconnect attempt.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line216">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.WebSocket.protectEntryPoints"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.WebSocket.</span><span class="entryName">protectEntryPoints<span class="args">(<span class="arg">errorHandler</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Installs exception protection for all entry points introduced by
+goog.net.WebSocket instances which are not protected by
+goog.debug.ErrorHandler#protectWindowSetTimeout,
+goog.debug.ErrorHandler#protectWindowSetInterval, or
+goog.events.protectBrowserEventEntryPoint.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">errorHandler</span>
+        : <div class="fullType"><span class="type"><a href="class_goog_debug_ErrorHandler.html">goog.debug.ErrorHandler</a></span></div>
+        <div class="entryOverview">Error handler with which to protect the entry points.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line232">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+<h2>Static Properties</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.EXPONENTIAL_BACKOFF_CEILING_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.WebSocket.</span><span class="entryName">EXPONENTIAL_BACKOFF_CEILING_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The maximum amount of time between reconnect attempts for the exponential
+back-off in milliseconds.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line203">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+<h2>Enumerations</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.EventType"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.WebSocket.</span><span class="entryName">EventType</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       The events fired by the web socket.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  CLOSED
+                </span>
+                <div class="entryOverview">
+                  Fired when an attempt to open the WebSocket fails or there is a connection
+failure after a successful connection has been established.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  OPENED
+                </span>
+                <div class="entryOverview">
+                  Fired when the WebSocket connection has been established.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ERROR
+                </span>
+                <div class="entryOverview">
+                  Fired when the WebSocket encounters an error.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MESSAGE
+                </span>
+                <div class="entryOverview">
+                  Fired when a new message arrives from the WebSocket.
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line154">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.WebSocket.ReadyState_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.WebSocket.</span><span class="entryName">ReadyState_</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       The various states of the web socket.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  OPEN
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CLOSING
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CLOSED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CONNECTING
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_websocket.js.source.html#line184">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package net</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="net.WebSocket"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

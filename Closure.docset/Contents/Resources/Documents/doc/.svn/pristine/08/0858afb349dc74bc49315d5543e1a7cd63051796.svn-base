@@ -1,0 +1,1831 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>SplitBehavior (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+     google.load("visualization", "1", {packages:["orgchart"]});
+     var _loadingVisualizations = true;
+  </script>
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+        <span class="fn">ui.SplitBehavior</span>
+        <span>Extends</span>
+        <span class="fn-name">
+          <a href="class_goog_Disposable.html">
+          goog.Disposable
+</a>
+        </span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Creates a behavior for combining two controls. The behavior is triggered
+by a given event type which applies the behavior handler.
+Can be used to also render or decorate  the controls.
+For a usage example see goog.ui.ColorSplitBehavior
+  </div>
+
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="../trunk/closure/goog/demos/split.html">Demo</a></li>
+            <li><a href="closure_goog_ui_splitbehavior.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/ui/splitbehavior.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+
+
+
+
+
+<h2 class="g-first">Inheritance</h2>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+  <tr><td><span class="type"><a href="class_goog_Disposable.html">goog.Disposable</a></span></td><td></td></tr>
+  <tr><td>goog.ui.SplitBehavior</td><td><span class="type"><a href="class_goog_Disposable.html">goog.Disposable</a></span></td></tr>
+</table>
+</div>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+      <tr><td><span class="type"><a href="class_goog_ui_ColorSplitBehavior.html">goog.ui.ColorSplitBehavior</a></span></td><td>goog.ui.SplitBehavior</td></tr>
+  </table>
+</div>
+
+
+
+
+  <h2>Constructor</h2>
+      <div class="fn-constructor">
+    goog.ui.SplitBehavior(<span><span class="arg">first</span>,&nbsp;<span class="arg">second</span>,&nbsp;<span class="arg">opt_behaviorHandler</span>,&nbsp;<span class="arg">opt_eventType</span>,&nbsp;<span class="arg">opt_domHelper</span></span>)
+  </div>
+
+   <h3>Parameters</h3>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">first</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_ui_Control.html">goog.ui.Control</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">A ui control.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">second</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_ui_Control.html">goog.ui.Control</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">A ui control.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_behaviorHandler</span>
+        : <div class="fullType">(<span class="type">function ((goog.ui.Control</span><span>&nbsp;|&nbsp;</span><span class="type">null), (Event</span><span>&nbsp;|&nbsp;</span><span>?</span><span class="type">null)): </span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">A handler to apply for the behavior.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_eventType</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">The event type triggering the handler.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_domHelper</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_dom_DomHelper.html">goog.dom.DomHelper</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Optional DOM helper, used for document interaction.</div>
+     </td>
+   </tr>
+  </table>
+
+
+<h2>Instance Methods</h2>
+
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_ui_SplitBehavior.html">
+              goog.ui.SplitBehavior
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.behaviorHandler_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">behaviorHandler_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Handler for this behavior.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line81">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.collapseSides_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">collapseSides_<span class="args">(<span class="arg">first</span>,&nbsp;<span class="arg">second</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Collapse the the controls together.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">first</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_ui_Control.html">goog.ui.Control</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The first element.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">second</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_ui_Control.html">goog.ui.Control</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The second element.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line332">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.decorate"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">decorate<span class="args">(<span class="arg">element</span>,&nbsp;<span class="arg">opt_activate</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="class_goog_ui_SplitBehavior.html">goog.ui.SplitBehavior</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Decorates an element and returns the behavior.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">An element to decorate.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_activate</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Whether to activate the behavior (default=true).</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="class_goog_ui_SplitBehavior.html">goog.ui.SplitBehavior</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>&nbsp;
+            A split behavior.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line237">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.decorateChildren_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">decorateChildren_<span class="args">(<span class="arg">element</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Decorates two child nodes of the given element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">An element to render two of it's child nodes.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line307">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.disposeInternal"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeInternal<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line289">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.getBehaviorHandler"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getBehaviorHandler<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">function ((goog.ui.Control</span><span>&nbsp;|&nbsp;</span><span class="type">null), (Event</span><span>&nbsp;|&nbsp;</span><span>?</span><span class="type">null)): </span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">function ((goog.ui.Control</span><span>&nbsp;|&nbsp;</span><span class="type">null), (Event</span><span>&nbsp;|&nbsp;</span><span>?</span><span class="type">null)): </span></div>&nbsp;
+            The behavior handler.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line176">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.getElement"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getElement<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>&nbsp;
+            The element containing the controls.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line168">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.getEventType"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getEventType<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>&nbsp;
+            The behavior event type.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line184">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.render"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">render<span class="args">(<span class="arg">element</span>,&nbsp;<span class="arg">opt_activate</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="class_goog_ui_SplitBehavior.html">goog.ui.SplitBehavior</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Renders an element and returns the behavior.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">An element to decorate.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_activate</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Whether to activate the behavior (default=true).</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="class_goog_ui_SplitBehavior.html">goog.ui.SplitBehavior</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>&nbsp;
+            A split behavior.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line256">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.setActive"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">setActive<span class="args">(<span class="arg">activate</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Activate or deactivate the behavior.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">activate</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+        <div class="entryOverview">Whether to activate or deactivate the behavior.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line272">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.setDisposeControls"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">setDisposeControls<span class="args">(<span class="arg">disposeFirst</span>,&nbsp;<span class="arg">disposeSecond</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the disposeControls flags.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">disposeFirst</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+        <div class="entryOverview">Whether to dispose the first control when dispose is called.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">disposeSecond</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+        <div class="entryOverview">Whether to dispose the second control when dispose is called.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line196">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.setEventType"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">setEventType<span class="args">(<span class="arg">eventType</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the behavior event type.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">eventType</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The behavior event type.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line221">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.prototype.setHandler"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">setHandler<span class="args">(<span class="arg">behaviorHandler</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the behavior handler.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">behaviorHandler</span>
+        : <div class="fullType"><span class="type">function ((goog.ui.Control</span><span>&nbsp;|&nbsp;</span><span class="type">null), (Event</span><span>&nbsp;|&nbsp;</span><span>?</span><span class="type">null)): </span></div>
+        <div class="entryOverview">The behavior handler.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line208">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_Disposable.html">
+              goog.Disposable
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.dispose"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dispose<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">undefined</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Disposes of the object. If the object hasn&amp;amp;#39;t already been disposed of, calls
+#disposeInternal. Classes that extend <code>goog.Disposable</code> should
+override #disposeInternal in order to delete references to COM
+objects, DOM nodes, and other disposable objects. Reentrant.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">undefined</span></div>&nbsp;
+            Nothing.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line125">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry protected">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.disposeInternal"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeInternal<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Deletes or nulls out any references to COM objects, DOM nodes, or other
+disposable objects. Classes that extend <code>goog.Disposable</code> should
+override this method.
+Not reentrant. To avoid calling it twice, it must only be called from the
+subclass&amp;amp;#39; <code>disposeInternal</code> method. Everywhere else the public
+<code>dispose</code> method must be used.
+For example:
+<pre class="lang-js prettyprint">
+mypackage.MyClass = function() {
+goog.base(this);
+// Constructor logic specific to MyClass.
+...
+};
+goog.inherits(mypackage.MyClass, goog.Disposable);
+
+mypackage.MyClass.prototype.disposeInternal = function() {
+goog.base(this, &amp;#39;disposeInternal&amp;#39;);
+// Dispose logic specific to MyClass.
+...
+};
+</pre>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line182">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td class="deprecated">
+    <a name="goog.Disposable.prototype.getDisposed"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">getDisposed<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class="deprecatedMessage">Use #isDisposed instead.</span>
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether the object has been disposed of.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line114">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.isDisposed"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">isDisposed<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether the object has been disposed of.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line105">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.Disposable.prototype.registerDisposable"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">registerDisposable<span class="args">(<span class="arg">disposable</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Associates a disposable object with this object so that they will be disposed
+together.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">disposable</span>
+        : <div class="fullType">(<span class="type"><a href="interface_goog_disposable_IDisposable.html">goog.disposable.IDisposable</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">that will be disposed when this object is disposed.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line150">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Instance Properties</h2>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_ui_SplitBehavior.html">
+              goog.ui.SplitBehavior
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.disposeFirst_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeFirst_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether to dispose the first control when dispose is called.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line116">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.disposeSecond_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposeSecond_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether to dispose the second control when dispose is called.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line123">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.dom_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dom_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_dom_DomHelper.html">goog.dom.DomHelper</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line95">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.element_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">element_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The element containing the controls.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line162">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.eventHandler_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">eventHandler_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_events_EventHandler.html">goog.events.EventHandler</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Event handler.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line109">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.eventType_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">eventType_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Event type triggering the behavior.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line89">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.first_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">first_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_ui_Control.html">goog.ui.Control</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line68">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.isActive_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">isActive_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       True iff the behavior is active.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line102">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.prototype.second_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">second_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_ui_Control.html">goog.ui.Control</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line74">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_Disposable.html">
+              goog.Disposable
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.Disposable.prototype.dependentDisposables_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">dependentDisposables_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Disposables that should be disposed when this object is disposed.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line99">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.Disposable.prototype.disposed_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">disposed_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether the object has been disposed of.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_disposable_disposable.js.source.html#line91">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Static Methods</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.ui.SplitBehavior.call"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.ui.SplitBehavior.</span><span class="entryName">call<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line60">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+<h2>Static Properties</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.CSS_CLASS"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.ui.SplitBehavior.</span><span class="entryName">CSS_CLASS</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Css class for elements rendered by this behavior.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line132">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+<h2>Enumerations</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.ui.SplitBehavior.DefaultHandlers"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.ui.SplitBehavior.</span><span class="entryName">DefaultHandlers</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       An emum of split behavior handlers.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  VALUE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NONE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CAPTION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_ui_splitbehavior.js.source.html#line139">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package ui</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="ui.SplitBehavior"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

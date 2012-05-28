@@ -1,0 +1,1454 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>a11y (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">dom.a11y</span>
+</div>
+
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_dom_a11y_Announcer.html">
+          goog.dom.a11y.Announcer</a><br/>
+        <div class="class-details">Class that allows messages to be spoken by assistive technologies that the
+user may have active.</div>
+ </div>
+   
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+<h2>Enumerations</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.dom.a11y.LivePriority"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">LivePriority</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       Enumeration of ARIA state values for live regions.
+
+See <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-live">http://www.w3.org/TR/wai-aria/states_and_properties#aria-live</a>
+for more information.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  OFF
+                </span>
+                <div class="entryOverview">
+                  Default value.  Used for live regions that should never be spoken.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  POLITE
+                </span>
+                <div class="entryOverview">
+                  Spoke only when the user is idle.  Best option in most cases.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ASSERTIVE
+                </span>
+                <div class="entryOverview">
+                  Spoken as soon as possible, which means that the information has a
+higher priority than normal, but does not necessarily interrupt
+immediately.
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line374">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.dom.a11y.Role"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">Role</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       Enumeration of ARIA roles.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  DOCUMENT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PROGRESSBAR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ARTICLE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  REGION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LINK
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MENU_ITEM_RADIO
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TAB_LIST
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  COMPLEMENTARY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  IMG
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ROW
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  STATUS
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ALERT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SEARCH
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SEPARATOR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  COLUMNHEADER
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NOTE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TAB
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TIMER
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  HEADING
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LOG
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TAB_PANEL
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  BUTTON
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ALERTDIALOG
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SLIDER
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  GROUP
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  GRIDCELL
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  DIALOG
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MENU
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PRESENTATION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  APPLICATION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MATH
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LISTBOX
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TOOLTIP
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  FORM
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MENU_ITEM
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MARQUEE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  RADIO
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LISTITEM
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SPINBUTTON
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TEXTBOX
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  BANNER
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SCROLLBAR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LIST
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  OPTION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MAIN
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TREEITEM
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MENU_ITEM_CHECKBOX
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MENUBAR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  RADIOGROUP
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  DIRECTORY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CHECKBOX
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ROWHEADER
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NAVIGATION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TREE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TOOLBAR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  GRID
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  COMBOBOX
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ROWGROUP
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TREEGRID
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line186">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.dom.a11y.State"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">State</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       Enumeration of ARIA states and properties.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  FLOWTO
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CONTROLS
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  RELEVANT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MULTILINE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ACTIVEDESCENDANT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  GRABBED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  VALUENOW
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  AUTOCOMPLETE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  DROPEFFECT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LABELLEDBY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  POSINSET
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  VALUEMIN
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  VALUETEXT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  BUSY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ATOMIC
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  DESCRIBEDBY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LABEL
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PRESSED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SORT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  HASPOPUP
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  VALUEMAX
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CHECKED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MULTISELECTABLE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LEVEL
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ORIENTATION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  EXPANDED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  REQUIRED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  DISABLED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  HIDDEN
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SELECTED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  INVALID
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SETSIZE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  OWNS
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LIVE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  READONLY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line38">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.dom.a11y.getActiveDescendant"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">getActiveDescendant<span class="args">(<span class="arg">element</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Gets the activedescendant of the given element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node to get activedescendant from.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>&nbsp;
+            DOM node of the activedescendant.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line452">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.dom.a11y.getRole"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">getRole<span class="args">(<span class="arg">element</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Gets role of an element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node to get role of.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>&nbsp;
+            rolename.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line408">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.dom.a11y.getState"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">getState<span class="args">(<span class="arg">element</span>,&nbsp;<span class="arg">stateName</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Gets value of specified state or property.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node to get state from.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">stateName</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">State name.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>&nbsp;
+            Value of the state attribute.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line431">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.dom.a11y.setActiveDescendant"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">setActiveDescendant<span class="args">(<span class="arg">element</span>,&nbsp;<span class="arg">activeElement</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the activedescendant value for an element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node to set activedescendant to.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">activeElement</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node being set as activedescendant.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line464">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.dom.a11y.setRole"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">setRole<span class="args">(<span class="arg">element</span>,&nbsp;<span class="arg">roleName</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the role of an element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node to set role of.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">roleName</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">role name(s).</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line397">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.dom.a11y.setState"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.dom.a11y.</span><span class="entryName">setState<span class="args">(<span class="arg">element</span>,&nbsp;<span class="arg">state</span>,&nbsp;<span class="arg">value</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Sets the state or property of an element.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">element</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">DOM node where we set state.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">state</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">State attribute being set. Automatically adds prefix 'aria-' to the state name.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">value</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+        <div class="entryOverview">Value for the state attribute.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_dom_a11y.js.source.html#line420">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package dom</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="dom.a11y"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

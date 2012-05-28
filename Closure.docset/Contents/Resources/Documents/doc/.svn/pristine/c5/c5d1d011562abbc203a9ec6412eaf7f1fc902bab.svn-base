@@ -1,0 +1,239 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>db.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">db.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Wrappers for the HTML5 IndexedDB. The wrappers export nearly
+ the same interface as the standard API, but return goog.async.Deferred
+ objects instead of request objects and use Closure events. The wrapper works
+ and has been tested on Chrome version 14+. Though they should work in theory,
+ the wrapper tests fail in strange, non-deterministic ways on Firefox 6,
+ unfortunately.
+
+ Example usage:
+
+ <code>
+ goog.db.openDatabase(&amp;#39;mydb&amp;#39;).addCallback(function(db) {
+ return db.setVersion(&amp;#39;1.0&amp;#39;).addCallback(function(tx) {
+ db.createObjectStore(&amp;#39;mystore&amp;#39;);
+ // restart to see our structure changes
+ return goog.db.openDatabase(&amp;#39;mydb&amp;#39;);
+ });
+ }).addCallback(function(db) {
+ var putTx = db.createTransaction(
+ [],
+ goog.db.Transaction.TransactionMode.READ_WRITE);
+ var store = putTx.objectStore(&amp;#39;mystore&amp;#39;);
+ store.put(&amp;#39;value&amp;#39;, &amp;#39;key&amp;#39;);
+ goog.listen(putTx, goog.db.Transaction.EventTypes.COMPLETE, function() {
+ var getTx = db.createTransaction([]);
+ var request = getTx.objectStore(&amp;#39;mystore&amp;#39;).get(&amp;#39;key&amp;#39;);
+ request.addCallback(function(result) {
+ ...
+ });
+ });
+ </code>
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_goog_db_db.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/db/db.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">db/db.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+   
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.db.openDatabase"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.db.</span><span class="entryName">openDatabase<span class="args">(<span class="arg">name</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Opens a database connection and wraps it.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">name</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The name of the database to open.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred database object.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_db_db.js.source.html#line62">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory db</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="db/db.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

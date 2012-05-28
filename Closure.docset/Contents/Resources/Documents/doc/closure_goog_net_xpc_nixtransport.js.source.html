@@ -1,0 +1,524 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>nixtransport.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_net_xpc_nixtransport.js.html">nixtransport.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Contains the NIX (Native IE XDC) method transport for
+<a name="line17"></a> * cross-domain communication. It exploits the fact that Internet Explorer
+<a name="line18"></a> * allows a window that is the parent of an iframe to set said iframe window&#39;s
+<a name="line19"></a> * opener property to an object. This object can be a function that in turn
+<a name="line20"></a> * can be used to send a message despite same-origin constraints. Note that
+<a name="line21"></a> * this function, if a pure JavaScript object, opens up the possibilitiy of
+<a name="line22"></a> * gaining a hold of the context of the other window and in turn, attacking
+<a name="line23"></a> * it. This implementation therefore wraps the JavaScript objects used inside
+<a name="line24"></a> * a VBScript class. Since VBScript objects are passed in JavaScript as a COM
+<a name="line25"></a> * wrapper (like DOM objects), they are thus opaque to JavaScript
+<a name="line26"></a> * (except for the interface they expose). This therefore provides a safe
+<a name="line27"></a> * method of transport.
+<a name="line28"></a> *
+<a name="line29"></a> *
+<a name="line30"></a> * Initially based on FrameElementTransport which shares some similarities
+<a name="line31"></a> * to this method.
+<a name="line32"></a> */
+<a name="line33"></a>
+<a name="line34"></a>goog.provide(&#39;goog.net.xpc.NixTransport&#39;);
+<a name="line35"></a>
+<a name="line36"></a>goog.require(&#39;goog.net.xpc&#39;);
+<a name="line37"></a>goog.require(&#39;goog.net.xpc.CrossPageChannelRole&#39;);
+<a name="line38"></a>goog.require(&#39;goog.net.xpc.Transport&#39;);
+<a name="line39"></a>goog.require(&#39;goog.reflect&#39;);
+<a name="line40"></a>
+<a name="line41"></a>
+<a name="line42"></a>/**
+<a name="line43"></a> * NIX method transport.
+<a name="line44"></a> *
+<a name="line45"></a> * NOTE(user): NIX method tested in all IE versions starting from 6.0.
+<a name="line46"></a> *
+<a name="line47"></a> * @param {goog.net.xpc.CrossPageChannel} channel The channel this transport
+<a name="line48"></a> *     belongs to.
+<a name="line49"></a> * @param {goog.dom.DomHelper=} opt_domHelper The dom helper to use for finding
+<a name="line50"></a> *     the correct window.
+<a name="line51"></a> * @constructor
+<a name="line52"></a> * @extends {goog.net.xpc.Transport}
+<a name="line53"></a> */
+<a name="line54"></a>goog.net.xpc.NixTransport = function(channel, opt_domHelper) {
+<a name="line55"></a>  goog.base(this, opt_domHelper);
+<a name="line56"></a>
+<a name="line57"></a>  /**
+<a name="line58"></a>   * The channel this transport belongs to.
+<a name="line59"></a>   * @type {goog.net.xpc.CrossPageChannel}
+<a name="line60"></a>   * @private
+<a name="line61"></a>   */
+<a name="line62"></a>  this.channel_ = channel;
+<a name="line63"></a>
+<a name="line64"></a>  /**
+<a name="line65"></a>   * The authorization token, if any, used by this transport.
+<a name="line66"></a>   * @type {?string}
+<a name="line67"></a>   * @private
+<a name="line68"></a>   */
+<a name="line69"></a>  this.authToken_ = channel[goog.net.xpc.CfgFields.AUTH_TOKEN] || &#39;&#39;;
+<a name="line70"></a>
+<a name="line71"></a>  /**
+<a name="line72"></a>   * The authorization token, if any, that must be sent by the other party
+<a name="line73"></a>   * for setup to occur.
+<a name="line74"></a>   * @type {?string}
+<a name="line75"></a>   * @private
+<a name="line76"></a>   */
+<a name="line77"></a>  this.remoteAuthToken_ =
+<a name="line78"></a>      channel[goog.net.xpc.CfgFields.REMOTE_AUTH_TOKEN] || &#39;&#39;;
+<a name="line79"></a>
+<a name="line80"></a>  // Conduct the setup work for NIX in general, if need be.
+<a name="line81"></a>  goog.net.xpc.NixTransport.conductGlobalSetup_(this.getWindow());
+<a name="line82"></a>
+<a name="line83"></a>  // Setup aliases so that VBScript can call these methods
+<a name="line84"></a>  // on the transport class, even if they are renamed during
+<a name="line85"></a>  // compression.
+<a name="line86"></a>  this[goog.net.xpc.NixTransport.NIX_HANDLE_MESSAGE] = this.handleMessage_;
+<a name="line87"></a>  this[goog.net.xpc.NixTransport.NIX_CREATE_CHANNEL] = this.createChannel_;
+<a name="line88"></a>};
+<a name="line89"></a>goog.inherits(goog.net.xpc.NixTransport, goog.net.xpc.Transport);
+<a name="line90"></a>
+<a name="line91"></a>
+<a name="line92"></a>// Consts for NIX. VBScript doesn&#39;t allow items to start with _ for some
+<a name="line93"></a>// reason, so we need to make these names quite unique, as they will go into
+<a name="line94"></a>// the global namespace.
+<a name="line95"></a>
+<a name="line96"></a>
+<a name="line97"></a>/**
+<a name="line98"></a> * Global name of the Wrapper VBScript class.
+<a name="line99"></a> * Note that this class will be stored in the *global*
+<a name="line100"></a> * namespace (i.e. window in browsers).
+<a name="line101"></a> * @type {string}
+<a name="line102"></a> */
+<a name="line103"></a>goog.net.xpc.NixTransport.NIX_WRAPPER = &#39;GCXPC____NIXVBS_wrapper&#39;;
+<a name="line104"></a>
+<a name="line105"></a>
+<a name="line106"></a>/**
+<a name="line107"></a> * Global name of the GetWrapper VBScript function. This
+<a name="line108"></a> * constant is used by JavaScript to call this function.
+<a name="line109"></a> * Note that this function will be stored in the *global*
+<a name="line110"></a> * namespace (i.e. window in browsers).
+<a name="line111"></a> * @type {string}
+<a name="line112"></a> */
+<a name="line113"></a>goog.net.xpc.NixTransport.NIX_GET_WRAPPER = &#39;GCXPC____NIXVBS_get_wrapper&#39;;
+<a name="line114"></a>
+<a name="line115"></a>
+<a name="line116"></a>/**
+<a name="line117"></a> * The name of the handle message method used by the wrapper class
+<a name="line118"></a> * when calling the transport.
+<a name="line119"></a> * @type {string}
+<a name="line120"></a> */
+<a name="line121"></a>goog.net.xpc.NixTransport.NIX_HANDLE_MESSAGE = &#39;GCXPC____NIXJS_handle_message&#39;;
+<a name="line122"></a>
+<a name="line123"></a>
+<a name="line124"></a>/**
+<a name="line125"></a> * The name of the create channel method used by the wrapper class
+<a name="line126"></a> * when calling the transport.
+<a name="line127"></a> * @type {string}
+<a name="line128"></a> */
+<a name="line129"></a>goog.net.xpc.NixTransport.NIX_CREATE_CHANNEL = &#39;GCXPC____NIXJS_create_channel&#39;;
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * A &quot;unique&quot; identifier that is stored in the wrapper
+<a name="line134"></a> * class so that the wrapper can be distinguished from
+<a name="line135"></a> * other objects easily.
+<a name="line136"></a> * @type {string}
+<a name="line137"></a> */
+<a name="line138"></a>goog.net.xpc.NixTransport.NIX_ID_FIELD = &#39;GCXPC____NIXVBS_container&#39;;
+<a name="line139"></a>
+<a name="line140"></a>
+<a name="line141"></a>/**
+<a name="line142"></a> * Determines if the installed version of IE supports accessing window.opener
+<a name="line143"></a> * after it has been set to a non-Window/null value. NIX relies on this being
+<a name="line144"></a> * possible.
+<a name="line145"></a> * @return {boolean} Whether window.opener behavior is compatible with NIX.
+<a name="line146"></a> */
+<a name="line147"></a>goog.net.xpc.NixTransport.isNixSupported = function() {
+<a name="line148"></a>  var isSupported = false;
+<a name="line149"></a>  try {
+<a name="line150"></a>    var oldOpener = window.opener;
+<a name="line151"></a>    // The compiler complains (as it should!) if we set window.opener to
+<a name="line152"></a>    // something other than a window or null.
+<a name="line153"></a>    window.opener = /** @type {Window} */ ({});
+<a name="line154"></a>    isSupported = goog.reflect.canAccessProperty(window, &#39;opener&#39;);
+<a name="line155"></a>    window.opener = oldOpener;
+<a name="line156"></a>  } catch(e) { }
+<a name="line157"></a>  return isSupported;
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/**
+<a name="line162"></a> * Conducts the global setup work for the NIX transport method.
+<a name="line163"></a> * This function creates and then injects into the page the
+<a name="line164"></a> * VBScript code necessary to create the NIX wrapper class.
+<a name="line165"></a> * Note that this method can be called multiple times, as
+<a name="line166"></a> * it internally checks whether the work is necessary before
+<a name="line167"></a> * proceeding.
+<a name="line168"></a> * @private
+<a name="line169"></a> */
+<a name="line170"></a>goog.net.xpc.NixTransport.conductGlobalSetup_ = function(listenWindow) {
+<a name="line171"></a>  if (listenWindow[&#39;nix_setup_complete&#39;]) {
+<a name="line172"></a>    return;
+<a name="line173"></a>  }
+<a name="line174"></a>
+<a name="line175"></a>  // Inject the VBScript code needed.
+<a name="line176"></a>  var vbscript =
+<a name="line177"></a>    // We create a class to act as a wrapper for
+<a name="line178"></a>    // a Javascript call, to prevent a break in of
+<a name="line179"></a>    // the context.
+<a name="line180"></a>    &#39;Class &#39; + goog.net.xpc.NixTransport.NIX_WRAPPER + &#39;\n &#39; +
+<a name="line181"></a>
+<a name="line182"></a>    // An internal member for keeping track of the
+<a name="line183"></a>    // transport for which this wrapper exists.
+<a name="line184"></a>    &#39;Private m_Transport\n&#39; +
+<a name="line185"></a>
+<a name="line186"></a>    // An internal member for keeping track of the
+<a name="line187"></a>    // auth token associated with the context that
+<a name="line188"></a>    // created this wrapper. Used for validation
+<a name="line189"></a>    // purposes.
+<a name="line190"></a>    &#39;Private m_Auth\n&#39; +
+<a name="line191"></a>
+<a name="line192"></a>    // Method for internally setting the value
+<a name="line193"></a>    // of the m_Transport property. We have the
+<a name="line194"></a>    // isEmpty check to prevent the transport
+<a name="line195"></a>    // from being overridden with an illicit
+<a name="line196"></a>    // object by a malicious party.
+<a name="line197"></a>    &#39;Public Sub SetTransport(transport)\n&#39; +
+<a name="line198"></a>    &#39;If isEmpty(m_Transport) Then\n&#39; +
+<a name="line199"></a>    &#39;Set m_Transport = transport\n&#39; +
+<a name="line200"></a>    &#39;End If\n&#39; +
+<a name="line201"></a>    &#39;End Sub\n&#39; +
+<a name="line202"></a>
+<a name="line203"></a>    // Method for internally setting the value
+<a name="line204"></a>    // of the m_Auth property. We have the
+<a name="line205"></a>    // isEmpty check to prevent the transport
+<a name="line206"></a>    // from being overridden with an illicit
+<a name="line207"></a>    // object by a malicious party.
+<a name="line208"></a>    &#39;Public Sub SetAuth(auth)\n&#39; +
+<a name="line209"></a>    &#39;If isEmpty(m_Auth) Then\n&#39; +
+<a name="line210"></a>    &#39;m_Auth = auth\n&#39; +
+<a name="line211"></a>    &#39;End If\n&#39; +
+<a name="line212"></a>    &#39;End Sub\n&#39; +
+<a name="line213"></a>
+<a name="line214"></a>    // Returns the auth token to the gadget, so it can
+<a name="line215"></a>    // confirm a match before initiating the connection
+<a name="line216"></a>    &#39;Public Function GetAuthToken()\n &#39; +
+<a name="line217"></a>    &#39;GetAuthToken = m_Auth\n&#39; +
+<a name="line218"></a>    &#39;End Function\n&#39; +
+<a name="line219"></a>
+<a name="line220"></a>    // A wrapper method which causes a
+<a name="line221"></a>    // message to be sent to the other context.
+<a name="line222"></a>    &#39;Public Sub SendMessage(service, payload)\n &#39; +
+<a name="line223"></a>    &#39;Call m_Transport.&#39; +
+<a name="line224"></a>    goog.net.xpc.NixTransport.NIX_HANDLE_MESSAGE + &#39;(service, payload)\n&#39; +
+<a name="line225"></a>    &#39;End Sub\n&#39; +
+<a name="line226"></a>
+<a name="line227"></a>    // Method for setting up the inner-&gt;outer
+<a name="line228"></a>    // channel.
+<a name="line229"></a>    &#39;Public Sub CreateChannel(channel)\n &#39; +
+<a name="line230"></a>    &#39;Call m_Transport.&#39; +
+<a name="line231"></a>    goog.net.xpc.NixTransport.NIX_CREATE_CHANNEL + &#39;(channel)\n&#39; +
+<a name="line232"></a>    &#39;End Sub\n&#39; +
+<a name="line233"></a>
+<a name="line234"></a>    // An empty field with a unique identifier to
+<a name="line235"></a>    // prevent the code from confusing this wrapper
+<a name="line236"></a>    // with a run-of-the-mill value found in window.opener.
+<a name="line237"></a>    &#39;Public Sub &#39; + goog.net.xpc.NixTransport.NIX_ID_FIELD + &#39;()\n &#39; +
+<a name="line238"></a>    &#39;End Sub\n&#39; +
+<a name="line239"></a>    &#39;End Class\n &#39; +
+<a name="line240"></a>
+<a name="line241"></a>    // Function to get a reference to the wrapper.
+<a name="line242"></a>    &#39;Function &#39; +
+<a name="line243"></a>    goog.net.xpc.NixTransport.NIX_GET_WRAPPER + &#39;(transport, auth)\n&#39; +
+<a name="line244"></a>    &#39;Dim wrap\n&#39; +
+<a name="line245"></a>    &#39;Set wrap = New &#39; + goog.net.xpc.NixTransport.NIX_WRAPPER + &#39;\n&#39; +
+<a name="line246"></a>    &#39;wrap.SetTransport transport\n&#39; +
+<a name="line247"></a>    &#39;wrap.SetAuth auth\n&#39; +
+<a name="line248"></a>    &#39;Set &#39; + goog.net.xpc.NixTransport.NIX_GET_WRAPPER + &#39; = wrap\n&#39; +
+<a name="line249"></a>    &#39;End Function&#39;;
+<a name="line250"></a>
+<a name="line251"></a>  try {
+<a name="line252"></a>    listenWindow.execScript(vbscript, &#39;vbscript&#39;);
+<a name="line253"></a>    listenWindow[&#39;nix_setup_complete&#39;] = true;
+<a name="line254"></a>  }
+<a name="line255"></a>  catch (e) {
+<a name="line256"></a>    goog.net.xpc.logger.severe(
+<a name="line257"></a>        &#39;exception caught while attempting global setup: &#39; + e);
+<a name="line258"></a>  }
+<a name="line259"></a>};
+<a name="line260"></a>
+<a name="line261"></a>
+<a name="line262"></a>/**
+<a name="line263"></a> * The transport type.
+<a name="line264"></a> * @type {number}
+<a name="line265"></a> * @protected
+<a name="line266"></a> */
+<a name="line267"></a>goog.net.xpc.NixTransport.prototype.transportType =
+<a name="line268"></a>   goog.net.xpc.TransportTypes.NIX;
+<a name="line269"></a>
+<a name="line270"></a>
+<a name="line271"></a>/**
+<a name="line272"></a> * Keeps track of whether the local setup has completed (i.e.
+<a name="line273"></a> * the initial work towards setting the channel up has been
+<a name="line274"></a> * completed for this end).
+<a name="line275"></a> * @type {boolean}
+<a name="line276"></a> * @private
+<a name="line277"></a> */
+<a name="line278"></a>goog.net.xpc.NixTransport.prototype.localSetupCompleted_ = false;
+<a name="line279"></a>
+<a name="line280"></a>
+<a name="line281"></a>/**
+<a name="line282"></a> * The NIX channel used to talk to the other page. This
+<a name="line283"></a> * object is in fact a reference to a VBScript class
+<a name="line284"></a> * (see above) and as such, is in fact a COM wrapper.
+<a name="line285"></a> * When using this object, make sure to not access methods
+<a name="line286"></a> * without calling them, otherwise a COM error will be thrown.
+<a name="line287"></a> * @type {Object}
+<a name="line288"></a> * @private
+<a name="line289"></a> */
+<a name="line290"></a>goog.net.xpc.NixTransport.prototype.nixChannel_ = null;
+<a name="line291"></a>
+<a name="line292"></a>
+<a name="line293"></a>/**
+<a name="line294"></a> * Connect this transport.
+<a name="line295"></a> */
+<a name="line296"></a>goog.net.xpc.NixTransport.prototype.connect = function() {
+<a name="line297"></a>  if (this.channel_.getRole() == goog.net.xpc.CrossPageChannelRole.OUTER) {
+<a name="line298"></a>    this.attemptOuterSetup_();
+<a name="line299"></a>  } else {
+<a name="line300"></a>    this.attemptInnerSetup_();
+<a name="line301"></a>  }
+<a name="line302"></a>};
+<a name="line303"></a>
+<a name="line304"></a>
+<a name="line305"></a>/**
+<a name="line306"></a> * Attempts to setup the channel from the perspective
+<a name="line307"></a> * of the outer (read: container) page. This method
+<a name="line308"></a> * will attempt to create a NIX wrapper for this transport
+<a name="line309"></a> * and place it into the &quot;opener&quot; property of the inner
+<a name="line310"></a> * page&#39;s window object. If it fails, it will continue
+<a name="line311"></a> * to loop until it does so.
+<a name="line312"></a> *
+<a name="line313"></a> * @private
+<a name="line314"></a> */
+<a name="line315"></a>goog.net.xpc.NixTransport.prototype.attemptOuterSetup_ = function() {
+<a name="line316"></a>  if (this.localSetupCompleted_) {
+<a name="line317"></a>    return;
+<a name="line318"></a>  }
+<a name="line319"></a>
+<a name="line320"></a>  // Get shortcut to iframe-element that contains the inner
+<a name="line321"></a>  // page.
+<a name="line322"></a>  var innerFrame = this.channel_.iframeElement_;
+<a name="line323"></a>
+<a name="line324"></a>  try {
+<a name="line325"></a>    // Attempt to place the NIX wrapper object into the inner
+<a name="line326"></a>    // frame&#39;s opener property.
+<a name="line327"></a>    innerFrame.contentWindow.opener =
+<a name="line328"></a>      this.getWindow()[goog.net.xpc.NixTransport.NIX_GET_WRAPPER]
+<a name="line329"></a>        (this, this.authToken_);
+<a name="line330"></a>    this.localSetupCompleted_ = true;
+<a name="line331"></a>  }
+<a name="line332"></a>  catch (e) {
+<a name="line333"></a>    goog.net.xpc.logger.severe(
+<a name="line334"></a>        &#39;exception caught while attempting setup: &#39; + e);
+<a name="line335"></a>  }
+<a name="line336"></a>
+<a name="line337"></a>  // If the retry is necessary, reattempt this setup.
+<a name="line338"></a>  if (!this.localSetupCompleted_) {
+<a name="line339"></a>    this.getWindow().setTimeout(goog.bind(this.attemptOuterSetup_, this), 100);
+<a name="line340"></a>  }
+<a name="line341"></a>};
+<a name="line342"></a>
+<a name="line343"></a>
+<a name="line344"></a>/**
+<a name="line345"></a> * Attempts to setup the channel from the perspective
+<a name="line346"></a> * of the inner (read: iframe) page. This method
+<a name="line347"></a> * will attempt to *read* the opener object from the
+<a name="line348"></a> * page&#39;s opener property. If it succeeds, this object
+<a name="line349"></a> * is saved into nixChannel_ and the channel is confirmed
+<a name="line350"></a> * with the container by calling CreateChannel with an instance
+<a name="line351"></a> * of a wrapper for *this* page. Note that if this method
+<a name="line352"></a> * fails, it will continue to loop until it succeeds.
+<a name="line353"></a> *
+<a name="line354"></a> * @private
+<a name="line355"></a> */
+<a name="line356"></a>goog.net.xpc.NixTransport.prototype.attemptInnerSetup_ = function() {
+<a name="line357"></a>  if (this.localSetupCompleted_) {
+<a name="line358"></a>    return;
+<a name="line359"></a>  }
+<a name="line360"></a>
+<a name="line361"></a>  try {
+<a name="line362"></a>    var opener = this.getWindow().opener;
+<a name="line363"></a>
+<a name="line364"></a>    // Ensure that the object contained inside the opener
+<a name="line365"></a>    // property is in fact a NIX wrapper.
+<a name="line366"></a>    if (opener &amp;&amp; goog.net.xpc.NixTransport.NIX_ID_FIELD in opener) {
+<a name="line367"></a>      this.nixChannel_ = opener;
+<a name="line368"></a>
+<a name="line369"></a>      // Ensure that the NIX channel given to use is valid.
+<a name="line370"></a>      var remoteAuthToken = this.nixChannel_[&#39;GetAuthToken&#39;]();
+<a name="line371"></a>
+<a name="line372"></a>      if (remoteAuthToken != this.remoteAuthToken_) {
+<a name="line373"></a>        goog.net.xpc.logger.severe(&#39;Invalid auth token from other party&#39;);
+<a name="line374"></a>        return;
+<a name="line375"></a>      }
+<a name="line376"></a>
+<a name="line377"></a>      // Complete the construction of the channel by sending our own
+<a name="line378"></a>      // wrapper to the container via the channel they gave us.
+<a name="line379"></a>      this.nixChannel_[&#39;CreateChannel&#39;](
+<a name="line380"></a>        this.getWindow()[goog.net.xpc.NixTransport.NIX_GET_WRAPPER](this,
+<a name="line381"></a>                                                          this.authToken_));
+<a name="line382"></a>
+<a name="line383"></a>      this.localSetupCompleted_ = true;
+<a name="line384"></a>
+<a name="line385"></a>      // Notify channel that the transport is ready.
+<a name="line386"></a>      this.channel_.notifyConnected_();
+<a name="line387"></a>    }
+<a name="line388"></a>  }
+<a name="line389"></a>  catch (e) {
+<a name="line390"></a>    goog.net.xpc.logger.severe(
+<a name="line391"></a>        &#39;exception caught while attempting setup: &#39; + e);
+<a name="line392"></a>    return;
+<a name="line393"></a>  }
+<a name="line394"></a>
+<a name="line395"></a>  // If the retry is necessary, reattempt this setup.
+<a name="line396"></a>  if (!this.localSetupCompleted_) {
+<a name="line397"></a>    this.getWindow().setTimeout(goog.bind(this.attemptInnerSetup_, this), 100);
+<a name="line398"></a>  }
+<a name="line399"></a>};
+<a name="line400"></a>
+<a name="line401"></a>
+<a name="line402"></a>/**
+<a name="line403"></a> * Internal method called by the inner page, via the
+<a name="line404"></a> * NIX wrapper, to complete the setup of the channel.
+<a name="line405"></a> *
+<a name="line406"></a> * @param {Object} channel The NIX wrapper of the
+<a name="line407"></a> *  inner page.
+<a name="line408"></a> * @private
+<a name="line409"></a> */
+<a name="line410"></a>goog.net.xpc.NixTransport.prototype.createChannel_ = function(channel) {
+<a name="line411"></a>   // Verify that the channel is in fact a NIX wrapper.
+<a name="line412"></a>   if (typeof channel != &#39;unknown&#39; ||
+<a name="line413"></a>       !(goog.net.xpc.NixTransport.NIX_ID_FIELD in channel)) {
+<a name="line414"></a>     goog.net.xpc.logger.severe(&#39;Invalid NIX channel given to createChannel_&#39;);
+<a name="line415"></a>   }
+<a name="line416"></a>
+<a name="line417"></a>   this.nixChannel_ = channel;
+<a name="line418"></a>
+<a name="line419"></a>   // Ensure that the NIX channel given to use is valid.
+<a name="line420"></a>   var remoteAuthToken = this.nixChannel_[&#39;GetAuthToken&#39;]();
+<a name="line421"></a>
+<a name="line422"></a>   if (remoteAuthToken != this.remoteAuthToken_) {
+<a name="line423"></a>     goog.net.xpc.logger.severe(&#39;Invalid auth token from other party&#39;);
+<a name="line424"></a>     return;
+<a name="line425"></a>   }
+<a name="line426"></a>
+<a name="line427"></a>   // Indicate to the CrossPageChannel that the channel is setup
+<a name="line428"></a>   // and ready to use.
+<a name="line429"></a>   this.channel_.notifyConnected_();
+<a name="line430"></a>};
+<a name="line431"></a>
+<a name="line432"></a>
+<a name="line433"></a>/**
+<a name="line434"></a> * Internal method called by the other page, via the NIX wrapper,
+<a name="line435"></a> * to deliver a message.
+<a name="line436"></a> * @param {string} serviceName The name of the service the message is to be
+<a name="line437"></a> *   delivered to.
+<a name="line438"></a> * @param {string} payload The message to process.
+<a name="line439"></a> * @private
+<a name="line440"></a> */
+<a name="line441"></a>goog.net.xpc.NixTransport.prototype.handleMessage_ =
+<a name="line442"></a>    function(serviceName, payload) {
+<a name="line443"></a>
+<a name="line444"></a>  function deliveryHandler() {
+<a name="line445"></a>    this.channel_.deliver_(serviceName, payload);
+<a name="line446"></a>  }
+<a name="line447"></a>
+<a name="line448"></a>  this.getWindow().setTimeout(goog.bind(deliveryHandler, this), 1);
+<a name="line449"></a>};
+<a name="line450"></a>
+<a name="line451"></a>
+<a name="line452"></a>/**
+<a name="line453"></a> * Sends a message.
+<a name="line454"></a> * @param {string} service The name of the service the message is to be
+<a name="line455"></a> *   delivered to.
+<a name="line456"></a> * @param {string} payload The message content.
+<a name="line457"></a> */
+<a name="line458"></a>goog.net.xpc.NixTransport.prototype.send = function(service, payload) {
+<a name="line459"></a>  // Verify that the NIX channel we have is valid.
+<a name="line460"></a>  if (typeof(this.nixChannel_) !== &#39;unknown&#39;) {
+<a name="line461"></a>    goog.net.xpc.logger.severe(&#39;NIX channel not connected&#39;);
+<a name="line462"></a>  }
+<a name="line463"></a>
+<a name="line464"></a>  // Send the message via the NIX wrapper object.
+<a name="line465"></a>  this.nixChannel_[&#39;SendMessage&#39;](service, payload);
+<a name="line466"></a>};
+<a name="line467"></a>
+<a name="line468"></a>
+<a name="line469"></a>/** @override */
+<a name="line470"></a>goog.net.xpc.NixTransport.prototype.disposeInternal = function() {
+<a name="line471"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line472"></a>  this.nixChannel_ = null;
+<a name="line473"></a>};
+</pre>
+
+
+</body>
+</html>

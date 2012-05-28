@@ -1,0 +1,301 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>moduleloader.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_module_moduleloader.js.html">moduleloader.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview The module loader for loading modules across the network.
+<a name="line17"></a> *
+<a name="line18"></a> * Webkit and IE do not guarantee that scripts appended to the document
+<a name="line19"></a> * are executed in the order they are added. For production mode, we use
+<a name="line20"></a> * XHRs to load scripts, because they do not have this problem and they
+<a name="line21"></a> * have superior mechanisms for handling failure. However, XHR-evaled
+<a name="line22"></a> * scripts are harder to debug.
+<a name="line23"></a> *
+<a name="line24"></a> * In debugging mode, we use normal script tags. In order to make this work
+<a name="line25"></a> * in WebKit and IE, we load the scripts in serial: we do not execute
+<a name="line26"></a> * script B to the document until we are certain that script A is
+<a name="line27"></a> * finished loading.
+<a name="line28"></a> *
+<a name="line29"></a> */
+<a name="line30"></a>
+<a name="line31"></a>goog.provide(&#39;goog.module.ModuleLoader&#39;);
+<a name="line32"></a>
+<a name="line33"></a>goog.require(&#39;goog.array&#39;);
+<a name="line34"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line35"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line36"></a>goog.require(&#39;goog.events.EventHandler&#39;);
+<a name="line37"></a>goog.require(&#39;goog.module.BaseModuleLoader&#39;);
+<a name="line38"></a>goog.require(&#39;goog.net.BulkLoader&#39;);
+<a name="line39"></a>goog.require(&#39;goog.net.EventType&#39;);
+<a name="line40"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line41"></a>
+<a name="line42"></a>
+<a name="line43"></a>
+<a name="line44"></a>/**
+<a name="line45"></a> * A class that loads Javascript modules.
+<a name="line46"></a> * @constructor
+<a name="line47"></a> * @extends {goog.module.BaseModuleLoader}
+<a name="line48"></a> */
+<a name="line49"></a>goog.module.ModuleLoader = function() {
+<a name="line50"></a>  goog.module.BaseModuleLoader.call(this);
+<a name="line51"></a>
+<a name="line52"></a>  /**
+<a name="line53"></a>   * Event handler for managing handling events.
+<a name="line54"></a>   * @type {goog.events.EventHandler}
+<a name="line55"></a>   * @private
+<a name="line56"></a>   */
+<a name="line57"></a>  this.eventHandler_ = new goog.events.EventHandler(this);
+<a name="line58"></a>
+<a name="line59"></a>  /**
+<a name="line60"></a>   * Scripts waiting to be loaded. Only used in debug mode.
+<a name="line61"></a>   * @type {Array.&lt;string&gt;}
+<a name="line62"></a>   * @private
+<a name="line63"></a>   */
+<a name="line64"></a>  this.scriptsToLoadDebugMode_ = [];
+<a name="line65"></a>};
+<a name="line66"></a>goog.inherits(goog.module.ModuleLoader, goog.module.BaseModuleLoader);
+<a name="line67"></a>
+<a name="line68"></a>
+<a name="line69"></a>/**
+<a name="line70"></a> * A logger.
+<a name="line71"></a> * @type {goog.debug.Logger}
+<a name="line72"></a> * @protected
+<a name="line73"></a> */
+<a name="line74"></a>goog.module.ModuleLoader.prototype.logger = goog.debug.Logger.getLogger(
+<a name="line75"></a>    &#39;goog.module.ModuleLoader&#39;);
+<a name="line76"></a>
+<a name="line77"></a>
+<a name="line78"></a>/** @override */
+<a name="line79"></a>goog.module.ModuleLoader.prototype.loadModulesInternal = function(
+<a name="line80"></a>    ids, moduleInfoMap, opt_successFn, opt_errorFn, opt_timeoutFn,
+<a name="line81"></a>    opt_forceReload) {
+<a name="line82"></a>  var uris = [];
+<a name="line83"></a>  for (var i = 0; i &lt; ids.length; i++) {
+<a name="line84"></a>    goog.array.extend(uris, moduleInfoMap[ids[i]].getUris());
+<a name="line85"></a>  }
+<a name="line86"></a>  this.logger.info(&#39;loadModules ids:&#39; + ids + &#39; uris:&#39; + uris);
+<a name="line87"></a>
+<a name="line88"></a>  if (this.getDebugMode()) {
+<a name="line89"></a>    this.loadModulesInDebugMode_(uris);
+<a name="line90"></a>  } else {
+<a name="line91"></a>    var bulkLoader = new goog.net.BulkLoader(uris);
+<a name="line92"></a>    var eventHandler = this.eventHandler_;
+<a name="line93"></a>    eventHandler.listen(
+<a name="line94"></a>        bulkLoader,
+<a name="line95"></a>        goog.net.EventType.SUCCESS,
+<a name="line96"></a>        goog.bind(this.handleSuccess, this, bulkLoader, ids,
+<a name="line97"></a>            opt_successFn, opt_errorFn),
+<a name="line98"></a>        false,
+<a name="line99"></a>        null);
+<a name="line100"></a>    eventHandler.listen(
+<a name="line101"></a>        bulkLoader,
+<a name="line102"></a>        goog.net.EventType.ERROR,
+<a name="line103"></a>        goog.bind(this.handleError, this, bulkLoader, ids, opt_errorFn),
+<a name="line104"></a>        false,
+<a name="line105"></a>        null);
+<a name="line106"></a>    // TODO(user): Need to handle timeouts in the module loading code.
+<a name="line107"></a>
+<a name="line108"></a>    bulkLoader.load();
+<a name="line109"></a>  }
+<a name="line110"></a>};
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/**
+<a name="line114"></a> * Create a script tag.
+<a name="line115"></a> * @param {string} uri The uri of the script.
+<a name="line116"></a> * @return {Element} The new tag.
+<a name="line117"></a> * @private
+<a name="line118"></a> */
+<a name="line119"></a>goog.module.ModuleLoader.prototype.createScriptElement_ = function(uri) {
+<a name="line120"></a>  var scriptEl = goog.dom.createElement(&#39;script&#39;);
+<a name="line121"></a>  scriptEl.src = uri;
+<a name="line122"></a>  scriptEl.type = &#39;text/javascript&#39;;
+<a name="line123"></a>  return scriptEl;
+<a name="line124"></a>};
+<a name="line125"></a>
+<a name="line126"></a>
+<a name="line127"></a>/**
+<a name="line128"></a> * Loads and evaluates the JavaScript files at the specified URIs, in order.
+<a name="line129"></a> * This method uses &amp;lt;script&gt; tags rather than XHRs to load the files. This
+<a name="line130"></a> * makes it possible to debug and inspect stack traces more easily. It&#39;s also
+<a name="line131"></a> * possible to use it to load JavaScript files that are hosted on another
+<a name="line132"></a> * domain.
+<a name="line133"></a> * @param {Array.&lt;string&gt;} uris The URIs to load.
+<a name="line134"></a> * @private
+<a name="line135"></a> */
+<a name="line136"></a>goog.module.ModuleLoader.prototype.loadModulesInDebugMode_ = function(uris) {
+<a name="line137"></a>  // Loading the scripts in serial introduces asynchronosity into the module
+<a name="line138"></a>  // loading flow. In production mode, we can guarantee that scripts will
+<a name="line139"></a>  // be loaded synchronously one after another, but that doesn&#39;t hold true
+<a name="line140"></a>  // in debug mode. So in debug mode, there are race conditions where
+<a name="line141"></a>  // module A can kick off the load sequence for module B, even though
+<a name="line142"></a>  // module A&#39;s scripts haven&#39;t all been loaded yet.
+<a name="line143"></a>  //
+<a name="line144"></a>  // To work around this issue, all module loads share a queue.
+<a name="line145"></a>  if (!uris.length) {
+<a name="line146"></a>    return;
+<a name="line147"></a>  }
+<a name="line148"></a>
+<a name="line149"></a>  // If IE6 or 7 is still parsing the document, appending to the document
+<a name="line150"></a>  // element will lead to an operation aborted alert. If possible, try to find
+<a name="line151"></a>  // a head element to append on to make this a bit more idiot-proof.
+<a name="line152"></a>  var scriptParent = document.getElementsByTagName(&#39;head&#39;)[0] ||
+<a name="line153"></a>      document.documentElement;
+<a name="line154"></a>  if (goog.userAgent.GECKO &amp;&amp; !goog.userAgent.isVersion(2)) {
+<a name="line155"></a>    // For &lt;script&gt; tags that are loaded in this manner, Gecko 1.9 and earlier
+<a name="line156"></a>    // ensures that tag order is consistent with evaluation order.
+<a name="line157"></a>    // Unfortunately, other browsers do not make that guarantee. So the other
+<a name="line158"></a>    // browsers need a slower and more complex implementation.
+<a name="line159"></a>    for (var i = 0; i &lt; uris.length; i++) {
+<a name="line160"></a>      var scriptEl = this.createScriptElement_(uris[i]);
+<a name="line161"></a>      scriptParent.appendChild(scriptEl);
+<a name="line162"></a>    }
+<a name="line163"></a>  } else {
+<a name="line164"></a>    var isAnotherModuleLoading = this.scriptsToLoadDebugMode_.length;
+<a name="line165"></a>    goog.array.extend(this.scriptsToLoadDebugMode_, uris);
+<a name="line166"></a>    if (isAnotherModuleLoading) {
+<a name="line167"></a>      // The module loader is still loading some other module&#39;s code.
+<a name="line168"></a>      // In order to prevent the race condition noted above, we just add
+<a name="line169"></a>      // these URIs to the end of the other module&#39;s queue and return.
+<a name="line170"></a>      return;
+<a name="line171"></a>    }
+<a name="line172"></a>
+<a name="line173"></a>    var moduleLoader = this;
+<a name="line174"></a>    uris = this.scriptsToLoadDebugMode_;
+<a name="line175"></a>    var popAndLoadNextScript = function() {
+<a name="line176"></a>      var uri = uris.shift();
+<a name="line177"></a>      var scriptEl = moduleLoader.createScriptElement_(uri);
+<a name="line178"></a>      if (uris.length) {
+<a name="line179"></a>        if (goog.userAgent.IE) {
+<a name="line180"></a>          scriptEl.onreadystatechange = function() {
+<a name="line181"></a>            if (!this.readyState || this.readyState == &#39;loaded&#39; ||
+<a name="line182"></a>                this.readyState == &#39;complete&#39;) {
+<a name="line183"></a>              // Guard against redundant state changes.
+<a name="line184"></a>              scriptEl.onreadystatechange = goog.nullFunction;
+<a name="line185"></a>              popAndLoadNextScript();
+<a name="line186"></a>            }
+<a name="line187"></a>          };
+<a name="line188"></a>        } else {
+<a name="line189"></a>          scriptEl.onload = popAndLoadNextScript;
+<a name="line190"></a>        }
+<a name="line191"></a>      }
+<a name="line192"></a>      scriptParent.appendChild(scriptEl);
+<a name="line193"></a>    };
+<a name="line194"></a>    popAndLoadNextScript();
+<a name="line195"></a>  }
+<a name="line196"></a>};
+<a name="line197"></a>
+<a name="line198"></a>
+<a name="line199"></a>/**
+<a name="line200"></a> * Handles a successful response to a request for one or more modules.
+<a name="line201"></a> *
+<a name="line202"></a> * @param {goog.net.BulkLoader} bulkLoader The bulk loader.
+<a name="line203"></a> * @param {Array.&lt;string&gt;} moduleIds The ids of the modules requested.
+<a name="line204"></a> * @param {function()} successFn The callback for success.
+<a name="line205"></a> * @param {function(?number)} errorFn The callback for error.
+<a name="line206"></a> */
+<a name="line207"></a>goog.module.ModuleLoader.prototype.handleSuccess = function(
+<a name="line208"></a>    bulkLoader, moduleIds, successFn, errorFn) {
+<a name="line209"></a>  var jsCode = bulkLoader.getResponseTexts().join(&#39;\n&#39;);
+<a name="line210"></a>
+<a name="line211"></a>  this.handleRequestSuccess(jsCode, moduleIds, successFn, errorFn);
+<a name="line212"></a>
+<a name="line213"></a>  // NOTE: A bulk loader instance is used for loading a set of module ids. Once
+<a name="line214"></a>  // these modules have been loaded succesfully or in error the bulk loader
+<a name="line215"></a>  // should be disposed as it is not needed anymore. A new bulk loader is
+<a name="line216"></a>  // instantiated for any new modules to be loaded. The dispose is called
+<a name="line217"></a>  // on a timer so that the bulkloader has a chance to release its
+<a name="line218"></a>  // objects.
+<a name="line219"></a>  goog.Timer.callOnce(bulkLoader.dispose, 5, bulkLoader);
+<a name="line220"></a>};
+<a name="line221"></a>
+<a name="line222"></a>
+<a name="line223"></a>/**
+<a name="line224"></a> * Handles an error during a request for one or more modules.
+<a name="line225"></a> * @param {goog.net.BulkLoader} bulkLoader The bulk loader.
+<a name="line226"></a> * @param {Array.&lt;string&gt;} moduleIds The ids of the modules requested.
+<a name="line227"></a> * @param {function(?number)} errorFn The function to call on failure.
+<a name="line228"></a> * @param {number} status The response status.
+<a name="line229"></a> */
+<a name="line230"></a>goog.module.ModuleLoader.prototype.handleError = function(
+<a name="line231"></a>    bulkLoader, moduleIds, errorFn, status) {
+<a name="line232"></a>  this.handleRequestError(moduleIds, errorFn, status);
+<a name="line233"></a>
+<a name="line234"></a>  // NOTE: A bulk loader instance is used for loading a set of module ids. Once
+<a name="line235"></a>  // these modules have been loaded succesfully or in error the bulk loader
+<a name="line236"></a>  // should be disposed as it is not needed anymore. A new bulk loader is
+<a name="line237"></a>  // instantiated for any new modules to be loaded. The dispose is called
+<a name="line238"></a>  // on another thread so that the bulkloader has a chance to release its
+<a name="line239"></a>  // objects.
+<a name="line240"></a>  goog.Timer.callOnce(bulkLoader.dispose, 5, bulkLoader);
+<a name="line241"></a>};
+<a name="line242"></a>
+<a name="line243"></a>
+<a name="line244"></a>/** @override */
+<a name="line245"></a>goog.module.ModuleLoader.prototype.disposeInternal = function() {
+<a name="line246"></a>  goog.module.ModuleLoader.superClass_.disposeInternal.call(this);
+<a name="line247"></a>
+<a name="line248"></a>  this.eventHandler_.dispose();
+<a name="line249"></a>  this.eventHandler_ = null;
+<a name="line250"></a>};
+</pre>
+
+
+</body>
+</html>

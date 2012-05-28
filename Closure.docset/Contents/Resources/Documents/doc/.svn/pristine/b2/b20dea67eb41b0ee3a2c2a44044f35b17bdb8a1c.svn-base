@@ -1,0 +1,189 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>supporteduseragent.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_third_party_closure_goog_silverlight_supporteduseragent.js.html">supporteduseragent.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>/**
+<a name="line2"></a> * @license
+<a name="line3"></a> * Portions of this code are from Silverlight.supportedUserAgent.js
+<a name="line4"></a> * under the Ms-PL license.
+<a name="line5"></a> *
+<a name="line6"></a> * Silverlight.supportedUserAgent.js    version 4.0.50401.0
+<a name="line7"></a> *
+<a name="line8"></a> * This file is provided by Microsoft as a helper file for websites that
+<a name="line9"></a> * incorporate Silverlight Objects. This file is provided under the Microsoft
+<a name="line10"></a> * Public License available at
+<a name="line11"></a> * http://code.msdn.microsoft.com/SLsupportedUA/Project/License.aspx.
+<a name="line12"></a> * You may not use or distribute this file or the code in this file except as
+<a name="line13"></a> * expressly permitted under that license.
+<a name="line14"></a> *
+<a name="line15"></a> * Copyright (c) Microsoft Corporation. All rights reserved.
+<a name="line16"></a> */
+<a name="line17"></a>
+<a name="line18"></a>/**
+<a name="line19"></a> * @fileoverview Modified version of Silverlight.supportedUserAgent.js
+<a name="line20"></a> * to work with the compiler&#39;s advanced modes. The API should be the same,
+<a name="line21"></a> * except that they&#39;re namespaced under goog.silverlight
+<a name="line22"></a> * instead of Silverlight.
+<a name="line23"></a> *
+<a name="line24"></a> * @author nicksantos@google.com (Nick Santos) (ported to Closure)
+<a name="line25"></a> */
+<a name="line26"></a>
+<a name="line27"></a>goog.provide(&#39;goog.silverlight.supportedUserAgent&#39;);
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>/**
+<a name="line31"></a> * NOTE: This function is strongly tied to current implementations of web
+<a name="line32"></a> * browsers. The implementation of this function will change over time to
+<a name="line33"></a> * account for new Web browser developments. Visit
+<a name="line34"></a> * http://code.msdn.microsoft.com/SLsupportedUA often to ensure that you have
+<a name="line35"></a> * the latest version.
+<a name="line36"></a> *
+<a name="line37"></a> * Determines if the client browser is supported by Silverlight.
+<a name="line38"></a> *
+<a name="line39"></a> * @param {string} version
+<a name="line40"></a> *         determines if a particular version of Silverlight supports
+<a name="line41"></a> *         this browser. Acceptable values are &quot;1.0&quot; and &quot;2.0&quot;.
+<a name="line42"></a> * @param {string=} userAgent
+<a name="line43"></a> *         optional. User Agent string to be analized. If null then the
+<a name="line44"></a> *         current browsers user agent string will be used.
+<a name="line45"></a> *
+<a name="line46"></a> * @return {boolean} Whether the user agent is supported.
+<a name="line47"></a> */
+<a name="line48"></a>goog.silverlight.supportedUserAgent = function(version, userAgent) {
+<a name="line49"></a>  try {
+<a name="line50"></a>    var ua = null;
+<a name="line51"></a>
+<a name="line52"></a>    if (userAgent) {
+<a name="line53"></a>      ua = userAgent;
+<a name="line54"></a>    } else {
+<a name="line55"></a>      ua = window.navigator.userAgent;
+<a name="line56"></a>    }
+<a name="line57"></a>
+<a name="line58"></a>    var slua = {OS: &#39;Unsupported&#39;, Browser: &#39;Unsupported&#39;};
+<a name="line59"></a>
+<a name="line60"></a>    //Silverlight does not support pre-Windows NT platforms
+<a name="line61"></a>    if (ua.indexOf(&#39;Windows NT&#39;) &gt;= 0 ||
+<a name="line62"></a>        ua.indexOf(&#39;Mozilla/4.0 (compatible; MSIE 6.0)&#39;) &gt;= 0) {
+<a name="line63"></a>      slua.OS = &#39;Windows&#39;;
+<a name="line64"></a>    } else if (ua.indexOf(&#39;PPC Mac OS X&#39;) &gt;= 0) {
+<a name="line65"></a>      slua.OS = &#39;MacPPC&#39;;
+<a name="line66"></a>    } else if (ua.indexOf(&#39;Intel Mac OS X&#39;) &gt;= 0) {
+<a name="line67"></a>      slua.OS = &#39;MacIntel&#39;;
+<a name="line68"></a>    } else if (ua.indexOf(&#39;Linux&#39;) &gt;= 0) {
+<a name="line69"></a>      slua.OS = &#39;Linux&#39;;
+<a name="line70"></a>    }
+<a name="line71"></a>
+<a name="line72"></a>    if (slua.OS != &#39;Unsupported&#39;) {
+<a name="line73"></a>      if (ua.indexOf(&#39;MSIE&#39;) &gt;= 0) {
+<a name="line74"></a>        if (navigator.userAgent.indexOf(&#39;Win64&#39;) == -1) {
+<a name="line75"></a>          if (parseInt(ua.split(&#39;MSIE&#39;)[1], 10) &gt;= 6) {
+<a name="line76"></a>            slua.Browser = &#39;MSIE&#39;;
+<a name="line77"></a>          }
+<a name="line78"></a>        }
+<a name="line79"></a>      } else if (ua.indexOf(&#39;Firefox&#39;) &gt;= 0) {
+<a name="line80"></a>        var versionArr = ua.split(&#39;Firefox/&#39;)[1].split(&#39;.&#39;);
+<a name="line81"></a>        var major = parseInt(versionArr[0], 10);
+<a name="line82"></a>        if (major &gt;= 2) {
+<a name="line83"></a>          slua.Browser = &#39;Firefox&#39;;
+<a name="line84"></a>        } else {
+<a name="line85"></a>          var minor = parseInt(versionArr[1], 10);
+<a name="line86"></a>          if ((major == 1) &amp;&amp; (minor &gt;= 5)) {
+<a name="line87"></a>            slua.Browser = &#39;Firefox&#39;;
+<a name="line88"></a>          }
+<a name="line89"></a>        }
+<a name="line90"></a>      } else if (ua.indexOf(&#39;Chrome&#39;) &gt;= 0) {
+<a name="line91"></a>        slua.Browser = &#39;Chrome&#39;;
+<a name="line92"></a>      } else if (ua.indexOf(&#39;Safari&#39;) &gt;= 0) {
+<a name="line93"></a>        slua.Browser = &#39;Safari&#39;;
+<a name="line94"></a>      }
+<a name="line95"></a>    }
+<a name="line96"></a>
+<a name="line97"></a>    var sl_version = parseInt(version, 10);
+<a name="line98"></a>
+<a name="line99"></a>    // detect all unsupported platform combinations (IE on Mac, Safari on Win)
+<a name="line100"></a>    var supUA = (!(// Unsupported OS
+<a name="line101"></a>                   slua.OS == &#39;Unsupported&#39; ||
+<a name="line102"></a>                   // Unsupported Browser
+<a name="line103"></a>                   slua.Browser == &#39;Unsupported&#39; ||
+<a name="line104"></a>                   // Safari is not supported on Windows
+<a name="line105"></a>                   (slua.OS == &#39;Windows&#39; &amp;&amp; slua.Browser == &#39;Safari&#39;) ||
+<a name="line106"></a>                   // IE is not supported on Mac
+<a name="line107"></a>                   (slua.OS.indexOf(&#39;Mac&#39;) &gt;= 0 &amp;&amp; slua.Browser == &#39;MSIE&#39;) ||
+<a name="line108"></a>                   // Google Chrome is not supported on Mac
+<a name="line109"></a>                   (slua.OS.indexOf(&#39;Mac&#39;) &gt;= 0 &amp;&amp; slua.Browser == &#39;Chrome&#39;)));
+<a name="line110"></a>
+<a name="line111"></a>    // Detection of specific platform/versions
+<a name="line112"></a>
+<a name="line113"></a>    // Google Chrome only on Windows and only in SL4+
+<a name="line114"></a>    if ((slua.OS.indexOf(&#39;Windows&#39;) &gt;= 0 &amp;&amp;
+<a name="line115"></a>         slua.Browser == &#39;Chrome&#39; &amp;&amp; sl_version &lt; 4)) {
+<a name="line116"></a>      return false;
+<a name="line117"></a>    }
+<a name="line118"></a>
+<a name="line119"></a>    // detect unsupported MacPPC platforms (basically anything but 1.0)
+<a name="line120"></a>    if ((slua.OS == &#39;MacPPC&#39;) &amp;&amp; (sl_version &gt; 1)) {
+<a name="line121"></a>      return ((supUA &amp;&amp; (slua.OS != &#39;MacPPC&#39;)));
+<a name="line122"></a>    }
+<a name="line123"></a>
+<a name="line124"></a>    // detect unsupported Linux platforms per Moonlight
+<a name="line125"></a>    if ((slua.OS == &#39;Linux&#39;) &amp;&amp; (sl_version &gt; 2)) {
+<a name="line126"></a>      return ((supUA &amp;&amp; (slua.OS != &#39;Linux&#39;)));
+<a name="line127"></a>    }
+<a name="line128"></a>
+<a name="line129"></a>    // detect other unsupported 1.0 platforms (win2k)
+<a name="line130"></a>    if (version == &#39;1.0&#39;) {
+<a name="line131"></a>      return (supUA &amp;&amp; (ua.indexOf(&#39;Windows NT 5.0&#39;) &lt; 0));
+<a name="line132"></a>    } else {
+<a name="line133"></a>      return (supUA);
+<a name="line134"></a>    }
+<a name="line135"></a>  } catch (e) {
+<a name="line136"></a>    return false;
+<a name="line137"></a>  }
+<a name="line138"></a>};
+</pre>
+
+
+</body>
+</html>

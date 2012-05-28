@@ -1,0 +1,330 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>link.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_editor_link.js.html">link.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A utility class for managing editable links.
+<a name="line17"></a> *
+<a name="line18"></a> * @author nicksantos@google.com (Nick Santos)
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.editor.Link&#39;);
+<a name="line22"></a>
+<a name="line23"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line24"></a>goog.require(&#39;goog.dom.NodeType&#39;);
+<a name="line25"></a>goog.require(&#39;goog.dom.Range&#39;);
+<a name="line26"></a>goog.require(&#39;goog.editor.BrowserFeature&#39;);
+<a name="line27"></a>goog.require(&#39;goog.editor.node&#39;);
+<a name="line28"></a>goog.require(&#39;goog.editor.range&#39;);
+<a name="line29"></a>goog.require(&#39;goog.string.Unicode&#39;);
+<a name="line30"></a>goog.require(&#39;goog.uri.utils&#39;);
+<a name="line31"></a>
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>/**
+<a name="line35"></a> * Wrap an editable link.
+<a name="line36"></a> * @param {HTMLAnchorElement} anchor The anchor element.
+<a name="line37"></a> * @param {boolean} isNew Whether this is a new link.
+<a name="line38"></a> * @constructor
+<a name="line39"></a> */
+<a name="line40"></a>goog.editor.Link = function(anchor, isNew) {
+<a name="line41"></a>  /**
+<a name="line42"></a>   * The link DOM element.
+<a name="line43"></a>   * @type {HTMLAnchorElement}
+<a name="line44"></a>   * @private
+<a name="line45"></a>   */
+<a name="line46"></a>  this.anchor_ = anchor;
+<a name="line47"></a>
+<a name="line48"></a>  /**
+<a name="line49"></a>   * Whether this link represents a link just added to the document.
+<a name="line50"></a>   * @type {boolean}
+<a name="line51"></a>   * @private
+<a name="line52"></a>   */
+<a name="line53"></a>  this.isNew_ = isNew;
+<a name="line54"></a>};
+<a name="line55"></a>
+<a name="line56"></a>
+<a name="line57"></a>/**
+<a name="line58"></a> * @return {HTMLAnchorElement} The anchor element.
+<a name="line59"></a> */
+<a name="line60"></a>goog.editor.Link.prototype.getAnchor = function() {
+<a name="line61"></a>  return this.anchor_;
+<a name="line62"></a>};
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * @return {string} The inner text for the anchor.
+<a name="line67"></a> */
+<a name="line68"></a>goog.editor.Link.prototype.getCurrentText = function() {
+<a name="line69"></a>  if (!this.currentText_) {
+<a name="line70"></a>    this.currentText_ = goog.dom.getRawTextContent(this.getAnchor());
+<a name="line71"></a>  }
+<a name="line72"></a>  return this.currentText_;
+<a name="line73"></a>};
+<a name="line74"></a>
+<a name="line75"></a>
+<a name="line76"></a>/**
+<a name="line77"></a> * @return {boolean} Whether the link is new.
+<a name="line78"></a> */
+<a name="line79"></a>goog.editor.Link.prototype.isNew = function() {
+<a name="line80"></a>  return this.isNew_;
+<a name="line81"></a>};
+<a name="line82"></a>
+<a name="line83"></a>
+<a name="line84"></a>/**
+<a name="line85"></a> * Set the url without affecting the isNew() status of the link.
+<a name="line86"></a> * @param {string} url A URL.
+<a name="line87"></a> */
+<a name="line88"></a>goog.editor.Link.prototype.initializeUrl = function(url) {
+<a name="line89"></a>  this.getAnchor().href = url;
+<a name="line90"></a>};
+<a name="line91"></a>
+<a name="line92"></a>
+<a name="line93"></a>/**
+<a name="line94"></a> * Removes the link, leaving its contents in the document.  Note that this
+<a name="line95"></a> * object will no longer be usable/useful after this call.
+<a name="line96"></a> */
+<a name="line97"></a>goog.editor.Link.prototype.removeLink = function() {
+<a name="line98"></a>  goog.dom.flattenElement(this.anchor_);
+<a name="line99"></a>  this.anchor_ = null;
+<a name="line100"></a>};
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>/**
+<a name="line104"></a> * Change the link.
+<a name="line105"></a> * @param {string} newText New text for the link. If the link contains all its
+<a name="line106"></a> *     text in one descendent, newText will only replace the text in that
+<a name="line107"></a> *     one node. Otherwise, we&#39;ll change the innerHTML of the whole
+<a name="line108"></a> *     link to newText.
+<a name="line109"></a> * @param {string} newUrl A new URL.
+<a name="line110"></a> */
+<a name="line111"></a>goog.editor.Link.prototype.setTextAndUrl = function(newText, newUrl) {
+<a name="line112"></a>  var anchor = this.getAnchor();
+<a name="line113"></a>  anchor.href = newUrl;
+<a name="line114"></a>
+<a name="line115"></a>  // If the text did not change, don&#39;t update link text.
+<a name="line116"></a>  var currentText = this.getCurrentText();
+<a name="line117"></a>  if (newText != currentText) {
+<a name="line118"></a>    var leaf = goog.editor.node.getLeftMostLeaf(anchor);
+<a name="line119"></a>    if (leaf.nodeType == goog.dom.NodeType.TEXT) {
+<a name="line120"></a>      leaf = leaf.parentNode;
+<a name="line121"></a>    }
+<a name="line122"></a>
+<a name="line123"></a>    if (goog.dom.getRawTextContent(leaf) != currentText) {
+<a name="line124"></a>      leaf = anchor;
+<a name="line125"></a>    }
+<a name="line126"></a>
+<a name="line127"></a>    goog.dom.removeChildren(leaf);
+<a name="line128"></a>
+<a name="line129"></a>    var domHelper = goog.dom.getDomHelper(leaf);
+<a name="line130"></a>    goog.dom.appendChild(leaf, domHelper.createTextNode(newText));
+<a name="line131"></a>
+<a name="line132"></a>    // The text changed, so force getCurrentText to recompute.
+<a name="line133"></a>    this.currentText_ = null;
+<a name="line134"></a>  }
+<a name="line135"></a>
+<a name="line136"></a>  this.isNew_ = false;
+<a name="line137"></a>};
+<a name="line138"></a>
+<a name="line139"></a>
+<a name="line140"></a>/**
+<a name="line141"></a> * Places the cursor to the right of the anchor.
+<a name="line142"></a> * Note that this is different from goog.editor.range&#39;s placeCursorNextTo
+<a name="line143"></a> * in that it specifically handles the placement of a cursor in browsers
+<a name="line144"></a> * that trap you in links, by adding a space when necessary and placing the
+<a name="line145"></a> * cursor after that space.
+<a name="line146"></a> */
+<a name="line147"></a>goog.editor.Link.prototype.placeCursorRightOf = function() {
+<a name="line148"></a>  var anchor = this.getAnchor();
+<a name="line149"></a>  // If the browser gets stuck in a link if we place the cursor next to it,
+<a name="line150"></a>  // we&#39;ll place the cursor after a space instead.
+<a name="line151"></a>  if (goog.editor.BrowserFeature.GETS_STUCK_IN_LINKS) {
+<a name="line152"></a>    var spaceNode;
+<a name="line153"></a>    var nextSibling = anchor.nextSibling;
+<a name="line154"></a>
+<a name="line155"></a>    // Check if there is already a space after the link.  Only handle the
+<a name="line156"></a>    // simple case - the next node is a text node that starts with a space.
+<a name="line157"></a>    if (nextSibling &amp;&amp;
+<a name="line158"></a>        nextSibling.nodeType == goog.dom.NodeType.TEXT &amp;&amp;
+<a name="line159"></a>        (goog.string.startsWith(nextSibling.data, goog.string.Unicode.NBSP) ||
+<a name="line160"></a>         goog.string.startsWith(nextSibling.data, &#39; &#39;))) {
+<a name="line161"></a>      spaceNode = nextSibling;
+<a name="line162"></a>    } else {
+<a name="line163"></a>      // If there isn&#39;t an obvious space to use, create one after the link.
+<a name="line164"></a>      var dh = goog.dom.getDomHelper(anchor);
+<a name="line165"></a>      spaceNode = dh.createTextNode(goog.string.Unicode.NBSP);
+<a name="line166"></a>      goog.dom.insertSiblingAfter(spaceNode, anchor);
+<a name="line167"></a>    }
+<a name="line168"></a>
+<a name="line169"></a>    // Move the selection after the space.
+<a name="line170"></a>    var range = goog.dom.Range.createCaret(spaceNode, 1);
+<a name="line171"></a>    range.select();
+<a name="line172"></a>  } else {
+<a name="line173"></a>    goog.editor.range.placeCursorNextTo(anchor, false);
+<a name="line174"></a>  }
+<a name="line175"></a>};
+<a name="line176"></a>
+<a name="line177"></a>
+<a name="line178"></a>/**
+<a name="line179"></a> * Initialize a new link.
+<a name="line180"></a> * @param {HTMLAnchorElement} anchor The anchor element.
+<a name="line181"></a> * @param {string} url The initial URL.
+<a name="line182"></a> * @param {string=} opt_target The target.
+<a name="line183"></a> * @return {goog.editor.Link} The link.
+<a name="line184"></a> */
+<a name="line185"></a>goog.editor.Link.createNewLink = function(anchor, url, opt_target) {
+<a name="line186"></a>  var link = new goog.editor.Link(anchor, true);
+<a name="line187"></a>  link.initializeUrl(url);
+<a name="line188"></a>
+<a name="line189"></a>  if (opt_target) {
+<a name="line190"></a>    anchor.target = opt_target;
+<a name="line191"></a>  }
+<a name="line192"></a>
+<a name="line193"></a>  return link;
+<a name="line194"></a>};
+<a name="line195"></a>
+<a name="line196"></a>
+<a name="line197"></a>/**
+<a name="line198"></a> * Returns true if str could be a URL, false otherwise
+<a name="line199"></a> *
+<a name="line200"></a> * Ex: TR_Util.isLikelyUrl_(&quot;http://www.google.com&quot;) == true
+<a name="line201"></a> *     TR_Util.isLikelyUrl_(&quot;www.google.com&quot;) == true
+<a name="line202"></a> *
+<a name="line203"></a> * @param {string} str String to check if it looks like a URL.
+<a name="line204"></a> * @return {boolean} Whether str could be a URL.
+<a name="line205"></a> */
+<a name="line206"></a>goog.editor.Link.isLikelyUrl = function(str) {
+<a name="line207"></a>  // Whitespace means this isn&#39;t a domain.
+<a name="line208"></a>  if (/\s/.test(str)) {
+<a name="line209"></a>    return false;
+<a name="line210"></a>  }
+<a name="line211"></a>
+<a name="line212"></a>  if (goog.editor.Link.isLikelyEmailAddress(str)) {
+<a name="line213"></a>    return false;
+<a name="line214"></a>  }
+<a name="line215"></a>
+<a name="line216"></a>  // Add a scheme if the url doesn&#39;t have one - this helps the parser.
+<a name="line217"></a>  var addedScheme = false;
+<a name="line218"></a>  if (!/^[^:\/?#.]+:/.test(str)) {
+<a name="line219"></a>    str = &#39;http://&#39; + str;
+<a name="line220"></a>    addedScheme = true;
+<a name="line221"></a>  }
+<a name="line222"></a>
+<a name="line223"></a>  // Parse the domain.
+<a name="line224"></a>  var parts = goog.uri.utils.split(str);
+<a name="line225"></a>
+<a name="line226"></a>  // Relax the rules for special schemes.
+<a name="line227"></a>  var scheme = parts[goog.uri.utils.ComponentIndex.SCHEME];
+<a name="line228"></a>  if (goog.array.indexOf([&#39;mailto&#39;, &#39;aim&#39;], scheme) != -1) {
+<a name="line229"></a>    return true;
+<a name="line230"></a>  }
+<a name="line231"></a>
+<a name="line232"></a>  // Require domains to contain a &#39;.&#39;, unless the domain is fully qualified.
+<a name="line233"></a>  var domain = parts[goog.uri.utils.ComponentIndex.DOMAIN];
+<a name="line234"></a>  if (!domain || (addedScheme &amp;&amp; domain.indexOf(&#39;.&#39;) == -1)) {
+<a name="line235"></a>    return false;
+<a name="line236"></a>  }
+<a name="line237"></a>
+<a name="line238"></a>  // Require http and ftp paths to start with &#39;/&#39;.
+<a name="line239"></a>  var path = parts[goog.uri.utils.ComponentIndex.PATH];
+<a name="line240"></a>  return !path || path.indexOf(&#39;/&#39;) == 0;
+<a name="line241"></a>};
+<a name="line242"></a>
+<a name="line243"></a>
+<a name="line244"></a>/**
+<a name="line245"></a> * Regular expression that matches strings that could be an email address.
+<a name="line246"></a> * @type {RegExp}
+<a name="line247"></a> * @private
+<a name="line248"></a> */
+<a name="line249"></a>goog.editor.Link.LIKELY_EMAIL_ADDRESS_ = new RegExp(
+<a name="line250"></a>    &#39;^&#39; +                     // Test from start of string
+<a name="line251"></a>    &#39;[\\w-]+(\\.[\\w-]+)*&#39; +  // Dot-delimited alphanumerics and dashes (name)
+<a name="line252"></a>    &#39;\\@&#39; +                   // @
+<a name="line253"></a>    &#39;([\\w-]+\\.)+&#39; +         // Alphanumerics, dashes and dots (domain)
+<a name="line254"></a>    &#39;(\\d+|\\w\\w+)$&#39;,        // Domain ends in at least one number or 2 letters
+<a name="line255"></a>    &#39;i&#39;);
+<a name="line256"></a>
+<a name="line257"></a>
+<a name="line258"></a>/**
+<a name="line259"></a> * Returns true if str could be an email address, false otherwise
+<a name="line260"></a> *
+<a name="line261"></a> * Ex: goog.editor.Link.isLikelyEmailAddress_(&quot;some word&quot;) == false
+<a name="line262"></a> *     goog.editor.Link.isLikelyEmailAddress_(&quot;foo@foo.com&quot;) == true
+<a name="line263"></a> *
+<a name="line264"></a> * @param {string} str String to test for being email address.
+<a name="line265"></a> * @return {boolean} Whether &quot;str&quot; looks like an email address.
+<a name="line266"></a> */
+<a name="line267"></a>goog.editor.Link.isLikelyEmailAddress = function(str) {
+<a name="line268"></a>  return goog.editor.Link.LIKELY_EMAIL_ADDRESS_.test(str);
+<a name="line269"></a>};
+<a name="line270"></a>
+<a name="line271"></a>
+<a name="line272"></a>/**
+<a name="line273"></a> * Determines whether or not a url is an email link.
+<a name="line274"></a> * @param {string} url A url.
+<a name="line275"></a> * @return {boolean} Whether the url is a mailto link.
+<a name="line276"></a> */
+<a name="line277"></a>goog.editor.Link.isMailto = function(url) {
+<a name="line278"></a>  return !!url &amp;&amp; goog.string.startsWith(url, &#39;mailto:&#39;);
+<a name="line279"></a>};
+</pre>
+
+
+</body>
+</html>

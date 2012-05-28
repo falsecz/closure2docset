@@ -1,0 +1,550 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>useragent.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_useragent_useragent.js.html">useragent.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Rendering engine detection.
+<a name="line17"></a> * @see &lt;a href=&quot;http://www.useragentstring.com/&quot;&gt;User agent strings&lt;/a&gt;
+<a name="line18"></a> * For information on the browser brand (such as Safari versus Chrome), see
+<a name="line19"></a> * goog.userAgent.product.
+<a name="line20"></a> * @see ../demos/useragent.html
+<a name="line21"></a> */
+<a name="line22"></a>
+<a name="line23"></a>goog.provide(&#39;goog.userAgent&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.string&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>/**
+<a name="line29"></a> * @define {boolean} Whether we know at compile-time that the browser is IE.
+<a name="line30"></a> */
+<a name="line31"></a>goog.userAgent.ASSUME_IE = false;
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>/**
+<a name="line35"></a> * @define {boolean} Whether we know at compile-time that the browser is GECKO.
+<a name="line36"></a> */
+<a name="line37"></a>goog.userAgent.ASSUME_GECKO = false;
+<a name="line38"></a>
+<a name="line39"></a>
+<a name="line40"></a>/**
+<a name="line41"></a> * @define {boolean} Whether we know at compile-time that the browser is WEBKIT.
+<a name="line42"></a> */
+<a name="line43"></a>goog.userAgent.ASSUME_WEBKIT = false;
+<a name="line44"></a>
+<a name="line45"></a>
+<a name="line46"></a>/**
+<a name="line47"></a> * @define {boolean} Whether we know at compile-time that the browser is a
+<a name="line48"></a> *     mobile device running WebKit e.g. iPhone or Android.
+<a name="line49"></a> */
+<a name="line50"></a>goog.userAgent.ASSUME_MOBILE_WEBKIT = false;
+<a name="line51"></a>
+<a name="line52"></a>
+<a name="line53"></a>/**
+<a name="line54"></a> * @define {boolean} Whether we know at compile-time that the browser is OPERA.
+<a name="line55"></a> */
+<a name="line56"></a>goog.userAgent.ASSUME_OPERA = false;
+<a name="line57"></a>
+<a name="line58"></a>
+<a name="line59"></a>/**
+<a name="line60"></a> * @define {boolean} Whether the {@code goog.userAgent.isVersion} function will
+<a name="line61"></a> *     return true for any version.
+<a name="line62"></a> */
+<a name="line63"></a>goog.userAgent.ASSUME_ANY_VERSION = false;
+<a name="line64"></a>
+<a name="line65"></a>
+<a name="line66"></a>/**
+<a name="line67"></a> * Whether we know the browser engine at compile-time.
+<a name="line68"></a> * @type {boolean}
+<a name="line69"></a> * @private
+<a name="line70"></a> */
+<a name="line71"></a>goog.userAgent.BROWSER_KNOWN_ =
+<a name="line72"></a>    goog.userAgent.ASSUME_IE ||
+<a name="line73"></a>    goog.userAgent.ASSUME_GECKO ||
+<a name="line74"></a>    goog.userAgent.ASSUME_MOBILE_WEBKIT ||
+<a name="line75"></a>    goog.userAgent.ASSUME_WEBKIT ||
+<a name="line76"></a>    goog.userAgent.ASSUME_OPERA;
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>/**
+<a name="line80"></a> * Returns the userAgent string for the current browser.
+<a name="line81"></a> * Some user agents (I&#39;m thinking of you, Gears WorkerPool) do not expose a
+<a name="line82"></a> * navigator object off the global scope.  In that case we return null.
+<a name="line83"></a> *
+<a name="line84"></a> * @return {?string} The userAgent string or null if there is none.
+<a name="line85"></a> */
+<a name="line86"></a>goog.userAgent.getUserAgentString = function() {
+<a name="line87"></a>  return goog.global[&#39;navigator&#39;] ? goog.global[&#39;navigator&#39;].userAgent : null;
+<a name="line88"></a>};
+<a name="line89"></a>
+<a name="line90"></a>
+<a name="line91"></a>/**
+<a name="line92"></a> * @return {Object} The native navigator object.
+<a name="line93"></a> */
+<a name="line94"></a>goog.userAgent.getNavigator = function() {
+<a name="line95"></a>  // Need a local navigator reference instead of using the global one,
+<a name="line96"></a>  // to avoid the rare case where they reference different objects.
+<a name="line97"></a>  // (goog.gears.FakeWorkerPool, for example).
+<a name="line98"></a>  return goog.global[&#39;navigator&#39;];
+<a name="line99"></a>};
+<a name="line100"></a>
+<a name="line101"></a>
+<a name="line102"></a>/**
+<a name="line103"></a> * Initializer for goog.userAgent.
+<a name="line104"></a> *
+<a name="line105"></a> * This is a named function so that it can be stripped via the jscompiler
+<a name="line106"></a> * option for stripping types.
+<a name="line107"></a> * @private
+<a name="line108"></a> */
+<a name="line109"></a>goog.userAgent.init_ = function() {
+<a name="line110"></a>  /**
+<a name="line111"></a>   * Whether the user agent string denotes Opera.
+<a name="line112"></a>   * @type {boolean}
+<a name="line113"></a>   * @private
+<a name="line114"></a>   */
+<a name="line115"></a>  goog.userAgent.detectedOpera_ = false;
+<a name="line116"></a>
+<a name="line117"></a>  /**
+<a name="line118"></a>   * Whether the user agent string denotes Internet Explorer. This includes
+<a name="line119"></a>   * other browsers using Trident as its rendering engine. For example AOL
+<a name="line120"></a>   * and Netscape 8
+<a name="line121"></a>   * @type {boolean}
+<a name="line122"></a>   * @private
+<a name="line123"></a>   */
+<a name="line124"></a>  goog.userAgent.detectedIe_ = false;
+<a name="line125"></a>
+<a name="line126"></a>  /**
+<a name="line127"></a>   * Whether the user agent string denotes WebKit. WebKit is the rendering
+<a name="line128"></a>   * engine that Safari, Android and others use.
+<a name="line129"></a>   * @type {boolean}
+<a name="line130"></a>   * @private
+<a name="line131"></a>   */
+<a name="line132"></a>  goog.userAgent.detectedWebkit_ = false;
+<a name="line133"></a>
+<a name="line134"></a>  /**
+<a name="line135"></a>   * Whether the user agent string denotes a mobile device.
+<a name="line136"></a>   * @type {boolean}
+<a name="line137"></a>   * @private
+<a name="line138"></a>   */
+<a name="line139"></a>  goog.userAgent.detectedMobile_ = false;
+<a name="line140"></a>
+<a name="line141"></a>  /**
+<a name="line142"></a>   * Whether the user agent string denotes Gecko. Gecko is the rendering
+<a name="line143"></a>   * engine used by Mozilla, Mozilla Firefox, Camino and many more.
+<a name="line144"></a>   * @type {boolean}
+<a name="line145"></a>   * @private
+<a name="line146"></a>   */
+<a name="line147"></a>  goog.userAgent.detectedGecko_ = false;
+<a name="line148"></a>
+<a name="line149"></a>  var ua;
+<a name="line150"></a>  if (!goog.userAgent.BROWSER_KNOWN_ &amp;&amp;
+<a name="line151"></a>      (ua = goog.userAgent.getUserAgentString())) {
+<a name="line152"></a>    var navigator = goog.userAgent.getNavigator();
+<a name="line153"></a>    goog.userAgent.detectedOpera_ = ua.indexOf(&#39;Opera&#39;) == 0;
+<a name="line154"></a>    goog.userAgent.detectedIe_ = !goog.userAgent.detectedOpera_ &amp;&amp;
+<a name="line155"></a>        ua.indexOf(&#39;MSIE&#39;) != -1;
+<a name="line156"></a>    goog.userAgent.detectedWebkit_ = !goog.userAgent.detectedOpera_ &amp;&amp;
+<a name="line157"></a>        ua.indexOf(&#39;WebKit&#39;) != -1;
+<a name="line158"></a>    // WebKit also gives navigator.product string equal to &#39;Gecko&#39;.
+<a name="line159"></a>    goog.userAgent.detectedMobile_ = goog.userAgent.detectedWebkit_ &amp;&amp;
+<a name="line160"></a>        ua.indexOf(&#39;Mobile&#39;) != -1;
+<a name="line161"></a>    goog.userAgent.detectedGecko_ = !goog.userAgent.detectedOpera_ &amp;&amp;
+<a name="line162"></a>        !goog.userAgent.detectedWebkit_ &amp;&amp; navigator.product == &#39;Gecko&#39;;
+<a name="line163"></a>  }
+<a name="line164"></a>};
+<a name="line165"></a>
+<a name="line166"></a>
+<a name="line167"></a>if (!goog.userAgent.BROWSER_KNOWN_) {
+<a name="line168"></a>  goog.userAgent.init_();
+<a name="line169"></a>}
+<a name="line170"></a>
+<a name="line171"></a>
+<a name="line172"></a>/**
+<a name="line173"></a> * Whether the user agent is Opera.
+<a name="line174"></a> * @type {boolean}
+<a name="line175"></a> */
+<a name="line176"></a>goog.userAgent.OPERA = goog.userAgent.BROWSER_KNOWN_ ?
+<a name="line177"></a>    goog.userAgent.ASSUME_OPERA : goog.userAgent.detectedOpera_;
+<a name="line178"></a>
+<a name="line179"></a>
+<a name="line180"></a>/**
+<a name="line181"></a> * Whether the user agent is Internet Explorer. This includes other browsers
+<a name="line182"></a> * using Trident as its rendering engine. For example AOL and Netscape 8
+<a name="line183"></a> * @type {boolean}
+<a name="line184"></a> */
+<a name="line185"></a>goog.userAgent.IE = goog.userAgent.BROWSER_KNOWN_ ?
+<a name="line186"></a>    goog.userAgent.ASSUME_IE : goog.userAgent.detectedIe_;
+<a name="line187"></a>
+<a name="line188"></a>
+<a name="line189"></a>/**
+<a name="line190"></a> * Whether the user agent is Gecko. Gecko is the rendering engine used by
+<a name="line191"></a> * Mozilla, Mozilla Firefox, Camino and many more.
+<a name="line192"></a> * @type {boolean}
+<a name="line193"></a> */
+<a name="line194"></a>goog.userAgent.GECKO = goog.userAgent.BROWSER_KNOWN_ ?
+<a name="line195"></a>    goog.userAgent.ASSUME_GECKO :
+<a name="line196"></a>    goog.userAgent.detectedGecko_;
+<a name="line197"></a>
+<a name="line198"></a>
+<a name="line199"></a>/**
+<a name="line200"></a> * Whether the user agent is WebKit. WebKit is the rendering engine that
+<a name="line201"></a> * Safari, Android and others use.
+<a name="line202"></a> * @type {boolean}
+<a name="line203"></a> */
+<a name="line204"></a>goog.userAgent.WEBKIT = goog.userAgent.BROWSER_KNOWN_ ?
+<a name="line205"></a>    goog.userAgent.ASSUME_WEBKIT || goog.userAgent.ASSUME_MOBILE_WEBKIT :
+<a name="line206"></a>    goog.userAgent.detectedWebkit_;
+<a name="line207"></a>
+<a name="line208"></a>
+<a name="line209"></a>/**
+<a name="line210"></a> * Whether the user agent is running on a mobile device.
+<a name="line211"></a> * @type {boolean}
+<a name="line212"></a> */
+<a name="line213"></a>goog.userAgent.MOBILE = goog.userAgent.ASSUME_MOBILE_WEBKIT ||
+<a name="line214"></a>                        goog.userAgent.detectedMobile_;
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * Used while transitioning code to use WEBKIT instead.
+<a name="line219"></a> * @type {boolean}
+<a name="line220"></a> * @deprecated Use {@link goog.userAgent.product.SAFARI} instead.
+<a name="line221"></a> * TODO(nicksantos): Delete this from goog.userAgent.
+<a name="line222"></a> */
+<a name="line223"></a>goog.userAgent.SAFARI = goog.userAgent.WEBKIT;
+<a name="line224"></a>
+<a name="line225"></a>
+<a name="line226"></a>/**
+<a name="line227"></a> * @return {string} the platform (operating system) the user agent is running
+<a name="line228"></a> *     on. Default to empty string because navigator.platform may not be defined
+<a name="line229"></a> *     (on Rhino, for example).
+<a name="line230"></a> * @private
+<a name="line231"></a> */
+<a name="line232"></a>goog.userAgent.determinePlatform_ = function() {
+<a name="line233"></a>  var navigator = goog.userAgent.getNavigator();
+<a name="line234"></a>  return navigator &amp;&amp; navigator.platform || &#39;&#39;;
+<a name="line235"></a>};
+<a name="line236"></a>
+<a name="line237"></a>
+<a name="line238"></a>/**
+<a name="line239"></a> * The platform (operating system) the user agent is running on. Default to
+<a name="line240"></a> * empty string because navigator.platform may not be defined (on Rhino, for
+<a name="line241"></a> * example).
+<a name="line242"></a> * @type {string}
+<a name="line243"></a> */
+<a name="line244"></a>goog.userAgent.PLATFORM = goog.userAgent.determinePlatform_();
+<a name="line245"></a>
+<a name="line246"></a>
+<a name="line247"></a>/**
+<a name="line248"></a> * @define {boolean} Whether the user agent is running on a Macintosh operating
+<a name="line249"></a> *     system.
+<a name="line250"></a> */
+<a name="line251"></a>goog.userAgent.ASSUME_MAC = false;
+<a name="line252"></a>
+<a name="line253"></a>
+<a name="line254"></a>/**
+<a name="line255"></a> * @define {boolean} Whether the user agent is running on a Windows operating
+<a name="line256"></a> *     system.
+<a name="line257"></a> */
+<a name="line258"></a>goog.userAgent.ASSUME_WINDOWS = false;
+<a name="line259"></a>
+<a name="line260"></a>
+<a name="line261"></a>/**
+<a name="line262"></a> * @define {boolean} Whether the user agent is running on a Linux operating
+<a name="line263"></a> *     system.
+<a name="line264"></a> */
+<a name="line265"></a>goog.userAgent.ASSUME_LINUX = false;
+<a name="line266"></a>
+<a name="line267"></a>
+<a name="line268"></a>/**
+<a name="line269"></a> * @define {boolean} Whether the user agent is running on a X11 windowing
+<a name="line270"></a> *     system.
+<a name="line271"></a> */
+<a name="line272"></a>goog.userAgent.ASSUME_X11 = false;
+<a name="line273"></a>
+<a name="line274"></a>
+<a name="line275"></a>/**
+<a name="line276"></a> * @type {boolean}
+<a name="line277"></a> * @private
+<a name="line278"></a> */
+<a name="line279"></a>goog.userAgent.PLATFORM_KNOWN_ =
+<a name="line280"></a>    goog.userAgent.ASSUME_MAC ||
+<a name="line281"></a>    goog.userAgent.ASSUME_WINDOWS ||
+<a name="line282"></a>    goog.userAgent.ASSUME_LINUX ||
+<a name="line283"></a>    goog.userAgent.ASSUME_X11;
+<a name="line284"></a>
+<a name="line285"></a>
+<a name="line286"></a>/**
+<a name="line287"></a> * Initialize the goog.userAgent constants that define which platform the user
+<a name="line288"></a> * agent is running on.
+<a name="line289"></a> * @private
+<a name="line290"></a> */
+<a name="line291"></a>goog.userAgent.initPlatform_ = function() {
+<a name="line292"></a>  /**
+<a name="line293"></a>   * Whether the user agent is running on a Macintosh operating system.
+<a name="line294"></a>   * @type {boolean}
+<a name="line295"></a>   * @private
+<a name="line296"></a>   */
+<a name="line297"></a>  goog.userAgent.detectedMac_ = goog.string.contains(goog.userAgent.PLATFORM,
+<a name="line298"></a>      &#39;Mac&#39;);
+<a name="line299"></a>
+<a name="line300"></a>  /**
+<a name="line301"></a>   * Whether the user agent is running on a Windows operating system.
+<a name="line302"></a>   * @type {boolean}
+<a name="line303"></a>   * @private
+<a name="line304"></a>   */
+<a name="line305"></a>  goog.userAgent.detectedWindows_ = goog.string.contains(
+<a name="line306"></a>      goog.userAgent.PLATFORM, &#39;Win&#39;);
+<a name="line307"></a>
+<a name="line308"></a>  /**
+<a name="line309"></a>   * Whether the user agent is running on a Linux operating system.
+<a name="line310"></a>   * @type {boolean}
+<a name="line311"></a>   * @private
+<a name="line312"></a>   */
+<a name="line313"></a>  goog.userAgent.detectedLinux_ = goog.string.contains(goog.userAgent.PLATFORM,
+<a name="line314"></a>      &#39;Linux&#39;);
+<a name="line315"></a>
+<a name="line316"></a>  /**
+<a name="line317"></a>   * Whether the user agent is running on a X11 windowing system.
+<a name="line318"></a>   * @type {boolean}
+<a name="line319"></a>   * @private
+<a name="line320"></a>   */
+<a name="line321"></a>  goog.userAgent.detectedX11_ = !!goog.userAgent.getNavigator() &amp;&amp;
+<a name="line322"></a>      goog.string.contains(goog.userAgent.getNavigator()[&#39;appVersion&#39;] || &#39;&#39;,
+<a name="line323"></a>          &#39;X11&#39;);
+<a name="line324"></a>};
+<a name="line325"></a>
+<a name="line326"></a>
+<a name="line327"></a>if (!goog.userAgent.PLATFORM_KNOWN_) {
+<a name="line328"></a>  goog.userAgent.initPlatform_();
+<a name="line329"></a>}
+<a name="line330"></a>
+<a name="line331"></a>
+<a name="line332"></a>/**
+<a name="line333"></a> * Whether the user agent is running on a Macintosh operating system.
+<a name="line334"></a> * @type {boolean}
+<a name="line335"></a> */
+<a name="line336"></a>goog.userAgent.MAC = goog.userAgent.PLATFORM_KNOWN_ ?
+<a name="line337"></a>    goog.userAgent.ASSUME_MAC : goog.userAgent.detectedMac_;
+<a name="line338"></a>
+<a name="line339"></a>
+<a name="line340"></a>/**
+<a name="line341"></a> * Whether the user agent is running on a Windows operating system.
+<a name="line342"></a> * @type {boolean}
+<a name="line343"></a> */
+<a name="line344"></a>goog.userAgent.WINDOWS = goog.userAgent.PLATFORM_KNOWN_ ?
+<a name="line345"></a>    goog.userAgent.ASSUME_WINDOWS : goog.userAgent.detectedWindows_;
+<a name="line346"></a>
+<a name="line347"></a>
+<a name="line348"></a>/**
+<a name="line349"></a> * Whether the user agent is running on a Linux operating system.
+<a name="line350"></a> * @type {boolean}
+<a name="line351"></a> */
+<a name="line352"></a>goog.userAgent.LINUX = goog.userAgent.PLATFORM_KNOWN_ ?
+<a name="line353"></a>    goog.userAgent.ASSUME_LINUX : goog.userAgent.detectedLinux_;
+<a name="line354"></a>
+<a name="line355"></a>
+<a name="line356"></a>/**
+<a name="line357"></a> * Whether the user agent is running on a X11 windowing system.
+<a name="line358"></a> * @type {boolean}
+<a name="line359"></a> */
+<a name="line360"></a>goog.userAgent.X11 = goog.userAgent.PLATFORM_KNOWN_ ?
+<a name="line361"></a>    goog.userAgent.ASSUME_X11 : goog.userAgent.detectedX11_;
+<a name="line362"></a>
+<a name="line363"></a>
+<a name="line364"></a>/**
+<a name="line365"></a> * @return {string} The string that describes the version number of the user
+<a name="line366"></a> *     agent.
+<a name="line367"></a> * @private
+<a name="line368"></a> */
+<a name="line369"></a>goog.userAgent.determineVersion_ = function() {
+<a name="line370"></a>  // All browsers have different ways to detect the version and they all have
+<a name="line371"></a>  // different naming schemes.
+<a name="line372"></a>
+<a name="line373"></a>  // version is a string rather than a number because it may contain &#39;b&#39;, &#39;a&#39;,
+<a name="line374"></a>  // and so on.
+<a name="line375"></a>  var version = &#39;&#39;, re;
+<a name="line376"></a>
+<a name="line377"></a>  if (goog.userAgent.OPERA &amp;&amp; goog.global[&#39;opera&#39;]) {
+<a name="line378"></a>    var operaVersion = goog.global[&#39;opera&#39;].version;
+<a name="line379"></a>    version = typeof operaVersion == &#39;function&#39; ? operaVersion() : operaVersion;
+<a name="line380"></a>  } else {
+<a name="line381"></a>    if (goog.userAgent.GECKO) {
+<a name="line382"></a>      re = /rv\:([^\);]+)(\)|;)/;
+<a name="line383"></a>    } else if (goog.userAgent.IE) {
+<a name="line384"></a>      re = /MSIE\s+([^\);]+)(\)|;)/;
+<a name="line385"></a>    } else if (goog.userAgent.WEBKIT) {
+<a name="line386"></a>      // WebKit/125.4
+<a name="line387"></a>      re = /WebKit\/(\S+)/;
+<a name="line388"></a>    }
+<a name="line389"></a>    if (re) {
+<a name="line390"></a>      var arr = re.exec(goog.userAgent.getUserAgentString());
+<a name="line391"></a>      version = arr ? arr[1] : &#39;&#39;;
+<a name="line392"></a>    }
+<a name="line393"></a>  }
+<a name="line394"></a>  if (goog.userAgent.IE) {
+<a name="line395"></a>    // IE9 can be in document mode 9 but be reporting an inconsistent user agent
+<a name="line396"></a>    // version.  If it is identifying as a version lower than 9 we take the
+<a name="line397"></a>    // documentMode as the version instead.  IE8 has similar behavior.
+<a name="line398"></a>    // It is recommended to set the X-UA-Compatible header to ensure that IE9
+<a name="line399"></a>    // uses documentMode 9.
+<a name="line400"></a>    var docMode = goog.userAgent.getDocumentMode_();
+<a name="line401"></a>    if (docMode &gt; parseFloat(version)) {
+<a name="line402"></a>      return String(docMode);
+<a name="line403"></a>    }
+<a name="line404"></a>  }
+<a name="line405"></a>  return version;
+<a name="line406"></a>};
+<a name="line407"></a>
+<a name="line408"></a>
+<a name="line409"></a>/**
+<a name="line410"></a> * @return {number|undefined} Returns the document mode (for testing).
+<a name="line411"></a> * @private
+<a name="line412"></a> */
+<a name="line413"></a>goog.userAgent.getDocumentMode_ = function() {
+<a name="line414"></a>  // NOTE(user): goog.userAgent may be used in context where there is no DOM.
+<a name="line415"></a>  var doc = goog.global[&#39;document&#39;];
+<a name="line416"></a>  return doc ? doc[&#39;documentMode&#39;] : undefined;
+<a name="line417"></a>};
+<a name="line418"></a>
+<a name="line419"></a>
+<a name="line420"></a>/**
+<a name="line421"></a> * The version of the user agent. This is a string because it might contain
+<a name="line422"></a> * &#39;b&#39; (as in beta) as well as multiple dots.
+<a name="line423"></a> * @type {string}
+<a name="line424"></a> */
+<a name="line425"></a>goog.userAgent.VERSION = goog.userAgent.determineVersion_();
+<a name="line426"></a>
+<a name="line427"></a>
+<a name="line428"></a>/**
+<a name="line429"></a> * Compares two version numbers.
+<a name="line430"></a> *
+<a name="line431"></a> * @param {string} v1 Version of first item.
+<a name="line432"></a> * @param {string} v2 Version of second item.
+<a name="line433"></a> *
+<a name="line434"></a> * @return {number}  1 if first argument is higher
+<a name="line435"></a> *                   0 if arguments are equal
+<a name="line436"></a> *                  -1 if second argument is higher.
+<a name="line437"></a> * @deprecated Use goog.string.compareVersions.
+<a name="line438"></a> */
+<a name="line439"></a>goog.userAgent.compare = function(v1, v2) {
+<a name="line440"></a>  return goog.string.compareVersions(v1, v2);
+<a name="line441"></a>};
+<a name="line442"></a>
+<a name="line443"></a>
+<a name="line444"></a>/**
+<a name="line445"></a> * Cache for {@link goog.userAgent.isVersion}. Calls to compareVersions are
+<a name="line446"></a> * surprisingly expensive and as a browsers version number is unlikely to change
+<a name="line447"></a> * during a session we cache the results.
+<a name="line448"></a> * @type {Object}
+<a name="line449"></a> * @private
+<a name="line450"></a> */
+<a name="line451"></a>goog.userAgent.isVersionCache_ = {};
+<a name="line452"></a>
+<a name="line453"></a>
+<a name="line454"></a>/**
+<a name="line455"></a> * Whether the user agent version is higher or the same as the given version.
+<a name="line456"></a> * NOTE: When checking the version numbers for Firefox and Safari, be sure to
+<a name="line457"></a> * use the engine&#39;s version, not the browser&#39;s version number.  For example,
+<a name="line458"></a> * Firefox 3.0 corresponds to Gecko 1.9 and Safari 3.0 to Webkit 522.11.
+<a name="line459"></a> * Opera and Internet Explorer versions match the product release number.&lt;br&gt;
+<a name="line460"></a> * @see &lt;a href=&quot;http://en.wikipedia.org/wiki/Safari_version_history&quot;&gt;
+<a name="line461"></a> *     Webkit&lt;/a&gt;
+<a name="line462"></a> * @see &lt;a href=&quot;http://en.wikipedia.org/wiki/Gecko_engine&quot;&gt;Gecko&lt;/a&gt;
+<a name="line463"></a> *
+<a name="line464"></a> * @param {string|number} version The version to check.
+<a name="line465"></a> * @return {boolean} Whether the user agent version is higher or the same as
+<a name="line466"></a> *     the given version.
+<a name="line467"></a> */
+<a name="line468"></a>goog.userAgent.isVersion = function(version) {
+<a name="line469"></a>  return goog.userAgent.ASSUME_ANY_VERSION ||
+<a name="line470"></a>      goog.userAgent.isVersionCache_[version] ||
+<a name="line471"></a>      (goog.userAgent.isVersionCache_[version] =
+<a name="line472"></a>          goog.string.compareVersions(goog.userAgent.VERSION, version) &gt;= 0);
+<a name="line473"></a>};
+<a name="line474"></a>
+<a name="line475"></a>
+<a name="line476"></a>/**
+<a name="line477"></a> * Cache for {@link goog.userAgent.isDocumentMode}.
+<a name="line478"></a> * Browsers document mode version number is unlikely to change during a session
+<a name="line479"></a> * we cache the results.
+<a name="line480"></a> * @type {Object}
+<a name="line481"></a> * @private
+<a name="line482"></a> */
+<a name="line483"></a>goog.userAgent.isDocumentModeCache_ = {};
+<a name="line484"></a>
+<a name="line485"></a>
+<a name="line486"></a>/**
+<a name="line487"></a> * Whether the IE effective document mode is higher or the same as the given
+<a name="line488"></a> * document mode version.
+<a name="line489"></a> * NOTE: Only for IE, return false for another browser.
+<a name="line490"></a> *
+<a name="line491"></a> * @param {number} documentMode The document mode version to check.
+<a name="line492"></a> * @return {boolean} Whether the IE effective document mode is higher or the
+<a name="line493"></a> *     same as the given version.
+<a name="line494"></a> */
+<a name="line495"></a>goog.userAgent.isDocumentMode = function(documentMode) {
+<a name="line496"></a>  return goog.userAgent.isDocumentModeCache_[documentMode] ||
+<a name="line497"></a>      (goog.userAgent.isDocumentModeCache_[documentMode] = goog.userAgent.IE &amp;&amp;
+<a name="line498"></a>      document.documentMode &amp;&amp; document.documentMode &gt;= documentMode);
+<a name="line499"></a>};
+</pre>
+
+
+</body>
+</html>

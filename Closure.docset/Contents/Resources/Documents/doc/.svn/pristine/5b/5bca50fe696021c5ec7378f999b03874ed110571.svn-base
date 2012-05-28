@@ -1,0 +1,592 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>a11y.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_dom_a11y.js.html">a11y.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities for adding, removing and setting ARIA roles
+<a name="line17"></a> * as defined by W3C ARIA Working Draft:
+<a name="line18"></a> *     http://www.w3.org/TR/2010/WD-wai-aria-20100916/
+<a name="line19"></a> * All modern browsers have some form of ARIA support, so no browser checks are
+<a name="line20"></a> * performed when adding ARIA to components.
+<a name="line21"></a> *
+<a name="line22"></a> */
+<a name="line23"></a>goog.provide(&#39;goog.dom.a11y&#39;);
+<a name="line24"></a>goog.provide(&#39;goog.dom.a11y.Announcer&#39;);
+<a name="line25"></a>goog.provide(&#39;goog.dom.a11y.LivePriority&#39;);
+<a name="line26"></a>goog.provide(&#39;goog.dom.a11y.Role&#39;);
+<a name="line27"></a>goog.provide(&#39;goog.dom.a11y.State&#39;);
+<a name="line28"></a>
+<a name="line29"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line30"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line31"></a>goog.require(&#39;goog.object&#39;);
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>/**
+<a name="line35"></a> * Enumeration of ARIA states and properties.
+<a name="line36"></a> * @enum {string}
+<a name="line37"></a> */
+<a name="line38"></a>goog.dom.a11y.State = {
+<a name="line39"></a>  // ARIA property for setting the currently active descendant of an element,
+<a name="line40"></a>  // for example the selected item in a list box. Value: ID of an element.
+<a name="line41"></a>  ACTIVEDESCENDANT: &#39;activedescendant&#39;,
+<a name="line42"></a>
+<a name="line43"></a>  // ARIA property that, if true, indicates that all of a changed region should
+<a name="line44"></a>  // be presented, instead of only parts. Value: one of {true, false}.
+<a name="line45"></a>  ATOMIC: &#39;atomic&#39;,
+<a name="line46"></a>
+<a name="line47"></a>  // ARIA property to specify that input completion is provided. Value:
+<a name="line48"></a>  // one of {&#39;inline&#39;, &#39;list&#39;, &#39;both&#39;, &#39;none&#39;}.
+<a name="line49"></a>  AUTOCOMPLETE: &#39;autocomplete&#39;,
+<a name="line50"></a>
+<a name="line51"></a>  // ARIA state to indicate that an element and its subtree are being updated.
+<a name="line52"></a>  // Value: one of {true, false}.
+<a name="line53"></a>  BUSY: &#39;busy&#39;,
+<a name="line54"></a>
+<a name="line55"></a>  // ARIA state for a checked item. Value: one of {&#39;true&#39;, &#39;false&#39;, &#39;mixed&#39;,
+<a name="line56"></a>  // undefined}.
+<a name="line57"></a>  CHECKED: &#39;checked&#39;,
+<a name="line58"></a>
+<a name="line59"></a>  // ARIA property that identifies the element or elements whose contents or
+<a name="line60"></a>  // presence are controlled by this element. Value: space-separated IDs of
+<a name="line61"></a>  // other elements.
+<a name="line62"></a>  CONTROLS: &#39;controls&#39;,
+<a name="line63"></a>
+<a name="line64"></a>  // ARIA property that identifies the element or elements that describe
+<a name="line65"></a>  // this element. Value: space-separated IDs of other elements.
+<a name="line66"></a>  DESCRIBEDBY: &#39;describedby&#39;,
+<a name="line67"></a>
+<a name="line68"></a>  // ARIA state for a disabled item. Value: one of {true, false}.
+<a name="line69"></a>  DISABLED: &#39;disabled&#39;,
+<a name="line70"></a>
+<a name="line71"></a>  // ARIA property that indicates what functions can be performed when a
+<a name="line72"></a>  // dragged object is released on the drop target.  Value: one of
+<a name="line73"></a>  // {&#39;copy&#39;, &#39;move&#39;, &#39;link&#39;, &#39;execute&#39;, &#39;popup&#39;, &#39;none&#39;}.
+<a name="line74"></a>  DROPEFFECT: &#39;dropeffect&#39;,
+<a name="line75"></a>
+<a name="line76"></a>  // ARIA state for setting whether the element like a tree node is expanded.
+<a name="line77"></a>  // Value: one of {true, false, undefined}.
+<a name="line78"></a>  EXPANDED: &#39;expanded&#39;,
+<a name="line79"></a>
+<a name="line80"></a>  // ARIA property that identifies the next element (or elements) in the
+<a name="line81"></a>  // recommended reading order of content. Value: space-separated ids of
+<a name="line82"></a>  // elements to flow to.
+<a name="line83"></a>  FLOWTO: &#39;flowto&#39;,
+<a name="line84"></a>
+<a name="line85"></a>  // ARIA state that indicates an element&#39;s &quot;grabbed&quot; state in drag-and-drop.
+<a name="line86"></a>  // Value: one of {true, false, undefined}.
+<a name="line87"></a>  GRABBED: &#39;grabbed&#39;,
+<a name="line88"></a>
+<a name="line89"></a>  // ARIA property indicating whether the element has a popup. Value: one of
+<a name="line90"></a>  // {true, false}.
+<a name="line91"></a>  HASPOPUP: &#39;haspopup&#39;,
+<a name="line92"></a>
+<a name="line93"></a>  // ARIA state indicating that the element is not visible or perceivable
+<a name="line94"></a>  // to any user. Value: one of {true, false}.
+<a name="line95"></a>  HIDDEN: &#39;hidden&#39;,
+<a name="line96"></a>
+<a name="line97"></a>  // ARIA state indicating that the entered value does not conform. Value:
+<a name="line98"></a>  // one of {false, true, &#39;grammar&#39;, &#39;spelling&#39;}
+<a name="line99"></a>  INVALID: &#39;invalid&#39;,
+<a name="line100"></a>
+<a name="line101"></a>  // ARIA property that provides a label to override any other text, value, or
+<a name="line102"></a>  // contents used to describe this element. Value: string.
+<a name="line103"></a>  LABEL: &#39;label&#39;,
+<a name="line104"></a>
+<a name="line105"></a>  // ARIA property for setting the element which labels another element.
+<a name="line106"></a>  // Value: space-separated IDs of elements.
+<a name="line107"></a>  LABELLEDBY: &#39;labelledby&#39;,
+<a name="line108"></a>
+<a name="line109"></a>  // ARIA property for setting the level of an element in the hierarchy.
+<a name="line110"></a>  // Value: integer.
+<a name="line111"></a>  LEVEL: &#39;level&#39;,
+<a name="line112"></a>
+<a name="line113"></a>  // ARIA property indicating that an element will be updated, and
+<a name="line114"></a>  // describes the types of updates the user agents, assistive technologies,
+<a name="line115"></a>  // and user can expect from the live region. Value: one of {&#39;off&#39;, &#39;polite&#39;,
+<a name="line116"></a>  // &#39;assertive&#39;}.
+<a name="line117"></a>  LIVE: &#39;live&#39;,
+<a name="line118"></a>
+<a name="line119"></a>  // ARIA property indicating whether a text box can accept multiline input.
+<a name="line120"></a>  // Value: one of {true, false}.
+<a name="line121"></a>  MULTILINE: &#39;multiline&#39;,
+<a name="line122"></a>
+<a name="line123"></a>  // ARIA property indicating if the user may select more than one item.
+<a name="line124"></a>  // Value: one of {true, false}.
+<a name="line125"></a>  MULTISELECTABLE: &#39;multiselectable&#39;,
+<a name="line126"></a>
+<a name="line127"></a>  // ARIA property indicating if the element is horizontal or vertical.
+<a name="line128"></a>  // Value: one of {&#39;vertical&#39;, &#39;horizontal&#39;}.
+<a name="line129"></a>  ORIENTATION: &#39;orientation&#39;,
+<a name="line130"></a>
+<a name="line131"></a>  // ARIA property creating a visual, functional, or contextual parent/child
+<a name="line132"></a>  // relationship when the DOM hierarchy can&#39;t be used to represent it.
+<a name="line133"></a>  // Value: Space-separated IDs of elements.
+<a name="line134"></a>  OWNS: &#39;owns&#39;,
+<a name="line135"></a>
+<a name="line136"></a>  // ARIA property that defines an element&#39;s number of position in a list.
+<a name="line137"></a>  // Value: integer.
+<a name="line138"></a>  POSINSET: &#39;posinset&#39;,
+<a name="line139"></a>
+<a name="line140"></a>  // ARIA state for a pressed item. Value: one of {true, false, undefined,
+<a name="line141"></a>  // &#39;mixed&#39;}.
+<a name="line142"></a>  PRESSED: &#39;pressed&#39;,
+<a name="line143"></a>
+<a name="line144"></a>  // ARIA property indicating that an element is not editable.  Value:
+<a name="line145"></a>  // one of {true, false}.
+<a name="line146"></a>  READONLY: &#39;readonly&#39;,
+<a name="line147"></a>
+<a name="line148"></a>  // ARIA property indicating that change notifications within this subtree
+<a name="line149"></a>  // of a live region should be announced. Value: one of {&#39;additions&#39;,
+<a name="line150"></a>  // &#39;removals&#39;, &#39;text&#39;, &#39;all&#39;, &#39;additions text&#39;}.
+<a name="line151"></a>  RELEVANT: &#39;relevant&#39;,
+<a name="line152"></a>
+<a name="line153"></a>  // ARIA property indicating that user input is required on this element
+<a name="line154"></a>  // before a form may be submitted. Value: one of {true, false}.
+<a name="line155"></a>  REQUIRED: &#39;required&#39;,
+<a name="line156"></a>
+<a name="line157"></a>  // ARIA state for setting the currently selected item in the list.
+<a name="line158"></a>  // Value: one of {true, false, undefined}.
+<a name="line159"></a>  SELECTED: &#39;selected&#39;,
+<a name="line160"></a>
+<a name="line161"></a>  // ARIA property defining the number of items in a list. Value: integer.
+<a name="line162"></a>  SETSIZE: &#39;setsize&#39;,
+<a name="line163"></a>
+<a name="line164"></a>  // ARIA property indicating if items are sorted. Value: one of {&#39;ascending&#39;,
+<a name="line165"></a>  // &#39;descending&#39;, &#39;none&#39;, &#39;other&#39;}.
+<a name="line166"></a>  SORT: &#39;sort&#39;,
+<a name="line167"></a>
+<a name="line168"></a>  // ARIA property for slider maximum value. Value: number.
+<a name="line169"></a>  VALUEMAX: &#39;valuemax&#39;,
+<a name="line170"></a>
+<a name="line171"></a>  // ARIA property for slider minimum value. Value: number.
+<a name="line172"></a>  VALUEMIN: &#39;valuemin&#39;,
+<a name="line173"></a>
+<a name="line174"></a>  // ARIA property for slider active value. Value: number.
+<a name="line175"></a>  VALUENOW: &#39;valuenow&#39;,
+<a name="line176"></a>
+<a name="line177"></a>  // ARIA property for slider active value represented as text. Value: string.
+<a name="line178"></a>  VALUETEXT: &#39;valuetext&#39;
+<a name="line179"></a>};
+<a name="line180"></a>
+<a name="line181"></a>
+<a name="line182"></a>/**
+<a name="line183"></a> * Enumeration of ARIA roles.
+<a name="line184"></a> * @enum {string}
+<a name="line185"></a> */
+<a name="line186"></a>goog.dom.a11y.Role = {
+<a name="line187"></a>  // ARIA role for an alert element that doesn&#39;t need to be explicitly closed.
+<a name="line188"></a>  ALERT: &#39;alert&#39;,
+<a name="line189"></a>
+<a name="line190"></a>  // ARIA role for an alert dialog element that takes focus and must be closed.
+<a name="line191"></a>  ALERTDIALOG: &#39;alertdialog&#39;,
+<a name="line192"></a>
+<a name="line193"></a>  // ARIA role for an application that implements its own keyboard navigation.
+<a name="line194"></a>  APPLICATION: &#39;application&#39;,
+<a name="line195"></a>
+<a name="line196"></a>  // ARIA role for an article.
+<a name="line197"></a>  ARTICLE: &#39;article&#39;,
+<a name="line198"></a>
+<a name="line199"></a>  // ARIA role for a banner containing mostly site content, not page content.
+<a name="line200"></a>  BANNER: &#39;banner&#39;,
+<a name="line201"></a>
+<a name="line202"></a>  // ARIA role for a button element.
+<a name="line203"></a>  BUTTON: &#39;button&#39;,
+<a name="line204"></a>
+<a name="line205"></a>  // ARIA role for a checkbox button element; use with the CHECKED state.
+<a name="line206"></a>  CHECKBOX: &#39;checkbox&#39;,
+<a name="line207"></a>
+<a name="line208"></a>  // ARIA role for a column header of a table or grid.
+<a name="line209"></a>  COLUMNHEADER: &#39;columnheader&#39;,
+<a name="line210"></a>
+<a name="line211"></a>  // ARIA role for a combo box element.
+<a name="line212"></a>  COMBOBOX: &#39;combobox&#39;,
+<a name="line213"></a>
+<a name="line214"></a>  // ARIA role for a supporting section of the document.
+<a name="line215"></a>  COMPLEMENTARY: &#39;complementary&#39;,
+<a name="line216"></a>
+<a name="line217"></a>  // ARIA role for a dialog, some descendant must take initial focus.
+<a name="line218"></a>  DIALOG: &#39;dialog&#39;,
+<a name="line219"></a>
+<a name="line220"></a>  // ARIA role for a directory, like a table of contents.
+<a name="line221"></a>  DIRECTORY: &#39;directory&#39;,
+<a name="line222"></a>
+<a name="line223"></a>  // ARIA role for a part of a page that&#39;s a document, not a web application.
+<a name="line224"></a>  DOCUMENT: &#39;document&#39;,
+<a name="line225"></a>
+<a name="line226"></a>  // ARIA role for a landmark region logically considered one form.
+<a name="line227"></a>  FORM: &#39;form&#39;,
+<a name="line228"></a>
+<a name="line229"></a>  // ARIA role for an interactive control of tabular data.
+<a name="line230"></a>  GRID: &#39;grid&#39;,
+<a name="line231"></a>
+<a name="line232"></a>  // ARIA role for a cell in a grid.
+<a name="line233"></a>  GRIDCELL: &#39;gridcell&#39;,
+<a name="line234"></a>
+<a name="line235"></a>  // ARIA role for a group of related elements like tree item siblings.
+<a name="line236"></a>  GROUP: &#39;group&#39;,
+<a name="line237"></a>
+<a name="line238"></a>  // ARIA role for a heading element.
+<a name="line239"></a>  HEADING: &#39;heading&#39;,
+<a name="line240"></a>
+<a name="line241"></a>  // ARIA role for a container of elements that together comprise one image.
+<a name="line242"></a>  IMG: &#39;img&#39;,
+<a name="line243"></a>
+<a name="line244"></a>  // ARIA role for a link.
+<a name="line245"></a>  LINK: &#39;link&#39;,
+<a name="line246"></a>
+<a name="line247"></a>  // ARIA role for a list of non-interactive list items.
+<a name="line248"></a>  LIST: &#39;list&#39;,
+<a name="line249"></a>
+<a name="line250"></a>  // ARIA role for a listbox.
+<a name="line251"></a>  LISTBOX: &#39;listbox&#39;,
+<a name="line252"></a>
+<a name="line253"></a>  // ARIA role for a list item.
+<a name="line254"></a>  LISTITEM: &#39;listitem&#39;,
+<a name="line255"></a>
+<a name="line256"></a>  // ARIA role for a live region where new information is added.
+<a name="line257"></a>  LOG: &#39;log&#39;,
+<a name="line258"></a>
+<a name="line259"></a>  // ARIA landmark role for the main content in a document. Use only once.
+<a name="line260"></a>  MAIN: &#39;main&#39;,
+<a name="line261"></a>
+<a name="line262"></a>  // ARIA role for a live region of non-essential information that changes.
+<a name="line263"></a>  MARQUEE: &#39;marquee&#39;,
+<a name="line264"></a>
+<a name="line265"></a>  // ARIA role for a mathematical expression.
+<a name="line266"></a>  MATH: &#39;math&#39;,
+<a name="line267"></a>
+<a name="line268"></a>  // ARIA role for a popup menu.
+<a name="line269"></a>  MENU: &#39;menu&#39;,
+<a name="line270"></a>
+<a name="line271"></a>  // ARIA role for a menubar element containing menu elements.
+<a name="line272"></a>  MENUBAR: &#39;menubar&#39;,
+<a name="line273"></a>
+<a name="line274"></a>  // ARIA role for menu item elements.
+<a name="line275"></a>  MENU_ITEM: &#39;menuitem&#39;,
+<a name="line276"></a>
+<a name="line277"></a>  // ARIA role for a checkbox box element inside a menu.
+<a name="line278"></a>  MENU_ITEM_CHECKBOX: &#39;menuitemcheckbox&#39;,
+<a name="line279"></a>
+<a name="line280"></a>  // ARIA role for a radio button element inside a menu.
+<a name="line281"></a>  MENU_ITEM_RADIO: &#39;menuitemradio&#39;,
+<a name="line282"></a>
+<a name="line283"></a>  // ARIA landmark role for a collection of navigation links.
+<a name="line284"></a>  NAVIGATION: &#39;navigation&#39;,
+<a name="line285"></a>
+<a name="line286"></a>  // ARIA role for a section ancillary to the main content.
+<a name="line287"></a>  NOTE: &#39;note&#39;,
+<a name="line288"></a>
+<a name="line289"></a>  // ARIA role for option items that are  children of combobox, listbox, menu,
+<a name="line290"></a>  // radiogroup, or tree elements.
+<a name="line291"></a>  OPTION: &#39;option&#39;,
+<a name="line292"></a>
+<a name="line293"></a>  // ARIA role for ignorable cosmetic elements with no semantic significance.
+<a name="line294"></a>  PRESENTATION: &#39;presentation&#39;,
+<a name="line295"></a>
+<a name="line296"></a>  // ARIA role for a progress bar element.
+<a name="line297"></a>  PROGRESSBAR: &#39;progressbar&#39;,
+<a name="line298"></a>
+<a name="line299"></a>  // ARIA role for a radio button element.
+<a name="line300"></a>  RADIO: &#39;radio&#39;,
+<a name="line301"></a>
+<a name="line302"></a>  // ARIA role for a group of connected radio button elements.
+<a name="line303"></a>  RADIOGROUP: &#39;radiogroup&#39;,
+<a name="line304"></a>
+<a name="line305"></a>  // ARIA role for an important region of the page.
+<a name="line306"></a>  REGION: &#39;region&#39;,
+<a name="line307"></a>
+<a name="line308"></a>  // ARIA role for a row of cells in a grid.
+<a name="line309"></a>  ROW: &#39;row&#39;,
+<a name="line310"></a>
+<a name="line311"></a>  // ARIA role for a group of one or more rows in a grid.
+<a name="line312"></a>  ROWGROUP: &#39;rowgroup&#39;,
+<a name="line313"></a>
+<a name="line314"></a>  // ARIA role for a row header of a table or grid.
+<a name="line315"></a>  ROWHEADER: &#39;rowheader&#39;,
+<a name="line316"></a>
+<a name="line317"></a>  // ARIA role for a scrollbar element.
+<a name="line318"></a>  SCROLLBAR: &#39;scrollbar&#39;,
+<a name="line319"></a>
+<a name="line320"></a>  // ARIA landmark role for a part of the page providing search functionality.
+<a name="line321"></a>  SEARCH: &#39;search&#39;,
+<a name="line322"></a>
+<a name="line323"></a>  // ARIA role for a menu separator.
+<a name="line324"></a>  SEPARATOR: &#39;separator&#39;,
+<a name="line325"></a>
+<a name="line326"></a>  // ARIA role for a slider.
+<a name="line327"></a>  SLIDER: &#39;slider&#39;,
+<a name="line328"></a>
+<a name="line329"></a>  // ARIA role for a spin button.
+<a name="line330"></a>  SPINBUTTON: &#39;spinbutton&#39;,
+<a name="line331"></a>
+<a name="line332"></a>  // ARIA role for a live region with advisory info less severe than an alert.
+<a name="line333"></a>  STATUS: &#39;status&#39;,
+<a name="line334"></a>
+<a name="line335"></a>  // ARIA role for a tab button.
+<a name="line336"></a>  TAB: &#39;tab&#39;,
+<a name="line337"></a>
+<a name="line338"></a>  // ARIA role for a tab bar (i.e. a list of tab buttons).
+<a name="line339"></a>  TAB_LIST: &#39;tablist&#39;,
+<a name="line340"></a>
+<a name="line341"></a>  // ARIA role for a tab page (i.e. the element holding tab contents).
+<a name="line342"></a>  TAB_PANEL: &#39;tabpanel&#39;,
+<a name="line343"></a>
+<a name="line344"></a>  // ARIA role for a textbox element.
+<a name="line345"></a>  TEXTBOX: &#39;textbox&#39;,
+<a name="line346"></a>
+<a name="line347"></a>  // ARIA role for an element displaying elapsed time or time remaining.
+<a name="line348"></a>  TIMER: &#39;timer&#39;,
+<a name="line349"></a>
+<a name="line350"></a>  // ARIA role for a toolbar element.
+<a name="line351"></a>  TOOLBAR: &#39;toolbar&#39;,
+<a name="line352"></a>
+<a name="line353"></a>  // ARIA role for a tooltip element.
+<a name="line354"></a>  TOOLTIP: &#39;tooltip&#39;,
+<a name="line355"></a>
+<a name="line356"></a>  // ARIA role for a tree.
+<a name="line357"></a>  TREE: &#39;tree&#39;,
+<a name="line358"></a>
+<a name="line359"></a>  // ARIA role for a grid whose rows can be expanded and collapsed like a tree.
+<a name="line360"></a>  TREEGRID: &#39;treegrid&#39;,
+<a name="line361"></a>
+<a name="line362"></a>  // ARIA role for a tree item that sometimes may be expanded or collapsed.
+<a name="line363"></a>  TREEITEM: &#39;treeitem&#39;
+<a name="line364"></a>};
+<a name="line365"></a>
+<a name="line366"></a>
+<a name="line367"></a>/**
+<a name="line368"></a> * Enumeration of ARIA state values for live regions.
+<a name="line369"></a> *
+<a name="line370"></a> * See http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
+<a name="line371"></a> * for more information.
+<a name="line372"></a> * @enum {string}
+<a name="line373"></a> */
+<a name="line374"></a>goog.dom.a11y.LivePriority = {
+<a name="line375"></a>  /**
+<a name="line376"></a>   * Default value.  Used for live regions that should never be spoken.
+<a name="line377"></a>   */
+<a name="line378"></a>  OFF: &#39;off&#39;,
+<a name="line379"></a>  /**
+<a name="line380"></a>   * Spoke only when the user is idle.  Best option in most cases.
+<a name="line381"></a>   */
+<a name="line382"></a>  POLITE: &#39;polite&#39;,
+<a name="line383"></a>  /**
+<a name="line384"></a>   * Spoken as soon as possible, which means that the information has a
+<a name="line385"></a>   * higher priority than normal, but does not necessarily interrupt
+<a name="line386"></a>   * immediately.
+<a name="line387"></a>   */
+<a name="line388"></a>  ASSERTIVE: &#39;assertive&#39;
+<a name="line389"></a>};
+<a name="line390"></a>
+<a name="line391"></a>
+<a name="line392"></a>/**
+<a name="line393"></a> * Sets the role of an element.
+<a name="line394"></a> * @param {Element} element DOM node to set role of.
+<a name="line395"></a> * @param {string} roleName role name(s).
+<a name="line396"></a> */
+<a name="line397"></a>goog.dom.a11y.setRole = function(element, roleName) {
+<a name="line398"></a>  element.setAttribute(&#39;role&#39;, roleName);
+<a name="line399"></a>  element.roleName = roleName;
+<a name="line400"></a>};
+<a name="line401"></a>
+<a name="line402"></a>
+<a name="line403"></a>/**
+<a name="line404"></a> * Gets role of an element.
+<a name="line405"></a> * @param {Element} element DOM node to get role of.
+<a name="line406"></a> * @return {string} rolename.
+<a name="line407"></a> */
+<a name="line408"></a>goog.dom.a11y.getRole = function(element) {
+<a name="line409"></a>  return element.roleName || &#39;&#39;;
+<a name="line410"></a>};
+<a name="line411"></a>
+<a name="line412"></a>
+<a name="line413"></a>/**
+<a name="line414"></a> * Sets the state or property of an element.
+<a name="line415"></a> * @param {Element} element DOM node where we set state.
+<a name="line416"></a> * @param {string} state State attribute being set. Automatically adds prefix
+<a name="line417"></a> *     &#39;aria-&#39; to the state name.
+<a name="line418"></a> * @param {string|boolean|number} value Value for the state attribute.
+<a name="line419"></a> */
+<a name="line420"></a>goog.dom.a11y.setState = function(element, state, value) {
+<a name="line421"></a>  element.setAttribute(&#39;aria-&#39; + state, value);
+<a name="line422"></a>};
+<a name="line423"></a>
+<a name="line424"></a>
+<a name="line425"></a>/**
+<a name="line426"></a> * Gets value of specified state or property.
+<a name="line427"></a> * @param {Element} element DOM node to get state from.
+<a name="line428"></a> * @param {string} stateName State name.
+<a name="line429"></a> * @return {string} Value of the state attribute.
+<a name="line430"></a> */
+<a name="line431"></a>goog.dom.a11y.getState = function(element, stateName) {
+<a name="line432"></a>  var attrb =
+<a name="line433"></a>      /** @type {string|number|boolean} */(element.getAttribute(&#39;aria-&#39; +
+<a name="line434"></a>          stateName));
+<a name="line435"></a>  // Check for multiple representations -  attrb might
+<a name="line436"></a>  // be a boolean or a string
+<a name="line437"></a>  if ((attrb === true) || (attrb === false)) {
+<a name="line438"></a>    return attrb ? &#39;true&#39; : &#39;false&#39;;
+<a name="line439"></a>  } else if (!attrb) {
+<a name="line440"></a>    return &#39;&#39;;
+<a name="line441"></a>  } else {
+<a name="line442"></a>    return String(attrb);
+<a name="line443"></a>  }
+<a name="line444"></a>};
+<a name="line445"></a>
+<a name="line446"></a>
+<a name="line447"></a>/**
+<a name="line448"></a> * Gets the activedescendant of the given element.
+<a name="line449"></a> * @param {Element} element DOM node to get activedescendant from.
+<a name="line450"></a> * @return {Element} DOM node of the activedescendant.
+<a name="line451"></a> */
+<a name="line452"></a>goog.dom.a11y.getActiveDescendant = function(element) {
+<a name="line453"></a>  var id = goog.dom.a11y.getState(
+<a name="line454"></a>      element, goog.dom.a11y.State.ACTIVEDESCENDANT);
+<a name="line455"></a>  return goog.dom.getOwnerDocument(element).getElementById(id);
+<a name="line456"></a>};
+<a name="line457"></a>
+<a name="line458"></a>
+<a name="line459"></a>/**
+<a name="line460"></a> * Sets the activedescendant value for an element.
+<a name="line461"></a> * @param {Element} element DOM node to set activedescendant to.
+<a name="line462"></a> * @param {Element} activeElement DOM node being set as activedescendant.
+<a name="line463"></a> */
+<a name="line464"></a>goog.dom.a11y.setActiveDescendant = function(element, activeElement) {
+<a name="line465"></a>  goog.dom.a11y.setState(element, goog.dom.a11y.State.ACTIVEDESCENDANT,
+<a name="line466"></a>      activeElement ? activeElement.id : &#39;&#39;);
+<a name="line467"></a>};
+<a name="line468"></a>
+<a name="line469"></a>
+<a name="line470"></a>
+<a name="line471"></a>/**
+<a name="line472"></a> * Class that allows messages to be spoken by assistive technologies that the
+<a name="line473"></a> * user may have active.
+<a name="line474"></a> *
+<a name="line475"></a> * @param {goog.dom.DomHelper} domHelper DOM helper.
+<a name="line476"></a> * @constructor
+<a name="line477"></a> * @extends {goog.Disposable}
+<a name="line478"></a> */
+<a name="line479"></a>goog.dom.a11y.Announcer = function(domHelper) {
+<a name="line480"></a>  goog.base(this);
+<a name="line481"></a>
+<a name="line482"></a>  /**
+<a name="line483"></a>   * @type {goog.dom.DomHelper}
+<a name="line484"></a>   * @private
+<a name="line485"></a>   */
+<a name="line486"></a>  this.domHelper_ = domHelper;
+<a name="line487"></a>
+<a name="line488"></a>  /**
+<a name="line489"></a>   * Map of priority to live region elements to use for communicating updates.
+<a name="line490"></a>   * Elements are created on demand.
+<a name="line491"></a>   * @type {Object.&lt;goog.dom.a11y.LivePriority, Element&gt;}
+<a name="line492"></a>   * @private
+<a name="line493"></a>   */
+<a name="line494"></a>  this.liveRegions_ = {};
+<a name="line495"></a>};
+<a name="line496"></a>goog.inherits(goog.dom.a11y.Announcer, goog.Disposable);
+<a name="line497"></a>
+<a name="line498"></a>
+<a name="line499"></a>/** @override */
+<a name="line500"></a>goog.dom.a11y.Announcer.prototype.disposeInternal = function() {
+<a name="line501"></a>  goog.object.forEach(
+<a name="line502"></a>      this.liveRegions_, this.domHelper_.removeNode, this.domHelper_);
+<a name="line503"></a>  this.liveRegions_ = null;
+<a name="line504"></a>  this.domHelper_ = null;
+<a name="line505"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line506"></a>};
+<a name="line507"></a>
+<a name="line508"></a>
+<a name="line509"></a>/**
+<a name="line510"></a> * Announce a message to be read by any assistive technologies the user may
+<a name="line511"></a> * have active.
+<a name="line512"></a> * @param {string} message The message to announce to screen readers.
+<a name="line513"></a> * @param {goog.dom.a11y.LivePriority=} opt_priority The priority of the
+<a name="line514"></a> *     message. Defaults to POLITE.
+<a name="line515"></a> */
+<a name="line516"></a>goog.dom.a11y.Announcer.prototype.say = function(message, opt_priority) {
+<a name="line517"></a>  goog.dom.setTextContent(this.getLiveRegion_(
+<a name="line518"></a>      opt_priority || goog.dom.a11y.LivePriority.POLITE), message);
+<a name="line519"></a>};
+<a name="line520"></a>
+<a name="line521"></a>
+<a name="line522"></a>/**
+<a name="line523"></a> * Returns an aria-live region that can be used to communicate announcements.
+<a name="line524"></a> * @param {goog.dom.a11y.LivePriority} priority The required priority.
+<a name="line525"></a> * @return {Element} A live region of the requested priority.
+<a name="line526"></a> * @private
+<a name="line527"></a> */
+<a name="line528"></a>goog.dom.a11y.Announcer.prototype.getLiveRegion_ = function(priority) {
+<a name="line529"></a>  if (this.liveRegions_[priority]) {
+<a name="line530"></a>    return this.liveRegions_[priority];
+<a name="line531"></a>  }
+<a name="line532"></a>  var liveRegion;
+<a name="line533"></a>  liveRegion = this.domHelper_.createElement(&#39;div&#39;);
+<a name="line534"></a>  liveRegion.style.position = &#39;absolute&#39;;
+<a name="line535"></a>  liveRegion.style.top = &#39;-1000px&#39;;
+<a name="line536"></a>  goog.dom.a11y.setState(liveRegion, &#39;live&#39;, priority);
+<a name="line537"></a>  goog.dom.a11y.setState(liveRegion, &#39;atomic&#39;, &#39;true&#39;);
+<a name="line538"></a>  this.domHelper_.getDocument().body.appendChild(liveRegion);
+<a name="line539"></a>  this.liveRegions_[priority] = liveRegion;
+<a name="line540"></a>  return liveRegion;
+<a name="line541"></a>};
+</pre>
+
+
+</body>
+</html>

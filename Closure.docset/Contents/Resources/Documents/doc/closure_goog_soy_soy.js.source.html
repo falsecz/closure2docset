@@ -1,0 +1,160 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>soy.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_soy_soy.js.html">soy.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Provides utility methods to render soy template.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>goog.provide(&#39;goog.soy&#39;);
+<a name="line20"></a>
+<a name="line21"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line22"></a>goog.require(&#39;goog.dom.NodeType&#39;);
+<a name="line23"></a>goog.require(&#39;goog.dom.TagName&#39;);
+<a name="line24"></a>
+<a name="line25"></a>
+<a name="line26"></a>
+<a name="line27"></a>/**
+<a name="line28"></a> * Renders a Soy template and then set the output string as
+<a name="line29"></a> * the innerHTML of an element. It is recommended to use this helper function
+<a name="line30"></a> * instead of directly setting innerHTML in your hand-written code, so that it
+<a name="line31"></a> * will be easier to audit the code for cross-site scripting vulnerabilities.
+<a name="line32"></a> *
+<a name="line33"></a> * @param {Element} element The element whose content we are rendering into.
+<a name="line34"></a> * @param {Function} template The Soy template defining the element&#39;s content.
+<a name="line35"></a> * @param {Object=} opt_templateData The data for the template.
+<a name="line36"></a> * @param {Object=} opt_injectedData The injected data for the template.
+<a name="line37"></a> */
+<a name="line38"></a>goog.soy.renderElement = function(element, template, opt_templateData,
+<a name="line39"></a>                                  opt_injectedData) {
+<a name="line40"></a>  element.innerHTML = template(
+<a name="line41"></a>      opt_templateData || goog.soy.defaultTemplateData_, undefined,
+<a name="line42"></a>      opt_injectedData);
+<a name="line43"></a>};
+<a name="line44"></a>
+<a name="line45"></a>
+<a name="line46"></a>/**
+<a name="line47"></a> * Renders a Soy template into a single node or a document
+<a name="line48"></a> * fragment. If the rendered HTML string represents a single node, then that
+<a name="line49"></a> * node is returned (note that this is *not* a fragment, despite them name of
+<a name="line50"></a> * the method). Otherwise a document fragment is returned containing the
+<a name="line51"></a> * rendered nodes.
+<a name="line52"></a> *
+<a name="line53"></a> * @param {Function} template The Soy template defining the element&#39;s content.
+<a name="line54"></a> * @param {Object=} opt_templateData The data for the template.
+<a name="line55"></a> * @param {Object=} opt_injectedData The injected data for the template.
+<a name="line56"></a> * @param {goog.dom.DomHelper=} opt_domHelper The DOM helper used to
+<a name="line57"></a> *     create DOM nodes; defaults to {@code goog.dom.getDomHelper}.
+<a name="line58"></a> * @return {!Node} The resulting node or document fragment.
+<a name="line59"></a> */
+<a name="line60"></a>goog.soy.renderAsFragment = function(template, opt_templateData,
+<a name="line61"></a>                                     opt_injectedData, opt_domHelper) {
+<a name="line62"></a>  var dom = opt_domHelper || goog.dom.getDomHelper();
+<a name="line63"></a>  return dom.htmlToDocumentFragment(
+<a name="line64"></a>      template(opt_templateData || goog.soy.defaultTemplateData_,
+<a name="line65"></a>               undefined, opt_injectedData));
+<a name="line66"></a>};
+<a name="line67"></a>
+<a name="line68"></a>
+<a name="line69"></a>/**
+<a name="line70"></a> * Renders a Soy template into a single node. If the rendered
+<a name="line71"></a> * HTML string represents a single node, then that node is returned. Otherwise,
+<a name="line72"></a> * a DIV element is returned containing the rendered nodes.
+<a name="line73"></a> *
+<a name="line74"></a> * @param {Function} template The Soy template defining the element&#39;s content.
+<a name="line75"></a> * @param {Object=} opt_templateData The data for the template.
+<a name="line76"></a> * @param {Object=} opt_injectedData The injected data for the template.
+<a name="line77"></a> * @param {goog.dom.DomHelper=} opt_domHelper The DOM helper used to
+<a name="line78"></a> *     create DOM nodes; defaults to {@code goog.dom.getDomHelper}.
+<a name="line79"></a> * @return {!Element} Rendered template contents, wrapped in a parent DIV
+<a name="line80"></a> *     element if necessary.
+<a name="line81"></a> */
+<a name="line82"></a>goog.soy.renderAsElement = function(template, opt_templateData,
+<a name="line83"></a>                                    opt_injectedData, opt_domHelper) {
+<a name="line84"></a>  var dom = opt_domHelper || goog.dom.getDomHelper();
+<a name="line85"></a>  var wrapper = dom.createElement(goog.dom.TagName.DIV);
+<a name="line86"></a>  wrapper.innerHTML = template(
+<a name="line87"></a>      opt_templateData || goog.soy.defaultTemplateData_,
+<a name="line88"></a>      undefined, opt_injectedData);
+<a name="line89"></a>
+<a name="line90"></a>  // If the template renders as a single element, return it.
+<a name="line91"></a>  if (wrapper.childNodes.length == 1) {
+<a name="line92"></a>    var firstChild = wrapper.firstChild;
+<a name="line93"></a>    if (firstChild.nodeType == goog.dom.NodeType.ELEMENT) {
+<a name="line94"></a>      return /** @type {!Element} */ (firstChild);
+<a name="line95"></a>    }
+<a name="line96"></a>  }
+<a name="line97"></a>
+<a name="line98"></a>  // Otherwise, return the wrapper DIV.
+<a name="line99"></a>  return wrapper;
+<a name="line100"></a>};
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>/**
+<a name="line104"></a> * Immutable object that is passed into templates that are rendered
+<a name="line105"></a> * without any data.
+<a name="line106"></a> * @type {Object}
+<a name="line107"></a> * @private
+<a name="line108"></a> */
+<a name="line109"></a>goog.soy.defaultTemplateData_ = {};
+</pre>
+
+
+</body>
+</html>

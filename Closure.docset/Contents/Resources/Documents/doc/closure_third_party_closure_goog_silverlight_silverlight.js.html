@@ -1,0 +1,1635 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>silverlight.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">silverlight.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Modified version of Silverlight.js to work with
+ the compiler's advanced modes. The API should be the same, except
+ that they're namespaced under goog.silverlight instead of Silverlight.
+
+ We've also modified this so that the silverlight bootstrapper
+ does not run by default. If you need to start up silverlight, you
+ should explicitly call goog.silverlight.startup().
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/third_party/closure/goog/silverlight/silverlight.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">_party/closure/goog/silverlight/silverlight.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+   
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.__cleanup"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">__cleanup<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Releases event handler resources when the page is unloaded
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line526">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.__verifySilverlight2UpgradeSuccess"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">__verifySilverlight2UpgradeSuccess<span class="args">(<span class="arg">host</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       This internal function helps identify installation state by
+taking advantage of behavioral differences between the
+1.0 and 2.0 releases of goog.silverlight.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">host</span>
+        : <div class="fullType">(<span class="type">SilverlightPlugin</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The dep object.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            If verification succeeded.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line738">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.buildHtml"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">buildHtml<span class="args">(<span class="arg">slProperties</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Create HTML that instantiates the control
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">slProperties</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The properties of the object.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>&nbsp;
+            The HTML for the object.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line324">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.buildPromptHtml"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">buildPromptHtml<span class="args">(<span class="arg">slPluginHelper</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Builds the HTML to prompt the user to download and install Silverlight
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">slPluginHelper</span>
+        : <div class="fullType"><span class="type">{alt: string, version: string}</span></div>
+        <div class="entryOverview">Alt is an alternate link to silverlight. If no alternate is specified, a default will be used with the given version number.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>&nbsp;
+            The UI.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line397">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.createObject"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">createObject<span class="args">(<span class="arg">source</span>,&nbsp;<span class="arg">parentElement</span>,&nbsp;<span class="arg">opt_id</span>,&nbsp;<span class="arg">opt_properties</span>,&nbsp;<span class="arg">opt_events</span>,&nbsp;<span class="arg">opt_initParams</span>,&nbsp;<span class="arg">opt_userContext</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Inserts a Silverlight <object> tag or installation experience into
+the HTML DOM based on the current installed state of
+goog.silverlight.</object>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">source</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The source file.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">parentElement</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/DOM/Element">Element</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The place to render the tag.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_id</span>
+        : <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">A DOM id for the tag.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_properties</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Properties for the tag. One of these should be version, to get the correct version of silverlight.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_events</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">An array of functions, keyed by the name of the event that they should be listening on (e.g., "onload"). What a weird API. The keys should be quoted if you're compiling with property renaming on.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_initParams</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">The initParams property of SilverlightPlugin.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_userContext</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Context to fire the events in. doesn't really work correctly. Use goog.bind instead.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>&nbsp;
+            The html for the object, if no rendering parent was specified.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line244">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.createObjectEx"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">createObjectEx<span class="args">(<span class="arg">params</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       takes a single parameter of all createObject
+parameters enclosed in {}
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">params</span>
+        : <div class="fullType"><span class="type">{context: (Object</span><span>&nbsp;|&nbsp;</span><span class="type">null), events: (Array</span><span>&nbsp;|&nbsp;</span><span class="type">null), id: string, initParams: string, ...}</span></div>
+        <div class="entryOverview">Named parameters of createObject.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>&nbsp;
+            See #createObject.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line373">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.defaultErrorHandler"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">defaultErrorHandler<span class="args">(<span class="arg">sender</span>,&nbsp;<span class="arg">args</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Default error handling function
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">sender</span>
+        : <div class="fullType">(<span class="type">SilverlightDependencyObject</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">dep object.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">args</span>
+        : <div class="fullType">(<span class="type">SilverlightErrorEventArgs</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The event.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line494">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.disposeHandlerName"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">disposeHandlerName<span class="args">(<span class="arg">handlerName</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Frees a handler created by getHandlerName.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">handlerName</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">A handler name.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line575">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.followFWLink"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">followFWLink<span class="args">(<span class="arg">linkid</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Navigates to a url based on fwlinkid
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">linkid</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The link suffix.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line453">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.getHandlerName"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">getHandlerName<span class="args">(<span class="arg">handler</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Generates named event handlers for delegates.
+
+Attaches them to the global window with the name __closure_slEvent +
+a unique id.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">handler</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+        <div class="entryOverview">A function to export.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>&nbsp;
+            The name of the handler.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line548">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.getSilverlight"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">getSilverlight<span class="args">(<span class="arg">version</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Navigates the browser to the appropriate Silverlight installer
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">version</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+        <div class="entryOverview">The silverlight version.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line423">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.htmlAttributeEncode"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">htmlAttributeEncode<span class="args">(<span class="arg">strInput</span>)</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Encodes special characters in input strings as charcodes
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">strInput</span>
+        : <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>
+        <div class="entryOverview">String to encode, or null. If null is passed, we give null right back.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span>)</div>&nbsp;
+            The encoded string, or null.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line464">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.isInstalled"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">isInstalled<span class="args">(<span class="arg">version</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Checks to see if the correct version is installed.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">version</span>
+        : <div class="fullType">(<span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">The silverlight version.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether silverlight is installed.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line85">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.isVersionAvailableOnError"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">isVersionAvailableOnError<span class="args">(<span class="arg">sender</span>,&nbsp;<span class="arg">args</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       This function should be called at the beginning of a web page's
+Silverlight error handler. It will determine if the required
+version of Silverlight is installed and available in the
+current process.
+
+During its execution the function will trigger one of the
+Silverlight installation state events, if appropriate.
+
+Sender and Args should be passed through from  the calling
+onError handler's parameters.
+
+The associated Sivlerlight <object> tag must have
+minRuntimeVersion set and should have autoUpgrade set to false.</object>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">sender</span>
+        : <div class="fullType">(<span class="type">SilverlightDependencyObject</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The sender.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">args</span>
+        : <div class="fullType">(<span class="type">SilverlightErrorEventArgs</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The event arguments.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Is the version available?
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line673">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.isVersionAvailableOnLoad"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">isVersionAvailableOnLoad<span class="args">(<span class="arg">sender</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       This function should be called at the beginning of a web page's
+Silverlight onLoad handler. It will determine if the required
+version of Silverlight is installed and available in the
+current process.
+
+During its execution the function will trigger one of the
+Silverlight installation state events, if appropriate.
+
+Sender should be passed through from the calling
+onError handler's parameters.
+
+The associated Sivlerlight <object> tag must have
+minRuntimeVersion set and should have autoUpgrade set to false.</object>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">sender</span>
+        : <div class="fullType">(<span class="type">SilverlightDependencyObject</span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The dep object.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Is the version available?
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line719">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.onInstallRequired"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">onInstallRequired<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called by goog.silverlight.checkInstallStatus to notify the page
+that Silverlight has not been installed by this user.
+The page should respond by
+injecting a clear, visible, and actionable upgrade message into
+the DOM. The message must inform the user that they need to
+download and install components needed to use the page.
+Silverlight should be mentioned so the user expects to see that
+string in the installer UI. However, the Silverlight-powered
+application should be the focus of the solicitation. The user
+wants the app. Silverlight is a means to the app.
+
+The installation solicitation will have a button that directs
+the user to the Silverlight installer. Upon click the button
+should both kick off a download of the installer URL and replace
+the Upgrade text with "Thanks for downloading. When installation
+is complete you may need to refresh the page to view this
+content" or equivalent.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line649">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.onRequiredVersionAvailable"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">onRequiredVersionAvailable<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called by version  verification control to notify the page that
+an appropriate build of Silverlight is available. The page
+should respond by injecting the appropriate Silverlight control
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line585">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.onRestartRequired"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">onRestartRequired<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called by version verification control to notify the page that
+an appropriate build of Silverlight is installed but not loaded.
+The page should respond by injecting a clear and visible
+"Thanks for installing. Please restart your browser and return
+to <a href="http://mysite.com">mysite.com</a>" or equivalent into the browser DOM
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line597">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.onSilverlightInstalled"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">onSilverlightInstalled<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called by Silverlight.waitForInstallCompletion when the page detects
+that Silverlight has been installed. The event handler is not called
+in upgrade scenarios.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line75">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.onUpgradeRequired"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">onUpgradeRequired<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called by version verification control to notify the page that
+Silverlight must be upgraded. The page should respond by
+injecting a clear, visible, and actionable upgrade message into
+the DOM. The message must inform the user that they need to
+upgrade Silverlight to use the page. They are already somewhat
+familiar with the Silverlight product when they encounter this.
+Silverlight should be mentioned so the user expects to see that
+string in the installer UI. However, the Silverlight-powered
+application should be the focus of the solicitation. The user
+wants the app. Silverlight is a means to the app.
+
+The upgrade solicitation will have a button that directs
+the user to the Silverlight installer. Upon click the button
+should both kick off a download of the installer URL and replace
+the Upgrade text with "Thanks for downloading. When the upgarde
+is complete please restart your browser and return to
+<a href="http://mysite.com">mysite.com</a>" or equivalent.
+
+Note: For a more interesting upgrade UX we can use Silverlight
+1.0-style XAML for this upgrade experience. Contact PiotrP for
+details.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line625">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.startup"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">startup<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Performs startup tasks.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line186">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.silverlight.waitForInstallCompletion"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">waitForInstallCompletion<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Occasionally checks for Silverlight installation status. If it
+detects that Silverlight has been installed then it calls
+Silverlight.onSilverlightInstalled();. This is only supported
+if Silverlight was not previously installed on this computer.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line165">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+  <h2>Global Properties</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.silverlight.__installationEventFired"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">__installationEventFired</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Ensures that only one Installation State event is fired.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line59">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.silverlight.__onSilverlightInstalledCalled"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">__onSilverlightInstalledCalled</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Prevents onSilverlightInstalled from being called multiple
+times
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line45">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.silverlight._silverlightCount"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">_silverlightCount</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Counter of globalized event handlers
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line37">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.silverlight.fwlinkRoot"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">fwlinkRoot</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Prefix for fwlink URL's
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line52">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.silverlight.onGetSilverlight"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.silverlight.</span><span class="entryName">onGetSilverlight</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Called by goog.silverlight.getSilverlight to notify the page that a user
+has requested the Silverlight installer
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_silverlight_silverlight.js.source.html#line67">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory silverlight</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="_party/closure/goog/silverlight/silverlight.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

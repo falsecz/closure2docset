@@ -1,0 +1,137 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>util.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_jsaction_util.js.html">util.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> *
+<a name="line17"></a> * @fileoverview Utility functions used by jsaction.
+<a name="line18"></a> * An important goal is to keep goog.jsaction as small as possible and
+<a name="line19"></a> * standalone.
+<a name="line20"></a> * This file provides minimal utility functions, mainly to deal with
+<a name="line21"></a> * browser events.
+<a name="line22"></a> * NOTE(user): This file should be considered private within goog.jsaction.
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>
+<a name="line26"></a>goog.provide(&#39;goog.jsaction.util&#39;);
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Registers the event handler function with the given DOM element for
+<a name="line31"></a> * the given event type.
+<a name="line32"></a> * NOTE(user): Jsaction only requires basic event handler registration.
+<a name="line33"></a> * Purposefully not pulling in goog.events to minimize binary size.
+<a name="line34"></a> *
+<a name="line35"></a> * @param {!Element} element The element.
+<a name="line36"></a> * @param {string} eventType The event type.
+<a name="line37"></a> * @param {Function} handler The handler function.
+<a name="line38"></a> */
+<a name="line39"></a>goog.jsaction.util.addEventListener = function(element, eventType, handler) {
+<a name="line40"></a>  if (element.addEventListener) {
+<a name="line41"></a>    element.addEventListener(eventType, handler, false);
+<a name="line42"></a>  } else if (element.attachEvent) {
+<a name="line43"></a>    // NOTE(user): IE executes handlers in the global scope.
+<a name="line44"></a>    // In the event handler function, &quot;this&quot; will therefore reference
+<a name="line45"></a>    // window, not the element on which the event occurred.
+<a name="line46"></a>    element.attachEvent(&#39;on&#39; + eventType, handler);
+<a name="line47"></a>  }
+<a name="line48"></a>};
+<a name="line49"></a>
+<a name="line50"></a>
+<a name="line51"></a>/**
+<a name="line52"></a> * Cancels propagation of an event.
+<a name="line53"></a> * @param {!Event} e The event to cancel propagation for.
+<a name="line54"></a> */
+<a name="line55"></a>goog.jsaction.util.stopPropagation = function(e) {
+<a name="line56"></a>  e.stopPropagation ? e.stopPropagation() : (e.cancelBubble = true);
+<a name="line57"></a>};
+<a name="line58"></a>
+<a name="line59"></a>
+<a name="line60"></a>/**
+<a name="line61"></a> * Prevents the default action of an event.
+<a name="line62"></a> * @param {!Event} e The event to prevent the default action for.
+<a name="line63"></a> */
+<a name="line64"></a>goog.jsaction.util.preventDefault = function(e) {
+<a name="line65"></a>  e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+<a name="line66"></a>};
+<a name="line67"></a>
+<a name="line68"></a>
+<a name="line69"></a>/**
+<a name="line70"></a> * Whether we are on a Mac. Not pulling in goog.useragent just for this.
+<a name="line71"></a> * @type {boolean}
+<a name="line72"></a> * @private
+<a name="line73"></a> */
+<a name="line74"></a>goog.jsaction.util.isMac_ = /Macintosh/.test(navigator.userAgent);
+<a name="line75"></a>
+<a name="line76"></a>
+<a name="line77"></a>/**
+<a name="line78"></a> * Determines and returns whether the given event (which is assumed
+<a name="line79"></a> * to be a click event) is modified.
+<a name="line80"></a> * @param {!Event} e The event.
+<a name="line81"></a> * @return {boolean} Whether the given event is modified.
+<a name="line82"></a> */
+<a name="line83"></a>goog.jsaction.util.isModifiedClickEvent = function(e) {
+<a name="line84"></a>  return (goog.jsaction.util.isMac_ &amp;&amp; e.metaKey) ||
+<a name="line85"></a>      (!goog.jsaction.util.isMac_ &amp;&amp; e.ctrlKey);
+<a name="line86"></a>};
+</pre>
+
+
+</body>
+</html>

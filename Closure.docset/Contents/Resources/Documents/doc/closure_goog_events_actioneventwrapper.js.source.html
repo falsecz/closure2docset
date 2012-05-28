@@ -1,0 +1,185 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>actioneventwrapper.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_events_actioneventwrapper.js.html">actioneventwrapper.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Action event wrapper implementation.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>goog.provide(&#39;goog.events.actionEventWrapper&#39;);
+<a name="line20"></a>
+<a name="line21"></a>goog.require(&#39;goog.events&#39;);
+<a name="line22"></a>goog.require(&#39;goog.events.EventHandler&#39;);
+<a name="line23"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line24"></a>goog.require(&#39;goog.events.EventWrapper&#39;);
+<a name="line25"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Event wrapper for action handling. Fires when an element is activated either
+<a name="line31"></a> * by clicking it or by focusing it and pressing Enter.
+<a name="line32"></a> *
+<a name="line33"></a> * @constructor
+<a name="line34"></a> * @implements {goog.events.EventWrapper}
+<a name="line35"></a> * @private
+<a name="line36"></a> */
+<a name="line37"></a>goog.events.ActionEventWrapper_ = function() {
+<a name="line38"></a>};
+<a name="line39"></a>
+<a name="line40"></a>
+<a name="line41"></a>/**
+<a name="line42"></a> * Singleton instance of ActionEventWrapper_.
+<a name="line43"></a> * @type {goog.events.ActionEventWrapper_}
+<a name="line44"></a> */
+<a name="line45"></a>goog.events.actionEventWrapper = new goog.events.ActionEventWrapper_();
+<a name="line46"></a>
+<a name="line47"></a>
+<a name="line48"></a>/**
+<a name="line49"></a> * Event types used by the wrapper.
+<a name="line50"></a> *
+<a name="line51"></a> * @type {Array.&lt;goog.events.EventType&gt;}
+<a name="line52"></a> * @private
+<a name="line53"></a> */
+<a name="line54"></a>goog.events.ActionEventWrapper_.EVENT_TYPES_ = [
+<a name="line55"></a>  goog.events.EventType.CLICK,
+<a name="line56"></a>  goog.userAgent.GECKO ?
+<a name="line57"></a>      goog.events.EventType.KEYPRESS :
+<a name="line58"></a>      goog.events.EventType.KEYDOWN
+<a name="line59"></a>];
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Adds an event listener using the wrapper on a DOM Node or an object that has
+<a name="line64"></a> * implemented {@link goog.events.EventTarget}. A listener can only be added
+<a name="line65"></a> * once to an object.
+<a name="line66"></a> *
+<a name="line67"></a> * @param {EventTarget|goog.events.EventTarget} target The node to listen to
+<a name="line68"></a> *     events on.
+<a name="line69"></a> * @param {Function|Object} listener Callback method, or an object with a
+<a name="line70"></a> *     handleEvent function.
+<a name="line71"></a> * @param {boolean=} opt_capt Whether to fire in capture phase (defaults to
+<a name="line72"></a> *     false).
+<a name="line73"></a> * @param {Object=} opt_scope Element in whose scope to call the listener.
+<a name="line74"></a> * @param {goog.events.EventHandler=} opt_eventHandler Event handler to add
+<a name="line75"></a> *     listener to.
+<a name="line76"></a> */
+<a name="line77"></a>goog.events.ActionEventWrapper_.prototype.listen = function(target, listener,
+<a name="line78"></a>    opt_capt, opt_scope, opt_eventHandler) {
+<a name="line79"></a>  var callback = function(e) {
+<a name="line80"></a>    if (e.type == goog.events.EventType.CLICK &amp;&amp; e.isMouseActionButton()) {
+<a name="line81"></a>      listener.call(opt_scope, e);
+<a name="line82"></a>    } else if (e.keyCode == goog.events.KeyCodes.ENTER ||
+<a name="line83"></a>        e.keyCode == goog.events.KeyCodes.MAC_ENTER) {
+<a name="line84"></a>      // convert keydown to keypress for backward compatibility.
+<a name="line85"></a>      e.type = goog.events.EventType.KEYPRESS;
+<a name="line86"></a>      listener.call(opt_scope, e);
+<a name="line87"></a>    }
+<a name="line88"></a>  };
+<a name="line89"></a>  callback.listener_ = listener;
+<a name="line90"></a>  callback.scope_ = opt_scope;
+<a name="line91"></a>
+<a name="line92"></a>  if (opt_eventHandler) {
+<a name="line93"></a>    opt_eventHandler.listen(target,
+<a name="line94"></a>        goog.events.ActionEventWrapper_.EVENT_TYPES_,
+<a name="line95"></a>        callback);
+<a name="line96"></a>  } else {
+<a name="line97"></a>    goog.events.listen(target,
+<a name="line98"></a>        goog.events.ActionEventWrapper_.EVENT_TYPES_,
+<a name="line99"></a>        callback);
+<a name="line100"></a>  }
+<a name="line101"></a>};
+<a name="line102"></a>
+<a name="line103"></a>
+<a name="line104"></a>/**
+<a name="line105"></a> * Removes an event listener added using goog.events.EventWrapper.listen.
+<a name="line106"></a> *
+<a name="line107"></a> * @param {EventTarget|goog.events.EventTarget} target The node to remove
+<a name="line108"></a> *    listener from.
+<a name="line109"></a> * @param {Function|Object} listener Callback method, or an object with a
+<a name="line110"></a> *     handleEvent function.
+<a name="line111"></a> * @param {boolean=} opt_capt Whether to fire in capture phase (defaults to
+<a name="line112"></a> *     false).
+<a name="line113"></a> * @param {Object=} opt_scope Element in whose scope to call the listener.
+<a name="line114"></a> * @param {goog.events.EventHandler=} opt_eventHandler Event handler to remove
+<a name="line115"></a> *     listener from.
+<a name="line116"></a> */
+<a name="line117"></a>goog.events.ActionEventWrapper_.prototype.unlisten = function(target, listener,
+<a name="line118"></a>    opt_capt, opt_scope, opt_eventHandler) {
+<a name="line119"></a>  for (var type, j = 0; type = goog.events.ActionEventWrapper_.EVENT_TYPES_[j];
+<a name="line120"></a>      j++) {
+<a name="line121"></a>    var listeners = goog.events.getListeners(target, type, false);
+<a name="line122"></a>    for (var obj, i = 0; obj = listeners[i]; i++) {
+<a name="line123"></a>      if (obj.listener.listener_ == listener &amp;&amp;
+<a name="line124"></a>          obj.listener.scope_ == opt_scope) {
+<a name="line125"></a>        if (opt_eventHandler) {
+<a name="line126"></a>          opt_eventHandler.unlisten(target, type, obj.listener);
+<a name="line127"></a>        } else {
+<a name="line128"></a>          goog.events.unlisten(target, type, obj.listener);
+<a name="line129"></a>        }
+<a name="line130"></a>        break;
+<a name="line131"></a>      }
+<a name="line132"></a>    }
+<a name="line133"></a>  }
+<a name="line134"></a>};
+</pre>
+
+
+</body>
+</html>

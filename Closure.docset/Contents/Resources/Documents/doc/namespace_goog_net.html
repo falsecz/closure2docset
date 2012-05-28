@@ -1,0 +1,998 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>net (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">net</span>
+</div>
+
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_net_BrowserChannel.html">
+          goog.net.BrowserChannel</a><br/>
+        <div class="class-details">Encapsulates the logic for a single BrowserChannel.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_BrowserTestChannel.html">
+          goog.net.BrowserTestChannel</a><br/>
+        <div class="class-details">Encapsulates the logic for a single BrowserTestChannel.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_BulkLoader.html">
+          goog.net.BulkLoader</a><br/>
+        <div class="class-details">Class used to load multiple URIs.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_BulkLoaderHelper.html">
+          goog.net.BulkLoaderHelper</a><br/>
+        <div class="class-details">Helper class used to load multiple URIs.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_ChannelDebug.html">
+          goog.net.ChannelDebug</a><br/>
+        <div class="class-details">Logs and keeps a buffer of debugging info for the Channel.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_ChannelRequest.html">
+          goog.net.ChannelRequest</a><br/>
+        <div class="class-details">Creates a ChannelRequest object which encapsulates a request to the server.
+A new ChannelRequest is created for each request to the server.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_Cookies.html">
+          goog.net.Cookies</a><br/>
+        <div class="class-details">A class for handling browser cookies.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_CrossDomainRpc.html">
+          goog.net.CrossDomainRpc</a><br/>
+        <div class="class-details">Creates a new instance of cross domain RPC</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_DefaultXmlHttpFactory.html">
+          goog.net.DefaultXmlHttpFactory</a><br/>
+        <div class="class-details">Default factory to use when creating xhr objects.  You probably shouldn't be
+instantiating this directly, but rather using it via goog.net.XmlHttp.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_FileDownloader.html">
+          goog.net.FileDownloader</a><br/>
+        <div class="class-details">A class for downloading remote files and storing them locally using the
+HTML5 filesystem API.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_IframeIo.html">
+          goog.net.IframeIo</a><br/>
+        <div class="class-details">Class for managing requests via iFrames.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_IframeLoadMonitor.html">
+          goog.net.IframeLoadMonitor</a><br/>
+        <div class="class-details">The correct way to determine whether an iframe has completed loading
+is different in IE and Firefox.  This class abstracts above these
+differences, providing a consistent interface for:
+<ol>
+<li> Determing if an iframe is currently loaded
+<li> Listening for an iframe that is not currently loaded, to finish loading
+</li></li></ol></div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_ImageLoader.html">
+          goog.net.ImageLoader</a><br/>
+        <div class="class-details">Image loader utility class.  Raises a goog.events.EventType.LOAD
+event for each image loaded, with an Image object as the target of
+the event, normalized to have <code>naturalHeight</code> and <code>naturalWidth</code>
+attributes.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_IpAddress.html">
+          goog.net.IpAddress</a><br/>
+        <div class="class-details">Abstract class defining an IP Address.
+
+Please use goog.net.IpAddress static methods or
+goog.net.Ipv4Address/Ipv6Address classes.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_Ipv4Address.html">
+          goog.net.Ipv4Address</a><br/>
+        <div class="class-details">Takes a string or a number and returns a IPv4 Address.
+
+This constructor accepts strings and instance of goog.math.Integer.
+If you pass a goog.math.Integer, make sure that its sign is set to positive.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_Ipv6Address.html">
+          goog.net.Ipv6Address</a><br/>
+        <div class="class-details">Takes a string or a number and returns an IPv6 Address.
+
+This constructor accepts strings and instance of goog.math.Integer.
+If you pass a goog.math.Integer, make sure that its sign is set to positive.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_Jsonp.html">
+          goog.net.Jsonp</a><br/>
+        <div class="class-details">Creates a new cross domain channel that sends data to the specified
+host URL. By default, if no reply arrives within 5s, the channel
+assumes the call failed to complete successfully.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_MockIFrameIo.html">
+          goog.net.MockIFrameIo</a><br/>
+        <div class="class-details">Mock implenetation of goog.net.IframeIo. This doesn't provide a mock
+implementation for all cases, but it's not too hard to add them as needed.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_MultiIframeLoadMonitor.html">
+          goog.net.MultiIframeLoadMonitor</a><br/>
+        <div class="class-details">Provides a wrapper around IframeLoadMonitor, to allow the caller to wait for
+multiple iframes to load.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_NetworkTester.html">
+          goog.net.NetworkTester</a><br/>
+        <div class="class-details">Creates an instance of goog.net.NetworkTester which can be used to test
+for internet connectivity by seeing if an image can be loaded from
+<a href="http://google.com">google.com</a>. It can also be tested with other URLs.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_WebSocket.html">
+          goog.net.WebSocket</a><br/>
+        <div class="class-details">Class encapsulating the logic for using a WebSocket.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_WrapperXmlHttpFactory.html">
+          goog.net.WrapperXmlHttpFactory</a><br/>
+        <div class="class-details">An xhr factory subclass which can be constructed using two factory methods.
+This exists partly to allow the preservation of goog.net.XmlHttp.setFactory()
+with an unchanged signature.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_XhrIo.html">
+          goog.net.XhrIo</a><br/>
+        <div class="class-details">Basic class for handling XMLHttpRequests.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_XhrIoPool.html">
+          goog.net.XhrIoPool</a><br/>
+        <div class="class-details">A pool of XhrIo objects.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_XhrManager.html">
+          goog.net.XhrManager</a><br/>
+        <div class="class-details">A manager of an XhrIoPool.</div>
+ </div>
+ <div class="fn-constructor">
+        <a href="class_goog_net_XmlHttpFactory.html">
+          goog.net.XmlHttpFactory</a><br/>
+        <div class="class-details">Abstract base class for an XmlHttpRequest factory.</div>
+ </div>
+   
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+<h2>Enumerations</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.ErrorCode"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.</span><span class="entryName">ErrorCode</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       Error codes
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  NO_ERROR
+                </span>
+                <div class="entryOverview">
+                  There is no error condition.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  HTTP_ERROR
+                </span>
+                <div class="entryOverview">
+                  The Http response returned a non-successful http status code.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ABORT
+                </span>
+                <div class="entryOverview">
+                  The request was aborted.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  FILE_NOT_FOUND
+                </span>
+                <div class="entryOverview">
+                  Currently the only case where file not found will be caused is when the
+code is running on the local file system and a non-IE browser makes a
+request to a file that doesn't exist.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  EXCEPTION
+                </span>
+                <div class="entryOverview">
+                  Exception was thrown while processing the request.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  getDebugMessage
+                </span>
+                <div class="entryOverview">
+                  Returns a friendly error message for an error code. These messages are for
+debugging and are not localized.goog.net.ErrorCode.errorCodeAn error code.string
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CUSTOM_ERROR
+                </span>
+                <div class="entryOverview">
+                  Custom error provided by the client through the error check hook.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  FF_SILENT_ERROR
+                </span>
+                <div class="entryOverview">
+                  If Firefox shows a browser error page, such as a connection reset by
+server or access denied, then it will fail silently without the error or
+load handlers firing.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ACCESS_DENIED
+                </span>
+                <div class="entryOverview">
+                  The most common error from iframeio, unfortunately, is that the browser
+responded with an error page that is classed as a different domain. The
+situations, are when a browser error page  is shown -- 404, access denied,
+DNS failure, connection reset etc.)
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  OFFLINE
+                </span>
+                <div class="entryOverview">
+                  The resource is not available offline.
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TIMEOUT
+                </span>
+                <div class="entryOverview">
+                  The request timed out.
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_errorcode.js.source.html#line27">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.EventType"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.</span><span class="entryName">EventType</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       Event names for network events
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  INCREMENTAL_DATA
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SUCCESS
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ERROR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  COMPLETE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  TIMEOUT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  READY_STATE_CHANGE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  READY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PROGRESS
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ABORT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_eventtype.js.source.html#line27">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.HttpStatus"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.</span><span class="entryName">HttpStatus</span>
+        : 
+     </div>
+
+
+     <div class="entryOverview">
+       HTTP Status Codes defined in RFC 2616.
+     </div>
+
+     <div class="entryDetails">
+       <div class="detailsSection">
+          <b>Constants:</b>
+          <table class="horiz-rule">
+            <tbody>
+              <tr><td>
+                <span class="entryName">
+                  TEMPORARY_REDIRECT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CONFLICT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  FOUND
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  GATEWAY_TIMEOUT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  USE_PROXY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  OK
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PRECONDITION_FAILED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SWITCHING_PROTOCOLS
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MOVED_PERMANENTLY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  BAD_GATEWAY
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  GONE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  UNAUTHORIZED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PAYMENT_REQUIRED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  REQUEST_TIMEOUT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  REQUEST_RANGE_NOT_SATISFIABLE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NOT_FOUND
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  BAD_REQUEST
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NOT_ACCEPTABLE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  INTERNAL_SERVER_ERROR
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  MULTIPLE_CHOICES
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  LENGTH_REQUIRED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SERVICE_UNAVAILABLE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  UNSUPPORTED_MEDIA_TYPE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  FORBIDDEN
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PARTIAL_CONTENT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NOT_MODIFIED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  ACCEPTED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  EXPECTATION_FAILED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  PROXY_AUTHENTICATION_REQUIRED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NON_AUTHORITATIVE_INFORMATION
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CONTINUE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  QUIRK_IE_NO_CONTENT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NO_CONTENT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  HTTP_VERSION_NOT_SUPPORTED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  REQUEST_ENTITY_TOO_LARGE
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  CREATED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  SEE_OTHER
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  RESET_CONTENT
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  REQUEST_URI_TOO_LONG
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  METHOD_NOT_ALLOWED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+              <tr><td>
+                <span class="entryName">
+                  NOT_IMPLEMENTED
+                </span>
+                <div class="entryOverview">
+                  <span class='nodesc'>No description.</span>
+                </div>
+             </td></tr>
+           </tbody>
+         </table>
+       </div>
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_httpstatus.js.source.html#line27">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+  <h2>Global Functions</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.net.XmlHttp"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.</span><span class="entryName">XmlHttp<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType">(<span class="type">GearsHttpRequest</span><span>&nbsp;|&nbsp;</span><span class="type">XMLHttpRequest</span>)</div>
+      </div>
+
+
+     <div class="entryOverview">
+       Static class for creating XMLHttpRequest objects.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType">(<span class="type">GearsHttpRequest</span><span>&nbsp;|&nbsp;</span><span class="type">XMLHttpRequest</span>)</div>&nbsp;
+            A new XMLHttpRequest object.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_xmlhttp.js.source.html#line32">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+  <h2>Global Properties</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.net.cookies"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.net.</span><span class="entryName">cookies</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_net_Cookies.html">goog.net.Cookies</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       A static default instance.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_net_cookies.js.source.html#line392">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package net</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="net"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

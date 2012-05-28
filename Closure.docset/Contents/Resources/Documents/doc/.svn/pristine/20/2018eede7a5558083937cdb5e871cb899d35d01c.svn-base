@@ -1,0 +1,2400 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>DeferredList (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+  <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+  <script type="text/javascript">
+     google.load("visualization", "1", {packages:["orgchart"]});
+     var _loadingVisualizations = true;
+  </script>
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+        <span class="fn">async.DeferredList</span>
+        <span>Extends</span>
+        <span class="fn-name">
+          <a href="class_goog_async_Deferred.html">
+          goog.async.Deferred
+</a>
+        </span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Constructs an object that waits on the results of multiple asynchronous
+operations and marshals the results. It is itself a <code>Deferred</code>,
+and sends results to its registered callback chain. Each instance is single
+use and may only fire once.
+
+Unless overridden by one of the options below, the <code>DeferredList</code>
+will wait for a result from every input <code>Deferred</code>. The results
+are stored in a list of two-element arrays as <code>[success, result]</code>,
+where <code>success</code> is whether that result was from a callback or
+errback. Once all results are available, the <code>DeferredList</code>'s
+callback chain is invoked with the full result list.
+  </div>
+
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/third_party/closure/goog/mochikit/async/deferredlist.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+
+
+
+
+
+<h2 class="g-first">Inheritance</h2>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+  <tr><td><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></td><td></td></tr>
+  <tr><td>goog.async.DeferredList</td><td><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></td></tr>
+</table>
+</div>
+<div class='gviz-org-chart-container goog-inline-block'>
+<table class='gviz-org-chart' style='display:none'>
+</table>
+</div>
+
+
+
+
+  <h2>Constructor</h2>
+      <div class="fn-constructor">
+    goog.async.DeferredList(<span><span class="arg">list</span>,&nbsp;<span class="arg">opt_fireOnOneCallback</span>,&nbsp;<span class="arg">opt_fireOnOneErrback</span>,&nbsp;<span class="arg">opt_consumeErrors</span>,&nbsp;<span class="arg">opt_canceller</span>,&nbsp;<span class="arg">opt_defaultScope</span></span>)
+  </div>
+
+   <h3>Parameters</h3>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">list</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+        <div class="entryOverview">An array of deferred objects to wait for.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_fireOnOneCallback</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Whether to stop waiting as soon as one input completes successfully. In this case, the <code>DeferredList</code>'s callback chain will be called with a two element array, <code>[index, result]</code>, where <code>index</code> identifies which input <code>Deferred</code> produced the <code>result</code>.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_fireOnOneErrback</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">Whether to stop waiting as soon as one input reports an error. The error result is passed to the <code>DeferredList</code>'s error callback chain.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_consumeErrors</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">When true, will stop propagation of the error callback chain for input deferred objects. If the failing deferred has a registered callback after this <code>DeferredList</code>, it will be called with null instead of an <code>Error</code>.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_canceller</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">A function that will be called if the deferred list is canceled.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_defaultScope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">The default scope to call callbacks with.</div>
+     </td>
+   </tr>
+  </table>
+
+
+<h2>Instance Methods</h2>
+
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_async_DeferredList.html">
+              goog.async.DeferredList
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.DeferredList.prototype.errback"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">errback<span class="args">(<span class="arg">res</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">res</span>
+        : 
+        <div class="entryOverview"><span class='nodesc'>No description.</span></div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line170">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.DeferredList.prototype.handleCallback_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">handleCallback_<span class="args">(<span class="arg">index</span>,&nbsp;<span class="arg">success</span>,&nbsp;<span class="arg">result</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type">*</span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Registers the result from an input deferred callback or errback. The result
+is returned and may be passed to additional handlers in the callback chain.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">index</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+        <div class="entryOverview">The index of the firing deferred object in the input list.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">success</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+        <div class="entryOverview">Whether the result is from a callback or errback.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">result</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The result of the callback or errback.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type">*</span></div>&nbsp;
+            The result, to be handled by the next handler in the deferred's callback chain (if any). If consumeErrors is set, an error result is replaced with null.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line145">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_async_Deferred.html">
+              goog.async.Deferred
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.addBoth"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addBoth<span class="args">(<span class="arg">f</span>,&nbsp;<span class="arg">opt_scope</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Registers a function as both callback and errback.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">f</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span></div>
+        <div class="entryOverview">The function to be called on any result.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_scope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">An optional scope to call the callbacks in.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred object for chaining.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line405">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.addCallback"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addCallback<span class="args">(<span class="arg">cb</span>,&nbsp;<span class="arg">opt_scope</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Register a callback function, to be called when a successful result
+is available.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">cb</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span></div>
+        <div class="entryOverview">The function to be called on a successful result.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_scope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">An optional scope to call the callback in.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred object for chaining.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line308">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.addCallbacks"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addCallbacks<span class="args">(<span class="arg">cb</span>,&nbsp;<span class="arg">eb</span>,&nbsp;<span class="arg">opt_scope</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Registers a callback function and errback function.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">cb</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The function to be called on a successful result.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">eb</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+        <div class="entryOverview">The function to be called on an unsuccessful result.</div>
+     </td>
+   </tr>
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_scope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">An optional scope to call the callbacks in.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred object for chaining.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line331">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.addErrback"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">addErrback<span class="args">(<span class="arg">eb</span>,&nbsp;<span class="arg">opt_scope</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Register a callback function, to be called if this operation fails.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">eb</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span></div>
+        <div class="entryOverview">The function to be called on an unsuccessful result.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">opt_scope</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">An optional scope to call the errback in.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred object for chaining.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line319">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.assertNotDeferred_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">assertNotDeferred_<span class="args">(<span class="arg">obj</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Asserts that an object is not a Deferred.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">obj</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The object to test.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line293">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.awaitDeferred"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">awaitDeferred<span class="args">(<span class="arg">otherDeferred</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Makes this Deferred wait for otherDeferred to be called, and its preceding
+callbacks to be executed, before continuing with the callback sequence.
+
+This is equivalent to adding a callback that returns otherDeferred, but
+doesn't prevent additional callbacks from being added to otherDeferred.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">otherDeferred</span>
+        : <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+        <div class="entryOverview">The Deferred to wait for.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred object for chaining.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line367">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.branch"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">branch<span class="args">(<span class="arg">opt_propagateCancel</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Create a branch off this Deferred's callback chain, and return it as a new
+Deferred. This means that the return value will have the value at the current
+point in the callback chain, regardless of any further callbacks added to
+this Deferred.
+
+Additional callbacks added to the original Deferred will not affect the value
+of any branches. All branches at the same stage in the callback chain will
+receive the same starting value.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_propagateCancel</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">If cancel() is called on every child branch created with opt_propagateCancel, the parent will be cancelled as well.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred value at this point in the callback chain.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line388">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.branchCancel_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">branchCancel_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Handle a single branch being cancelled. Once all branches are cancelled, this
+Deferred will be cancelled as well.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line192">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.callback"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">callback<span class="args">(<span class="arg">result</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Record a successful result for this operation, and send the result
+to all registered callback functions.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">result</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The result of the operation.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line268">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.cancel"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">cancel<span class="args">(<span class="arg">opt_deepCancel</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Cancels a deferred that has not yet received a value. If this Deferred is
+paused waiting for a chained Deferred to fire, the chained Deferred will also
+be cancelled.
+
+If this Deferred was created by calling branch() on a parent Deferred with
+opt_propagateCancel set to true, the parent may also be cancelled. If
+opt_deepCancel is set, cancel() will be called on the parent (as well as any
+other ancestors if the parent is also a branch). If one or more branches were
+created with opt_propagateCancel set to true, the parent will be cancelled if
+cancel() is called on all of those branches.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">opt_deepCancel</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+        <div class="entryOverview">If true, cancels this Deferred's parent even if cancel() hasn't been called on some of the parent's branches. Has no effect on a branch without opt_propagateCancel set to true.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line157">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.chainDeferred"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">chainDeferred<span class="args">(<span class="arg">otherDeferred</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Adds another deferred to the end of this deferred's processing chain.
+
+Use this when you want otherDeferred to be called at the end of
+thisDeferred's previous callbacks.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">otherDeferred</span>
+        : <div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>
+        <div class="entryOverview">The Deferred to chain.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span></div>&nbsp;
+            The deferred object for chaining.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line350">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.check_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">check_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Verifies that the deferred has not yet been fired.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line253">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.continue_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">continue_<span class="args">(<span class="arg">isSuccess</span>,&nbsp;<span class="arg">res</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called when a dependent deferred fires.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">isSuccess</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+        <div class="entryOverview">Whether the result is a success or an error.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">res</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The result of the dependent deferred.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line228">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.errback"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">errback<span class="args">(<span class="arg">result</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Record that this operation failed with an error, and send the error
+to all registered errback functions.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">result</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The error result of the operation.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line280">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.fire_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">fire_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Exhausts the callback sequence once a result is available.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line447">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.hasErrback_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">hasErrback_<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether an errback has been registered.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line435">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.hasFired"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">hasFired<span class="args">()</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether callback or errback has been called on this deferred.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line414">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry protected">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.isError"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">isError<span class="args">(<span class="arg">res</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       <span class='nodesc'>No description.</span>
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">res</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The current callback result.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>&nbsp;
+            Whether the current result is an error that should cause registered errbacks to fire. May be overridden by subclasses to handle special error types.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line426">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.pause_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">pause_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Pauses the deferred.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line204">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.resback_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">resback_<span class="args">(<span class="arg">isSuccess</span>,&nbsp;<span class="arg">res</span>)</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Called when either a success or a failure happens.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">isSuccess</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+        <div class="entryOverview">Whether the result is a success or an error.</div>
+     </td>
+   </tr>
+     
+   <tr class="odd">
+     <td>
+        <span class="entryName">res</span>
+        : <div class="fullType"><span class="type">*</span></div>
+        <div class="entryOverview">The result.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line240">code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.Deferred.prototype.unpause_"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">unpause_<span class="args">()</span>
+        </span>
+      </div>
+
+
+     <div class="entryOverview">
+       Resumes a paused deferred.
+     </div>
+
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line213">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Instance Properties</h2>
+
+
+
+
+
+
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_async_DeferredList.html">
+              goog.async.DeferredList
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.DeferredList.prototype.consumeErrors_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">consumeErrors_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether to stop error propagation on the input Deferred objects. If the
+DeferredList sees an error from one of the Deferred inputs, the error will
+be captured, and the Deferred will be returned to success state with a null
+return value.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line109">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.DeferredList.prototype.deferredResults_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">deferredResults_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The stored return values of the Deferred objects.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line83">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.DeferredList.prototype.fireOnOneCallback_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">fireOnOneCallback_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether to fire on the first successful callback instead of waiting for
+every Deferred to complete.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line91">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.DeferredList.prototype.fireOnOneErrback_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">fireOnOneErrback_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether to fire on the first error result received instead of waiting for
+every Deferred to complete.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line99">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.DeferredList.prototype.list_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">list_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The list of Deferred objects to wait for.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line76">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.DeferredList.prototype.numFinished_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">numFinished_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The number of input deferred objects that have fired.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line129">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+<div>
+       <div class="desc">
+         Defined in
+         <span class="fn-name">
+            <a href="class_goog_async_Deferred.html">
+              goog.async.Deferred
+            </a>
+         </span>
+       </div>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.branches_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">branches_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The number of Deferred objects that have been branched off this one. This
+will be decremented whenever a branch is fired or cancelled.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line138">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.canceller_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">canceller_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Function">Function</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span><span>&nbsp;|&nbsp;</span><span class="type">undefined</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       If provided, this is the function to call when the deferred is cancelled.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line54">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.chain_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">chain_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Entries in the chain are arrays containing a callback, errback, and
+optional scope. Callbacks or errbacks may be null.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line47">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.chained_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">chained_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       If a callback returns a deferred then this deferred is considered a chained
+deferred and once it is chained we cannot add more callbacks.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line111">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.defaultScope_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">defaultScope_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Object">Object</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       The default scope to execute callbacks in.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line61">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.fired_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">fired_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether the deferred has been fired.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line70">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.hadError_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">hadError_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Whether the last result in the callback chain was an error.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line78">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.parent_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">parent_</span>
+        : <div class="fullType">(<span class="type"><a href="class_goog_async_Deferred.html">goog.async.Deferred</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       If this Deferred was created by branch(), this will be the "parent" Deferred.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line129">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.paused_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">paused_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The number of times this deferred has been paused.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line94">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.result_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">result_</span>
+        : <div class="fullType"><span class="type">*</span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       The current Deferred result, updated by registered callbacks and errbacks.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line86">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.silentlyCancelled_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">silentlyCancelled_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Boolean">boolean</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       If the deferred was cancelled but it did not have a canceller then this gets
+set to true.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line103">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.async.Deferred.prototype.unhandledExceptionTimeoutId_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryName">unhandledExceptionTimeoutId_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Number">number</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       If an error is thrown during Deferred execution with no errback to catch it,
+the error is rethrown after a timeout. Reporting the error after a timeout
+allows execution to continue in the calling context.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferred.js.source.html#line121">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+</div>
+
+
+
+
+<h2>Static Methods</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry public">
+       <td class="access"></td>
+
+
+
+
+
+
+  <td>
+    <a name="goog.async.DeferredList.gatherResults"></a>
+
+
+     <div class="arg">
+       <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.async.DeferredList.</span><span class="entryName">gatherResults<span class="args">(<span class="arg">list</span>)</span>
+        </span>
+        &#8658; <div class="fullType"><span class="type"><a href="class_goog_async_DeferredList.html">goog.async.DeferredList</a></span></div>
+      </div>
+
+
+     <div class="entryOverview">
+       Creates a <code>DeferredList</code> that gathers results from multiple
+<code>Deferred</code> inputs. If all inputs succeed, the callback is fired
+with the list of results as a flat array. If any input fails, the errback is
+fired with the error.
+     </div>
+
+
+    <! -- Method details -->
+    <div class="entryDetails">
+
+      <div class="detailsSection">
+        <b>Arguments: </b>
+
+
+
+
+
+
+<table class="horiz-rule">
+     
+   <tr class="even">
+     <td>
+        <span class="entryName">list</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array">Array</a></span></div>
+        <div class="entryOverview">The list of deferred objects to wait for.</div>
+     </td>
+   </tr>
+  </table>
+      </div>
+   
+      <div class="detailsSection">
+        <b>Returns:</b>&nbsp;<div class="fullType"><span class="type"><a href="class_goog_async_DeferredList.html">goog.async.DeferredList</a></span></div>&nbsp;
+            A new deferred list.
+      </div>
+  
+    </div>
+   
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.source.html#line189">code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Package async</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">Package Reference</h2>
+            <div id="sideTypeIndex" rootPath="" current="async.DeferredList"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

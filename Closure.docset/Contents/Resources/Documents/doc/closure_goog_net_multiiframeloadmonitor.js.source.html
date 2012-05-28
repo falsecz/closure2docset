@@ -1,0 +1,166 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>multiiframeloadmonitor.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_net_multiiframeloadmonitor.js.html">multiiframeloadmonitor.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Class that can be used to determine when multiple iframes have
+<a name="line17"></a> * been loaded. Refactored from static APIs in IframeLoadMonitor.
+<a name="line18"></a> */
+<a name="line19"></a>goog.provide(&#39;goog.net.MultiIframeLoadMonitor&#39;);
+<a name="line20"></a>
+<a name="line21"></a>goog.require(&#39;goog.net.IframeLoadMonitor&#39;);
+<a name="line22"></a>
+<a name="line23"></a>
+<a name="line24"></a>
+<a name="line25"></a>/**
+<a name="line26"></a> * Provides a wrapper around IframeLoadMonitor, to allow the caller to wait for
+<a name="line27"></a> * multiple iframes to load.
+<a name="line28"></a> *
+<a name="line29"></a> * @param {Array.&lt;HTMLIFrameElement&gt;} iframes Array of iframe elements to
+<a name="line30"></a> *     wait until they are loaded.
+<a name="line31"></a> * @param {function():void} callback The callback to invoke once the frames have
+<a name="line32"></a> *     loaded.
+<a name="line33"></a> * @param {boolean=} opt_hasContent true if the monitor should wait until the
+<a name="line34"></a> *     iframes have content (body.firstChild != null).
+<a name="line35"></a> * @constructor
+<a name="line36"></a> */
+<a name="line37"></a>goog.net.MultiIframeLoadMonitor = function(iframes, callback, opt_hasContent) {
+<a name="line38"></a>  /**
+<a name="line39"></a>   * Array of IframeLoadMonitors we use to track the loaded status of any
+<a name="line40"></a>   * currently unloaded iframes.
+<a name="line41"></a>   * @type {Array.&lt;goog.net.IframeLoadMonitor&gt;}
+<a name="line42"></a>   * @private
+<a name="line43"></a>   */
+<a name="line44"></a>  this.pendingIframeLoadMonitors_ = [];
+<a name="line45"></a>
+<a name="line46"></a>  /**
+<a name="line47"></a>   * Callback which is invoked when all of the iframes are loaded.
+<a name="line48"></a>   * @type {function():void}
+<a name="line49"></a>   * @private
+<a name="line50"></a>   */
+<a name="line51"></a>  this.callback_ = callback;
+<a name="line52"></a>
+<a name="line53"></a>  for (var i = 0; i &lt; iframes.length; i++) {
+<a name="line54"></a>    var iframeLoadMonitor = new goog.net.IframeLoadMonitor(
+<a name="line55"></a>      iframes[i], opt_hasContent);
+<a name="line56"></a>    if (iframeLoadMonitor.isLoaded()) {
+<a name="line57"></a>      // Already loaded - don&#39;t need to wait
+<a name="line58"></a>      iframeLoadMonitor.dispose();
+<a name="line59"></a>    } else {
+<a name="line60"></a>      // Iframe isn&#39;t loaded yet - register to be notified when it is
+<a name="line61"></a>      // loaded, and track this monitor so we can dispose later as
+<a name="line62"></a>      // required.
+<a name="line63"></a>      this.pendingIframeLoadMonitors_.push(iframeLoadMonitor);
+<a name="line64"></a>      goog.events.listen(
+<a name="line65"></a>        iframeLoadMonitor, goog.net.IframeLoadMonitor.LOAD_EVENT, this);
+<a name="line66"></a>    }
+<a name="line67"></a>  }
+<a name="line68"></a>  if (!this.pendingIframeLoadMonitors_.length) {
+<a name="line69"></a>    // All frames were already loaded
+<a name="line70"></a>    this.callback_();
+<a name="line71"></a>  }
+<a name="line72"></a>};
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a> * Handles a pending iframe load monitor load event.
+<a name="line77"></a> * @param {goog.events.Event} e The goog.net.IframeLoadMonitor.LOAD_EVENT event.
+<a name="line78"></a> */
+<a name="line79"></a>goog.net.MultiIframeLoadMonitor.prototype.handleEvent = function(e) {
+<a name="line80"></a>  var iframeLoadMonitor = e.target;
+<a name="line81"></a>  // iframeLoadMonitor is now loaded, remove it from the array of
+<a name="line82"></a>  // pending iframe load monitors.
+<a name="line83"></a>  for (var i = 0; i &lt; this.pendingIframeLoadMonitors_.length; i++) {
+<a name="line84"></a>    if (this.pendingIframeLoadMonitors_[i] == iframeLoadMonitor) {
+<a name="line85"></a>      this.pendingIframeLoadMonitors_.splice(i, 1);
+<a name="line86"></a>      break;
+<a name="line87"></a>    }
+<a name="line88"></a>  }
+<a name="line89"></a>
+<a name="line90"></a>  // Disposes of the iframe load monitor.  We created this iframe load monitor
+<a name="line91"></a>  // and installed the single listener on it, so it is safe to dispose it
+<a name="line92"></a>  // in the middle of this event handler.
+<a name="line93"></a>  iframeLoadMonitor.dispose();
+<a name="line94"></a>
+<a name="line95"></a>  // If there are no more pending iframe load monitors, all the iframes
+<a name="line96"></a>  // have loaded, and so we invoke the callback.
+<a name="line97"></a>  if (!this.pendingIframeLoadMonitors_.length) {
+<a name="line98"></a>    this.callback_();
+<a name="line99"></a>  }
+<a name="line100"></a>};
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>/**
+<a name="line104"></a> * Stops monitoring the iframes, cleaning up any associated resources. In
+<a name="line105"></a> * general, the object cleans up its own resources before invoking the
+<a name="line106"></a> * callback, so this API should only be used if the caller wants to stop the
+<a name="line107"></a> * monitoring before the iframes are loaded (for example, if the caller is
+<a name="line108"></a> * implementing a timeout).
+<a name="line109"></a> */
+<a name="line110"></a>goog.net.MultiIframeLoadMonitor.prototype.stopMonitoring = function() {
+<a name="line111"></a>  for (var i = 0; i &lt; this.pendingIframeLoadMonitors_.length; i++) {
+<a name="line112"></a>    this.pendingIframeLoadMonitors_[i].dispose();
+<a name="line113"></a>  }
+<a name="line114"></a>  this.pendingIframeLoadMonitors_.length = 0;
+<a name="line115"></a>};
+</pre>
+
+
+</body>
+</html>

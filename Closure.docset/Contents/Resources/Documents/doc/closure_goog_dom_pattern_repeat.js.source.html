@@ -1,0 +1,239 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>repeat.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_dom_pattern_repeat.js.html">repeat.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview DOM pattern to match a tag and all of its children.
+<a name="line17"></a> *
+<a name="line18"></a> * @author robbyw@google.com (Robby Walker)
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.dom.pattern.Repeat&#39;);
+<a name="line22"></a>
+<a name="line23"></a>goog.require(&#39;goog.dom.NodeType&#39;);
+<a name="line24"></a>goog.require(&#39;goog.dom.pattern.AbstractPattern&#39;);
+<a name="line25"></a>goog.require(&#39;goog.dom.pattern.MatchType&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Pattern object that matches a repetition of another pattern.
+<a name="line31"></a> * @param {goog.dom.pattern.AbstractPattern} pattern The pattern to
+<a name="line32"></a> *     repetitively match.
+<a name="line33"></a> * @param {number=} opt_minimum The minimum number of times to match.  Defaults
+<a name="line34"></a> *     to 0.
+<a name="line35"></a> * @param {number=} opt_maximum The maximum number of times to match.  Defaults
+<a name="line36"></a> *     to unlimited.
+<a name="line37"></a> * @constructor
+<a name="line38"></a> * @extends {goog.dom.pattern.AbstractPattern}
+<a name="line39"></a> */
+<a name="line40"></a>goog.dom.pattern.Repeat = function(pattern,
+<a name="line41"></a>                                   opt_minimum,
+<a name="line42"></a>                                   opt_maximum) {
+<a name="line43"></a>  this.pattern_ = pattern;
+<a name="line44"></a>  this.minimum_ = opt_minimum || 0;
+<a name="line45"></a>  this.maximum_ = opt_maximum || null;
+<a name="line46"></a>  this.matches = [];
+<a name="line47"></a>};
+<a name="line48"></a>goog.inherits(goog.dom.pattern.Repeat, goog.dom.pattern.AbstractPattern);
+<a name="line49"></a>
+<a name="line50"></a>
+<a name="line51"></a>/**
+<a name="line52"></a> * Pattern to repetitively match.
+<a name="line53"></a> *
+<a name="line54"></a> * @type {goog.dom.pattern.AbstractPattern}
+<a name="line55"></a> * @private
+<a name="line56"></a> */
+<a name="line57"></a>goog.dom.pattern.Repeat.prototype.pattern_;
+<a name="line58"></a>
+<a name="line59"></a>
+<a name="line60"></a>/**
+<a name="line61"></a> * Minimum number of times to match the pattern.
+<a name="line62"></a> *
+<a name="line63"></a> * @private
+<a name="line64"></a> */
+<a name="line65"></a>goog.dom.pattern.Repeat.prototype.minimum_ = 0;
+<a name="line66"></a>
+<a name="line67"></a>
+<a name="line68"></a>/**
+<a name="line69"></a> * Optional maximum number of times to match the pattern.  A {@code null} value
+<a name="line70"></a> * will be treated as infinity.
+<a name="line71"></a> *
+<a name="line72"></a> * @type {?number}
+<a name="line73"></a> * @private
+<a name="line74"></a> */
+<a name="line75"></a>goog.dom.pattern.Repeat.prototype.maximum_ = 0;
+<a name="line76"></a>
+<a name="line77"></a>
+<a name="line78"></a>/**
+<a name="line79"></a> * Number of times the pattern has matched.
+<a name="line80"></a> *
+<a name="line81"></a> * @type {number}
+<a name="line82"></a> */
+<a name="line83"></a>goog.dom.pattern.Repeat.prototype.count = 0;
+<a name="line84"></a>
+<a name="line85"></a>
+<a name="line86"></a>/**
+<a name="line87"></a> * Whether the pattern has recently matched or failed to match and will need to
+<a name="line88"></a> * be reset when starting a new round of matches.
+<a name="line89"></a> *
+<a name="line90"></a> * @type {boolean}
+<a name="line91"></a> * @private
+<a name="line92"></a> */
+<a name="line93"></a>goog.dom.pattern.Repeat.prototype.needsReset_ = false;
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * The matched nodes.
+<a name="line98"></a> *
+<a name="line99"></a> * @type {Array.&lt;Node&gt;}
+<a name="line100"></a> */
+<a name="line101"></a>goog.dom.pattern.Repeat.prototype.matches;
+<a name="line102"></a>
+<a name="line103"></a>
+<a name="line104"></a>/**
+<a name="line105"></a> * Test whether the given token continues a repeated series of matches of the
+<a name="line106"></a> * pattern given in the constructor.
+<a name="line107"></a> *
+<a name="line108"></a> * @param {Node} token Token to match against.
+<a name="line109"></a> * @param {goog.dom.TagWalkType} type The type of token.
+<a name="line110"></a> * @return {goog.dom.pattern.MatchType} &lt;code&gt;MATCH&lt;/code&gt; if the pattern
+<a name="line111"></a> *     matches, &lt;code&gt;BACKTRACK_MATCH&lt;/code&gt; if the pattern does not match
+<a name="line112"></a> *     but already had accumulated matches, &lt;code&gt;MATCHING&lt;/code&gt; if the pattern
+<a name="line113"></a> *     starts a match, and &lt;code&gt;NO_MATCH&lt;/code&gt; if the pattern does not match.
+<a name="line114"></a> * @suppress {missingProperties} See the broken line below.
+<a name="line115"></a> */
+<a name="line116"></a>goog.dom.pattern.Repeat.prototype.matchToken = function(token, type) {
+<a name="line117"></a>  // Reset if we&#39;re starting a new match
+<a name="line118"></a>  if (this.needsReset_) {
+<a name="line119"></a>    this.reset();
+<a name="line120"></a>  }
+<a name="line121"></a>
+<a name="line122"></a>  // If the option is set, ignore any whitespace only text nodes
+<a name="line123"></a>  if (token.nodeType == goog.dom.NodeType.TEXT &amp;&amp;
+<a name="line124"></a>      token.nodeValue.match(/^\s+$/)) {
+<a name="line125"></a>    return goog.dom.pattern.MatchType.MATCHING;
+<a name="line126"></a>  }
+<a name="line127"></a>
+<a name="line128"></a>  switch (this.pattern_.matchToken(token, type)) {
+<a name="line129"></a>    case goog.dom.pattern.MatchType.MATCH:
+<a name="line130"></a>      // Record the first token we match.
+<a name="line131"></a>      if (this.count == 0) {
+<a name="line132"></a>        this.matchedNode = token;
+<a name="line133"></a>      }
+<a name="line134"></a>
+<a name="line135"></a>      // Mark the match
+<a name="line136"></a>      this.count++;
+<a name="line137"></a>
+<a name="line138"></a>      // Add to the list
+<a name="line139"></a>      this.matches.push(this.pattern_.matchedNode);
+<a name="line140"></a>
+<a name="line141"></a>      // Check if this match hits our maximum
+<a name="line142"></a>      if (this.maximum_ !== null &amp;&amp; this.count == this.maximum_) {
+<a name="line143"></a>        this.needsReset_ = true;
+<a name="line144"></a>        return goog.dom.pattern.MatchType.MATCH;
+<a name="line145"></a>      } else {
+<a name="line146"></a>        return goog.dom.pattern.MatchType.MATCHING;
+<a name="line147"></a>      }
+<a name="line148"></a>
+<a name="line149"></a>    case goog.dom.pattern.MatchType.MATCHING:
+<a name="line150"></a>      // This can happen when our child pattern is a sequence or a repetition.
+<a name="line151"></a>      return goog.dom.pattern.MatchType.MATCHING;
+<a name="line152"></a>
+<a name="line153"></a>    case goog.dom.pattern.MatchType.BACKTRACK_MATCH:
+<a name="line154"></a>      // This happens if our child pattern is repetitive too.
+<a name="line155"></a>      // TODO(robbyw): Backtrack further if necessary.
+<a name="line156"></a>      this.count++;
+<a name="line157"></a>
+<a name="line158"></a>      // NOTE(nicksantos): This line of code is broken. this.patterns_ doesn&#39;t
+<a name="line159"></a>      // exist, and this.currentPosition_ doesn&#39;t exit. When this is fixed,
+<a name="line160"></a>      // remove the missingProperties suppression above.
+<a name="line161"></a>      if (this.currentPosition_ == this.patterns_.length) {
+<a name="line162"></a>        this.needsReset_ = true;
+<a name="line163"></a>        return goog.dom.pattern.MatchType.BACKTRACK_MATCH;
+<a name="line164"></a>      } else {
+<a name="line165"></a>        // Retry the same token on the next iteration of the child pattern.
+<a name="line166"></a>        return this.matchToken(token, type);
+<a name="line167"></a>      }
+<a name="line168"></a>
+<a name="line169"></a>    default:
+<a name="line170"></a>      this.needsReset_ = true;
+<a name="line171"></a>      if (this.count &gt;= this.minimum_) {
+<a name="line172"></a>        return goog.dom.pattern.MatchType.BACKTRACK_MATCH;
+<a name="line173"></a>      } else {
+<a name="line174"></a>        return goog.dom.pattern.MatchType.NO_MATCH;
+<a name="line175"></a>      }
+<a name="line176"></a>  }
+<a name="line177"></a>};
+<a name="line178"></a>
+<a name="line179"></a>
+<a name="line180"></a>/**
+<a name="line181"></a> * Reset any internal state this pattern keeps.
+<a name="line182"></a> */
+<a name="line183"></a>goog.dom.pattern.Repeat.prototype.reset = function() {
+<a name="line184"></a>  this.pattern_.reset();
+<a name="line185"></a>  this.count = 0;
+<a name="line186"></a>  this.needsReset_ = false;
+<a name="line187"></a>  this.matches.length = 0;
+<a name="line188"></a>};
+</pre>
+
+
+</body>
+</html>

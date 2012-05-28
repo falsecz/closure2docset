@@ -1,0 +1,230 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>prioritypool.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_structs_prioritypool.js.html">prioritypool.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Datastructure: Priority Pool.
+<a name="line17"></a> *
+<a name="line18"></a> *
+<a name="line19"></a> * An extending of Pool that handles queueing and prioritization.
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>
+<a name="line23"></a>goog.provide(&#39;goog.structs.PriorityPool&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.structs.Pool&#39;);
+<a name="line26"></a>goog.require(&#39;goog.structs.PriorityQueue&#39;);
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>/**
+<a name="line31"></a> * A generic pool class. If max is greater than min, an error is thrown.
+<a name="line32"></a> * @param {number=} opt_minCount Min. number of objects (Default: 1).
+<a name="line33"></a> * @param {number=} opt_maxCount Max. number of objects (Default: 10).
+<a name="line34"></a> * @constructor
+<a name="line35"></a> * @extends {goog.structs.Pool}
+<a name="line36"></a> */
+<a name="line37"></a>goog.structs.PriorityPool = function(opt_minCount, opt_maxCount) {
+<a name="line38"></a>  /**
+<a name="line39"></a>   * Queue of requests for pool objects.
+<a name="line40"></a>   * @type {goog.structs.PriorityQueue}
+<a name="line41"></a>   * @private
+<a name="line42"></a>   */
+<a name="line43"></a>  this.requestQueue_ = new goog.structs.PriorityQueue();
+<a name="line44"></a>
+<a name="line45"></a>  // Must break convention of putting the super-class&#39;s constructor first. This
+<a name="line46"></a>  // is because the super-class constructor calls adjustForMinMax, which this
+<a name="line47"></a>  // class overrides. In this class&#39;s implementation, it assumes that there
+<a name="line48"></a>  // is a requestQueue_, and will error if not present.
+<a name="line49"></a>  goog.structs.Pool.call(this, opt_minCount, opt_maxCount);
+<a name="line50"></a>};
+<a name="line51"></a>goog.inherits(goog.structs.PriorityPool, goog.structs.Pool);
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>/**
+<a name="line55"></a> * The key for the most recent timeout created.
+<a name="line56"></a> * @type {number|undefined}
+<a name="line57"></a> * @private
+<a name="line58"></a> */
+<a name="line59"></a>goog.structs.PriorityPool.prototype.delayTimeout_;
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Default priority for pool objects requests.
+<a name="line64"></a> * @type {number}
+<a name="line65"></a> * @private
+<a name="line66"></a> */
+<a name="line67"></a>goog.structs.PriorityPool.DEFAULT_PRIORITY_ = 100;
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/** @override */
+<a name="line71"></a>goog.structs.PriorityPool.prototype.setDelay = function(delay) {
+<a name="line72"></a>  goog.base(this, &#39;setDelay&#39;, delay);
+<a name="line73"></a>
+<a name="line74"></a>  // If the pool hasn&#39;t been accessed yet, no need to do anything.
+<a name="line75"></a>  if (!goog.isDefAndNotNull(this.lastAccess)) {
+<a name="line76"></a>    return;
+<a name="line77"></a>  }
+<a name="line78"></a>
+<a name="line79"></a>  goog.global.clearTimeout(this.delayTimeout_);
+<a name="line80"></a>  this.delayTimeout_ = goog.global.setTimeout(
+<a name="line81"></a>      goog.bind(this.handleQueueRequests_, this),
+<a name="line82"></a>      this.delay + this.lastAccess - goog.now());
+<a name="line83"></a>
+<a name="line84"></a>  // Handle all requests.
+<a name="line85"></a>  this.handleQueueRequests_();
+<a name="line86"></a>};
+<a name="line87"></a>
+<a name="line88"></a>
+<a name="line89"></a>/**
+<a name="line90"></a> * Get a new object from the the pool, if there is one available, otherwise
+<a name="line91"></a> * return undefined.
+<a name="line92"></a> * @param {Function=} opt_callback The function to callback when an object is
+<a name="line93"></a> *     available. This could be immediately. If this is not present, then an
+<a name="line94"></a> *     object is immediately returned if available, or undefined if not.
+<a name="line95"></a> * @param {*=} opt_priority The priority of the request.
+<a name="line96"></a> * @return {Object|undefined} The new object from the pool if there is one
+<a name="line97"></a> *     available and a callback is not given. Otherwise, undefined.
+<a name="line98"></a> */
+<a name="line99"></a>goog.structs.PriorityPool.prototype.getObject = function(opt_callback,
+<a name="line100"></a>                                                        opt_priority) {
+<a name="line101"></a>  if (!opt_callback) {
+<a name="line102"></a>    var result = goog.base(this, &#39;getObject&#39;);
+<a name="line103"></a>    if (result &amp;&amp; this.delay) {
+<a name="line104"></a>      this.delayTimeout_ = goog.global.setTimeout(
+<a name="line105"></a>          goog.bind(this.handleQueueRequests_, this),
+<a name="line106"></a>          this.delay);
+<a name="line107"></a>    }
+<a name="line108"></a>    return result;
+<a name="line109"></a>  }
+<a name="line110"></a>
+<a name="line111"></a>  var priority = opt_priority || goog.structs.PriorityPool.DEFAULT_PRIORITY_;
+<a name="line112"></a>  this.requestQueue_.enqueue(priority, opt_callback);
+<a name="line113"></a>
+<a name="line114"></a>  // Handle all requests.
+<a name="line115"></a>  this.handleQueueRequests_();
+<a name="line116"></a>
+<a name="line117"></a>  return undefined;
+<a name="line118"></a>};
+<a name="line119"></a>
+<a name="line120"></a>
+<a name="line121"></a>/**
+<a name="line122"></a> * Handles the request queue. Tries to fires off as many queued requests as
+<a name="line123"></a> * possible.
+<a name="line124"></a> * @private
+<a name="line125"></a> */
+<a name="line126"></a>goog.structs.PriorityPool.prototype.handleQueueRequests_ = function() {
+<a name="line127"></a>  var requestQueue = this.requestQueue_;
+<a name="line128"></a>  while (requestQueue.getCount() &gt; 0) {
+<a name="line129"></a>    var obj = this.getObject();
+<a name="line130"></a>
+<a name="line131"></a>    if (!obj) {
+<a name="line132"></a>      return;
+<a name="line133"></a>    } else {
+<a name="line134"></a>      var requestCallback = requestQueue.dequeue();
+<a name="line135"></a>      requestCallback.apply(this, [obj]);
+<a name="line136"></a>    }
+<a name="line137"></a>  }
+<a name="line138"></a>};
+<a name="line139"></a>
+<a name="line140"></a>
+<a name="line141"></a>/**
+<a name="line142"></a> * Adds an object to the collection of objects that are free. If the object can
+<a name="line143"></a> * not be added, then it is disposed.
+<a name="line144"></a> *
+<a name="line145"></a> * NOTE: This method does not remove the object from the in use collection.
+<a name="line146"></a> *
+<a name="line147"></a> * @param {Object} obj The object to add to the collection of free objects.
+<a name="line148"></a> */
+<a name="line149"></a>goog.structs.PriorityPool.prototype.addFreeObject = function(obj) {
+<a name="line150"></a>  goog.structs.PriorityPool.superClass_.addFreeObject.call(this, obj);
+<a name="line151"></a>
+<a name="line152"></a>  // Handle all requests.
+<a name="line153"></a>  this.handleQueueRequests_();
+<a name="line154"></a>};
+<a name="line155"></a>
+<a name="line156"></a>
+<a name="line157"></a>/**
+<a name="line158"></a> * Adjusts the objects held in the pool to be within the min/max constraints.
+<a name="line159"></a> *
+<a name="line160"></a> * NOTE: It is possible that the number of objects in the pool will still be
+<a name="line161"></a> * greater than the maximum count of objects allowed. This will be the case
+<a name="line162"></a> * if no more free objects can be disposed of to get below the minimum count
+<a name="line163"></a> * (i.e., all objects are in use).
+<a name="line164"></a> */
+<a name="line165"></a>goog.structs.PriorityPool.prototype.adjustForMinMax = function() {
+<a name="line166"></a>  goog.structs.PriorityPool.superClass_.adjustForMinMax.call(this);
+<a name="line167"></a>
+<a name="line168"></a>  // Handle all requests.
+<a name="line169"></a>  this.handleQueueRequests_();
+<a name="line170"></a>};
+<a name="line171"></a>
+<a name="line172"></a>
+<a name="line173"></a>/** @override */
+<a name="line174"></a>goog.structs.PriorityPool.prototype.disposeInternal = function() {
+<a name="line175"></a>  goog.structs.PriorityPool.superClass_.disposeInternal.call(this);
+<a name="line176"></a>  goog.global.clearTimeout(this.delayTimeout_);
+<a name="line177"></a>  this.requestQueue_.clear();
+<a name="line178"></a>  this.requestQueue_ = null;
+<a name="line179"></a>};
+</pre>
+
+
+</body>
+</html>

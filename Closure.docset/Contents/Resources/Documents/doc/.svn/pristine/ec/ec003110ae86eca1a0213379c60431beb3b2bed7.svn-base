@@ -1,0 +1,384 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>json.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_json_json.js.html">json.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview JSON utility functions.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.json&#39;);
+<a name="line21"></a>goog.provide(&#39;goog.json.Serializer&#39;);
+<a name="line22"></a>
+<a name="line23"></a>
+<a name="line24"></a>/**
+<a name="line25"></a> * Tests if a string is an invalid JSON string. This only ensures that we are
+<a name="line26"></a> * not using any invalid characters
+<a name="line27"></a> * @param {string} s The string to test.
+<a name="line28"></a> * @return {boolean} True if the input is a valid JSON string.
+<a name="line29"></a> * @private
+<a name="line30"></a> */
+<a name="line31"></a>goog.json.isValid_ = function(s) {
+<a name="line32"></a>  // All empty whitespace is not valid.
+<a name="line33"></a>  if (/^\s*$/.test(s)) {
+<a name="line34"></a>    return false;
+<a name="line35"></a>  }
+<a name="line36"></a>
+<a name="line37"></a>  // This is taken from http://www.json.org/json2.js which is released to the
+<a name="line38"></a>  // public domain.
+<a name="line39"></a>  // Changes: We dissallow \u2028 Line separator and \u2029 Paragraph separator
+<a name="line40"></a>  // inside strings.  We also treat \u2028 and \u2029 as whitespace which they
+<a name="line41"></a>  // are in the RFC but IE and Safari does not match \s to these so we need to
+<a name="line42"></a>  // include them in the reg exps in all places where whitespace is allowed.
+<a name="line43"></a>  // We allowed \x7f inside strings because some tools don&#39;t escape it,
+<a name="line44"></a>  // e.g. http://www.json.org/java/org/json/JSONObject.java
+<a name="line45"></a>
+<a name="line46"></a>  // Parsing happens in three stages. In the first stage, we run the text
+<a name="line47"></a>  // against regular expressions that look for non-JSON patterns. We are
+<a name="line48"></a>  // especially concerned with &#39;()&#39; and &#39;new&#39; because they can cause invocation,
+<a name="line49"></a>  // and &#39;=&#39; because it can cause mutation. But just to be safe, we want to
+<a name="line50"></a>  // reject all unexpected forms.
+<a name="line51"></a>
+<a name="line52"></a>  // We split the first stage into 4 regexp operations in order to work around
+<a name="line53"></a>  // crippling inefficiencies in IE&#39;s and Safari&#39;s regexp engines. First we
+<a name="line54"></a>  // replace all backslash pairs with &#39;@&#39; (a non-JSON character). Second, we
+<a name="line55"></a>  // replace all simple value tokens with &#39;]&#39; characters. Third, we delete all
+<a name="line56"></a>  // open brackets that follow a colon or comma or that begin the text. Finally,
+<a name="line57"></a>  // we look to see that the remaining characters are only whitespace or &#39;]&#39; or
+<a name="line58"></a>  // &#39;,&#39; or &#39;:&#39; or &#39;{&#39; or &#39;}&#39;. If that is so, then the text is safe for eval.
+<a name="line59"></a>
+<a name="line60"></a>  // Don&#39;t make these static since they have the global flag.
+<a name="line61"></a>  var backslashesRe = /\\[&quot;\\\/bfnrtu]/g;
+<a name="line62"></a>  var simpleValuesRe =
+<a name="line63"></a>      /&quot;[^&quot;\\\n\r\u2028\u2029\x00-\x08\x10-\x1f\x80-\x9f]*&quot;|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+<a name="line64"></a>  var openBracketsRe = /(?:^|:|,)(?:[\s\u2028\u2029]*\[)+/g;
+<a name="line65"></a>  var remainderRe = /^[\],:{}\s\u2028\u2029]*$/;
+<a name="line66"></a>
+<a name="line67"></a>  return remainderRe.test(s.replace(backslashesRe, &#39;@&#39;).
+<a name="line68"></a>      replace(simpleValuesRe, &#39;]&#39;).
+<a name="line69"></a>      replace(openBracketsRe, &#39;&#39;));
+<a name="line70"></a>};
+<a name="line71"></a>
+<a name="line72"></a>
+<a name="line73"></a>/**
+<a name="line74"></a> * Parses a JSON string and returns the result. This throws an exception if
+<a name="line75"></a> * the string is an invalid JSON string.
+<a name="line76"></a> *
+<a name="line77"></a> * Note that this is very slow on large strings. If you trust the source of
+<a name="line78"></a> * the string then you should use unsafeParse instead.
+<a name="line79"></a> *
+<a name="line80"></a> * @param {*} s The JSON string to parse.
+<a name="line81"></a> * @return {Object} The object generated from the JSON string.
+<a name="line82"></a> */
+<a name="line83"></a>goog.json.parse = function(s) {
+<a name="line84"></a>  var o = String(s);
+<a name="line85"></a>  if (goog.json.isValid_(o)) {
+<a name="line86"></a>    /** @preserveTry */
+<a name="line87"></a>    try {
+<a name="line88"></a>      return /** @type {Object} */ (eval(&#39;(&#39; + o + &#39;)&#39;));
+<a name="line89"></a>    } catch (ex) {
+<a name="line90"></a>    }
+<a name="line91"></a>  }
+<a name="line92"></a>  throw Error(&#39;Invalid JSON string: &#39; + o);
+<a name="line93"></a>};
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * Parses a JSON string and returns the result. This uses eval so it is open
+<a name="line98"></a> * to security issues and it should only be used if you trust the source.
+<a name="line99"></a> *
+<a name="line100"></a> * @param {string} s The JSON string to parse.
+<a name="line101"></a> * @return {Object} The object generated from the JSON string.
+<a name="line102"></a> */
+<a name="line103"></a>goog.json.unsafeParse = function(s) {
+<a name="line104"></a>  return /** @type {Object} */ (eval(&#39;(&#39; + s + &#39;)&#39;));
+<a name="line105"></a>};
+<a name="line106"></a>
+<a name="line107"></a>
+<a name="line108"></a>/**
+<a name="line109"></a> * JSON replacer, as defined in Section 15.12.3 of the ES5 spec.
+<a name="line110"></a> *
+<a name="line111"></a> * TODO(nicksantos): Array should also be a valid replacer.
+<a name="line112"></a> *
+<a name="line113"></a> * @typedef {function(this:Object, string, *): *}
+<a name="line114"></a> */
+<a name="line115"></a>goog.json.Replacer;
+<a name="line116"></a>
+<a name="line117"></a>
+<a name="line118"></a>/**
+<a name="line119"></a> * Serializes an object or a value to a JSON string.
+<a name="line120"></a> *
+<a name="line121"></a> * @param {*} object The object to serialize.
+<a name="line122"></a> * @param {?goog.json.Replacer=} opt_replacer A replacer function
+<a name="line123"></a> *     called for each (key, value) pair that determines how the value
+<a name="line124"></a> *     should be serialized. By defult, this just returns the value
+<a name="line125"></a> *     and allows default serialization to kick in.
+<a name="line126"></a> * @throws Error if there are loops in the object graph.
+<a name="line127"></a> * @return {string} A JSON string representation of the input.
+<a name="line128"></a> */
+<a name="line129"></a>goog.json.serialize = function(object, opt_replacer) {
+<a name="line130"></a>  // TODO(nicksantos): Change this to default to JSON.stringify when available.
+<a name="line131"></a>  // I need to fiddle with the default externs a bit to make this happen.
+<a name="line132"></a>  return new goog.json.Serializer(opt_replacer).serialize(object);
+<a name="line133"></a>};
+<a name="line134"></a>
+<a name="line135"></a>
+<a name="line136"></a>
+<a name="line137"></a>/**
+<a name="line138"></a> * Class that is used to serialize JSON objects to a string.
+<a name="line139"></a> * @param {?goog.json.Replacer=} opt_replacer Replacer.
+<a name="line140"></a> * @constructor
+<a name="line141"></a> */
+<a name="line142"></a>goog.json.Serializer = function(opt_replacer) {
+<a name="line143"></a>  /**
+<a name="line144"></a>   * @type {goog.json.Replacer|null|undefined}
+<a name="line145"></a>   * @private
+<a name="line146"></a>   */
+<a name="line147"></a>  this.replacer_ = opt_replacer;
+<a name="line148"></a>};
+<a name="line149"></a>
+<a name="line150"></a>
+<a name="line151"></a>/**
+<a name="line152"></a> * Serializes an object or a value to a JSON string.
+<a name="line153"></a> *
+<a name="line154"></a> * @param {*} object The object to serialize.
+<a name="line155"></a> * @throws Error if there are loops in the object graph.
+<a name="line156"></a> * @return {string} A JSON string representation of the input.
+<a name="line157"></a> */
+<a name="line158"></a>goog.json.Serializer.prototype.serialize = function(object) {
+<a name="line159"></a>  var sb = [];
+<a name="line160"></a>  this.serialize_(object, sb);
+<a name="line161"></a>  return sb.join(&#39;&#39;);
+<a name="line162"></a>};
+<a name="line163"></a>
+<a name="line164"></a>
+<a name="line165"></a>/**
+<a name="line166"></a> * Serializes a generic value to a JSON string
+<a name="line167"></a> * @private
+<a name="line168"></a> * @param {*} object The object to serialize.
+<a name="line169"></a> * @param {Array} sb Array used as a string builder.
+<a name="line170"></a> * @throws Error if there are loops in the object graph.
+<a name="line171"></a> */
+<a name="line172"></a>goog.json.Serializer.prototype.serialize_ = function(object, sb) {
+<a name="line173"></a>  switch (typeof object) {
+<a name="line174"></a>    case &#39;string&#39;:
+<a name="line175"></a>      this.serializeString_((/** @type {string} */ object), sb);
+<a name="line176"></a>      break;
+<a name="line177"></a>    case &#39;number&#39;:
+<a name="line178"></a>      this.serializeNumber_((/** @type {number} */ object), sb);
+<a name="line179"></a>      break;
+<a name="line180"></a>    case &#39;boolean&#39;:
+<a name="line181"></a>      sb.push(object);
+<a name="line182"></a>      break;
+<a name="line183"></a>    case &#39;undefined&#39;:
+<a name="line184"></a>      sb.push(&#39;null&#39;);
+<a name="line185"></a>      break;
+<a name="line186"></a>    case &#39;object&#39;:
+<a name="line187"></a>      if (object == null) {
+<a name="line188"></a>        sb.push(&#39;null&#39;);
+<a name="line189"></a>        break;
+<a name="line190"></a>      }
+<a name="line191"></a>      if (goog.isArray(object)) {
+<a name="line192"></a>        this.serializeArray_((/** @type {!Array} */ object), sb);
+<a name="line193"></a>        break;
+<a name="line194"></a>      }
+<a name="line195"></a>      // should we allow new String, new Number and new Boolean to be treated
+<a name="line196"></a>      // as string, number and boolean? Most implementations do not and the
+<a name="line197"></a>      // need is not very big
+<a name="line198"></a>      this.serializeObject_((/** @type {Object} */ object), sb);
+<a name="line199"></a>      break;
+<a name="line200"></a>    case &#39;function&#39;:
+<a name="line201"></a>      // Skip functions.
+<a name="line202"></a>      // TODO(user) Should we return something here?
+<a name="line203"></a>      break;
+<a name="line204"></a>    default:
+<a name="line205"></a>      throw Error(&#39;Unknown type: &#39; + typeof object);
+<a name="line206"></a>  }
+<a name="line207"></a>};
+<a name="line208"></a>
+<a name="line209"></a>
+<a name="line210"></a>/**
+<a name="line211"></a> * Character mappings used internally for goog.string.quote
+<a name="line212"></a> * @private
+<a name="line213"></a> * @type {Object}
+<a name="line214"></a> */
+<a name="line215"></a>goog.json.Serializer.charToJsonCharCache_ = {
+<a name="line216"></a>  &#39;\&quot;&#39;: &#39;\\&quot;&#39;,
+<a name="line217"></a>  &#39;\\&#39;: &#39;\\\\&#39;,
+<a name="line218"></a>  &#39;/&#39;: &#39;\\/&#39;,
+<a name="line219"></a>  &#39;\b&#39;: &#39;\\b&#39;,
+<a name="line220"></a>  &#39;\f&#39;: &#39;\\f&#39;,
+<a name="line221"></a>  &#39;\n&#39;: &#39;\\n&#39;,
+<a name="line222"></a>  &#39;\r&#39;: &#39;\\r&#39;,
+<a name="line223"></a>  &#39;\t&#39;: &#39;\\t&#39;,
+<a name="line224"></a>
+<a name="line225"></a>  &#39;\x0B&#39;: &#39;\\u000b&#39; // &#39;\v&#39; is not supported in JScript
+<a name="line226"></a>};
+<a name="line227"></a>
+<a name="line228"></a>
+<a name="line229"></a>/**
+<a name="line230"></a> * Regular expression used to match characters that need to be replaced.
+<a name="line231"></a> * The S60 browser has a bug where unicode characters are not matched by
+<a name="line232"></a> * regular expressions. The condition below detects such behaviour and
+<a name="line233"></a> * adjusts the regular expression accordingly.
+<a name="line234"></a> * @private
+<a name="line235"></a> * @type {RegExp}
+<a name="line236"></a> */
+<a name="line237"></a>goog.json.Serializer.charsToReplace_ = /\uffff/.test(&#39;\uffff&#39;) ?
+<a name="line238"></a>    /[\\\&quot;\x00-\x1f\x7f-\uffff]/g : /[\\\&quot;\x00-\x1f\x7f-\xff]/g;
+<a name="line239"></a>
+<a name="line240"></a>
+<a name="line241"></a>/**
+<a name="line242"></a> * Serializes a string to a JSON string
+<a name="line243"></a> * @private
+<a name="line244"></a> * @param {string} s The string to serialize.
+<a name="line245"></a> * @param {Array} sb Array used as a string builder.
+<a name="line246"></a> */
+<a name="line247"></a>goog.json.Serializer.prototype.serializeString_ = function(s, sb) {
+<a name="line248"></a>  // The official JSON implementation does not work with international
+<a name="line249"></a>  // characters.
+<a name="line250"></a>  sb.push(&#39;&quot;&#39;, s.replace(goog.json.Serializer.charsToReplace_, function(c) {
+<a name="line251"></a>    // caching the result improves performance by a factor 2-3
+<a name="line252"></a>    if (c in goog.json.Serializer.charToJsonCharCache_) {
+<a name="line253"></a>      return goog.json.Serializer.charToJsonCharCache_[c];
+<a name="line254"></a>    }
+<a name="line255"></a>
+<a name="line256"></a>    var cc = c.charCodeAt(0);
+<a name="line257"></a>    var rv = &#39;\\u&#39;;
+<a name="line258"></a>    if (cc &lt; 16) {
+<a name="line259"></a>      rv += &#39;000&#39;;
+<a name="line260"></a>    } else if (cc &lt; 256) {
+<a name="line261"></a>      rv += &#39;00&#39;;
+<a name="line262"></a>    } else if (cc &lt; 4096) { // \u1000
+<a name="line263"></a>      rv += &#39;0&#39;;
+<a name="line264"></a>    }
+<a name="line265"></a>    return goog.json.Serializer.charToJsonCharCache_[c] = rv + cc.toString(16);
+<a name="line266"></a>  }), &#39;&quot;&#39;);
+<a name="line267"></a>};
+<a name="line268"></a>
+<a name="line269"></a>
+<a name="line270"></a>/**
+<a name="line271"></a> * Serializes a number to a JSON string
+<a name="line272"></a> * @private
+<a name="line273"></a> * @param {number} n The number to serialize.
+<a name="line274"></a> * @param {Array} sb Array used as a string builder.
+<a name="line275"></a> */
+<a name="line276"></a>goog.json.Serializer.prototype.serializeNumber_ = function(n, sb) {
+<a name="line277"></a>  sb.push(isFinite(n) &amp;&amp; !isNaN(n) ? n : &#39;null&#39;);
+<a name="line278"></a>};
+<a name="line279"></a>
+<a name="line280"></a>
+<a name="line281"></a>/**
+<a name="line282"></a> * Serializes an array to a JSON string
+<a name="line283"></a> * @private
+<a name="line284"></a> * @param {Array} arr The array to serialize.
+<a name="line285"></a> * @param {Array} sb Array used as a string builder.
+<a name="line286"></a> */
+<a name="line287"></a>goog.json.Serializer.prototype.serializeArray_ = function(arr, sb) {
+<a name="line288"></a>  var l = arr.length;
+<a name="line289"></a>  sb.push(&#39;[&#39;);
+<a name="line290"></a>  var sep = &#39;&#39;;
+<a name="line291"></a>  for (var i = 0; i &lt; l; i++) {
+<a name="line292"></a>    sb.push(sep);
+<a name="line293"></a>
+<a name="line294"></a>    var value = arr[i];
+<a name="line295"></a>    this.serialize_(
+<a name="line296"></a>        this.replacer_ ? this.replacer_.call(arr, String(i), value) : value,
+<a name="line297"></a>        sb);
+<a name="line298"></a>
+<a name="line299"></a>    sep = &#39;,&#39;;
+<a name="line300"></a>  }
+<a name="line301"></a>  sb.push(&#39;]&#39;);
+<a name="line302"></a>};
+<a name="line303"></a>
+<a name="line304"></a>
+<a name="line305"></a>/**
+<a name="line306"></a> * Serializes an object to a JSON string
+<a name="line307"></a> * @private
+<a name="line308"></a> * @param {Object} obj The object to serialize.
+<a name="line309"></a> * @param {Array} sb Array used as a string builder.
+<a name="line310"></a> */
+<a name="line311"></a>goog.json.Serializer.prototype.serializeObject_ = function(obj, sb) {
+<a name="line312"></a>  sb.push(&#39;{&#39;);
+<a name="line313"></a>  var sep = &#39;&#39;;
+<a name="line314"></a>  for (var key in obj) {
+<a name="line315"></a>    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+<a name="line316"></a>      var value = obj[key];
+<a name="line317"></a>      // Skip functions.
+<a name="line318"></a>      // TODO(ptucker) Should we return something for function properties?
+<a name="line319"></a>      if (typeof value != &#39;function&#39;) {
+<a name="line320"></a>        sb.push(sep);
+<a name="line321"></a>        this.serializeString_(key, sb);
+<a name="line322"></a>        sb.push(&#39;:&#39;);
+<a name="line323"></a>
+<a name="line324"></a>        this.serialize_(
+<a name="line325"></a>            this.replacer_ ? this.replacer_.call(obj, key, value) : value,
+<a name="line326"></a>            sb);
+<a name="line327"></a>
+<a name="line328"></a>        sep = &#39;,&#39;;
+<a name="line329"></a>      }
+<a name="line330"></a>    }
+<a name="line331"></a>  }
+<a name="line332"></a>  sb.push(&#39;}&#39;);
+<a name="line333"></a>};
+</pre>
+
+
+</body>
+</html>

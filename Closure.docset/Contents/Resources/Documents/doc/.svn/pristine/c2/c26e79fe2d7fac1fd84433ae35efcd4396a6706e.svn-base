@@ -1,0 +1,227 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>filesaver.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_fs_filesaver.js.html">filesaver.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A wrapper for the HTML5 FileSaver object.
+<a name="line17"></a> *
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.fs.FileSaver&#39;);
+<a name="line21"></a>goog.provide(&#39;goog.fs.FileSaver.EventType&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.fs.FileSaver.ProgressEvent&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.fs.FileSaver.ReadyState&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.events.Event&#39;);
+<a name="line26"></a>goog.require(&#39;goog.events.EventTarget&#39;);
+<a name="line27"></a>goog.require(&#39;goog.fs.Error&#39;);
+<a name="line28"></a>goog.require(&#39;goog.fs.ProgressEvent&#39;);
+<a name="line29"></a>
+<a name="line30"></a>
+<a name="line31"></a>
+<a name="line32"></a>/**
+<a name="line33"></a> * An object for monitoring the saving of files. This emits ProgressEvents of
+<a name="line34"></a> * the types listed in {@link goog.fs.FileSaver.EventType}.
+<a name="line35"></a> *
+<a name="line36"></a> * This should not be instantiated directly. Instead, its subclass
+<a name="line37"></a> * {@link goog.fs.FileWriter} should be accessed via
+<a name="line38"></a> * {@link goog.fs.FileEntry#createWriter}.
+<a name="line39"></a> *
+<a name="line40"></a> * @param {!FileSaver} fileSaver The underlying FileSaver object.
+<a name="line41"></a> * @constructor
+<a name="line42"></a> * @extends {goog.events.EventTarget}
+<a name="line43"></a> */
+<a name="line44"></a>goog.fs.FileSaver = function(fileSaver) {
+<a name="line45"></a>  goog.base(this);
+<a name="line46"></a>
+<a name="line47"></a>  /**
+<a name="line48"></a>   * The underlying FileSaver object.
+<a name="line49"></a>   *
+<a name="line50"></a>   * @type {!FileSaver}
+<a name="line51"></a>   * @private
+<a name="line52"></a>   */
+<a name="line53"></a>  this.saver_ = fileSaver;
+<a name="line54"></a>
+<a name="line55"></a>  this.saver_.onwritestart = goog.bind(this.dispatchProgressEvent_, this);
+<a name="line56"></a>  this.saver_.onprogress = goog.bind(this.dispatchProgressEvent_, this);
+<a name="line57"></a>  this.saver_.onwrite = goog.bind(this.dispatchProgressEvent_, this);
+<a name="line58"></a>  this.saver_.onabort = goog.bind(this.dispatchProgressEvent_, this);
+<a name="line59"></a>  this.saver_.onerror = goog.bind(this.dispatchProgressEvent_, this);
+<a name="line60"></a>  this.saver_.onwriteend = goog.bind(this.dispatchProgressEvent_, this);
+<a name="line61"></a>};
+<a name="line62"></a>goog.inherits(goog.fs.FileSaver, goog.events.EventTarget);
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * Possible states for a FileSaver.
+<a name="line67"></a> *
+<a name="line68"></a> * @enum {number}
+<a name="line69"></a> */
+<a name="line70"></a>goog.fs.FileSaver.ReadyState = {
+<a name="line71"></a>  /**
+<a name="line72"></a>   * The object has been constructed, but there is no pending write.
+<a name="line73"></a>   */
+<a name="line74"></a>  INIT: 0,
+<a name="line75"></a>  /**
+<a name="line76"></a>   * Data is being written.
+<a name="line77"></a>   */
+<a name="line78"></a>  WRITING: 1,
+<a name="line79"></a>  /**
+<a name="line80"></a>   * The data has been written to the file, the write was aborted, or an error
+<a name="line81"></a>   * occurred.
+<a name="line82"></a>   */
+<a name="line83"></a>  DONE: 2
+<a name="line84"></a>};
+<a name="line85"></a>
+<a name="line86"></a>
+<a name="line87"></a>/**
+<a name="line88"></a> * Events emitted by a FileSaver.
+<a name="line89"></a> *
+<a name="line90"></a> * @enum {string}
+<a name="line91"></a> */
+<a name="line92"></a>goog.fs.FileSaver.EventType = {
+<a name="line93"></a>  /**
+<a name="line94"></a>   * Emitted when the writing begins. readyState will be WRITING.
+<a name="line95"></a>   */
+<a name="line96"></a>  WRITE_START: &#39;writestart&#39;,
+<a name="line97"></a>  /**
+<a name="line98"></a>   * Emitted when progress has been made in saving the file. readyState will be
+<a name="line99"></a>   * WRITING.
+<a name="line100"></a>   */
+<a name="line101"></a>  PROGRESS: &#39;progress&#39;,
+<a name="line102"></a>  /**
+<a name="line103"></a>   * Emitted when the data has been successfully written. readyState will be
+<a name="line104"></a>   * WRITING.
+<a name="line105"></a>   */
+<a name="line106"></a>  WRITE: &#39;write&#39;,
+<a name="line107"></a>  /**
+<a name="line108"></a>   * Emitted when the writing has been aborted. readyState will be WRITING.
+<a name="line109"></a>   */
+<a name="line110"></a>  ABORT: &#39;abort&#39;,
+<a name="line111"></a>  /**
+<a name="line112"></a>   * Emitted when an error is encountered or the writing has been aborted.
+<a name="line113"></a>   * readyState will be WRITING.
+<a name="line114"></a>   */
+<a name="line115"></a>  ERROR: &#39;error&#39;,
+<a name="line116"></a>  /**
+<a name="line117"></a>   * Emitted when the writing is finished, whether successfully or not.
+<a name="line118"></a>   * readyState will be DONE.
+<a name="line119"></a>   */
+<a name="line120"></a>  WRITE_END: &#39;writeend&#39;
+<a name="line121"></a>};
+<a name="line122"></a>
+<a name="line123"></a>
+<a name="line124"></a>/**
+<a name="line125"></a> * Abort the writing of the file.
+<a name="line126"></a> */
+<a name="line127"></a>goog.fs.FileSaver.prototype.abort = function() {
+<a name="line128"></a>  try {
+<a name="line129"></a>    this.saver_.abort();
+<a name="line130"></a>  } catch (e) {
+<a name="line131"></a>    throw new goog.fs.Error(e.code, &#39;aborting save&#39;);
+<a name="line132"></a>  }
+<a name="line133"></a>};
+<a name="line134"></a>
+<a name="line135"></a>
+<a name="line136"></a>/**
+<a name="line137"></a> * @return {goog.fs.FileSaver.ReadyState} The current state of the FileSaver.
+<a name="line138"></a> */
+<a name="line139"></a>goog.fs.FileSaver.prototype.getReadyState = function() {
+<a name="line140"></a>  return /** @type {goog.fs.FileSaver.ReadyState} */ (this.saver_.readyState);
+<a name="line141"></a>};
+<a name="line142"></a>
+<a name="line143"></a>
+<a name="line144"></a>/**
+<a name="line145"></a> * @return {goog.fs.Error} The error encountered while writing, if any.
+<a name="line146"></a> */
+<a name="line147"></a>goog.fs.FileSaver.prototype.getError = function() {
+<a name="line148"></a>  return this.saver_.error &amp;&amp;
+<a name="line149"></a>      new goog.fs.Error(this.saver_.error.code, &#39;saving file&#39;);
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>/**
+<a name="line154"></a> * Wrap a progress event emitted by the underlying file saver and re-emit it.
+<a name="line155"></a> *
+<a name="line156"></a> * @param {!ProgressEvent} event The underlying event.
+<a name="line157"></a> * @private
+<a name="line158"></a> */
+<a name="line159"></a>goog.fs.FileSaver.prototype.dispatchProgressEvent_ = function(event) {
+<a name="line160"></a>  this.dispatchEvent(new goog.fs.ProgressEvent(event, this));
+<a name="line161"></a>};
+<a name="line162"></a>
+<a name="line163"></a>
+<a name="line164"></a>/** @override */
+<a name="line165"></a>goog.fs.FileSaver.prototype.disposeInternal = function() {
+<a name="line166"></a>  delete this.saver_;
+<a name="line167"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line168"></a>};
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/**
+<a name="line172"></a> * A wrapper for the progress events emitted by the FileSaver.
+<a name="line173"></a> *
+<a name="line174"></a> * @deprecated Use {goog.fs.ProgressEvent}.
+<a name="line175"></a> */
+<a name="line176"></a>goog.fs.FileSaver.ProgressEvent = goog.fs.ProgressEvent;
+</pre>
+
+
+</body>
+</html>

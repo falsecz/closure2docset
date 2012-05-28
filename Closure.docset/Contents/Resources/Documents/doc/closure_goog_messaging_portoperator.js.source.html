@@ -1,0 +1,247 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>portoperator.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_messaging_portoperator.js.html">portoperator.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview The central node of a {@link goog.messaging.PortNetwork}. The
+<a name="line17"></a> * operator is responsible for providing the two-way communication channels (via
+<a name="line18"></a> * {@link MessageChannel}s) between each pair of nodes in the network that need
+<a name="line19"></a> * to communicate with one another. Each network should have one and only one
+<a name="line20"></a> * operator.
+<a name="line21"></a> *
+<a name="line22"></a> */
+<a name="line23"></a>
+<a name="line24"></a>goog.provide(&#39;goog.messaging.PortOperator&#39;);
+<a name="line25"></a>
+<a name="line26"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line27"></a>goog.require(&#39;goog.asserts&#39;);
+<a name="line28"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line29"></a>goog.require(&#39;goog.messaging.PortChannel&#39;);
+<a name="line30"></a>goog.require(&#39;goog.messaging.PortNetwork&#39;); // interface
+<a name="line31"></a>goog.require(&#39;goog.object&#39;);
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>/**
+<a name="line36"></a> * The central node of a PortNetwork.
+<a name="line37"></a> *
+<a name="line38"></a> * @param {string} name The name of this node.
+<a name="line39"></a> * @constructor
+<a name="line40"></a> * @extends {goog.Disposable}
+<a name="line41"></a> * @implements {goog.messaging.PortNetwork}
+<a name="line42"></a> */
+<a name="line43"></a>goog.messaging.PortOperator = function(name) {
+<a name="line44"></a>  goog.base(this);
+<a name="line45"></a>
+<a name="line46"></a>  /**
+<a name="line47"></a>   * The collection of channels for communicating with other contexts in the
+<a name="line48"></a>   * network. These are the channels that are returned to the user, as opposed
+<a name="line49"></a>   * to the channels used for internal network communication. This is lazily
+<a name="line50"></a>   * populated as the user requests communication with other contexts, or other
+<a name="line51"></a>   * contexts request communication with the operator.
+<a name="line52"></a>   *
+<a name="line53"></a>   * @type {!Object.&lt;!goog.messaging.PortChannel&gt;}
+<a name="line54"></a>   * @private
+<a name="line55"></a>   */
+<a name="line56"></a>  this.connections_ = {};
+<a name="line57"></a>
+<a name="line58"></a>  /**
+<a name="line59"></a>   * The collection of channels for internal network communication with other
+<a name="line60"></a>   * contexts. This is not lazily populated, and always contains entries for
+<a name="line61"></a>   * each member of the network.
+<a name="line62"></a>   *
+<a name="line63"></a>   * @type {!Object.&lt;!goog.messaging.MessageChannel&gt;}
+<a name="line64"></a>   * @private
+<a name="line65"></a>   */
+<a name="line66"></a>  this.switchboard_ = {};
+<a name="line67"></a>
+<a name="line68"></a>  /**
+<a name="line69"></a>   * The name of the operator context.
+<a name="line70"></a>   *
+<a name="line71"></a>   * @type {string}
+<a name="line72"></a>   * @private
+<a name="line73"></a>   */
+<a name="line74"></a>  this.name_ = name;
+<a name="line75"></a>};
+<a name="line76"></a>goog.inherits(goog.messaging.PortOperator, goog.Disposable);
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>/**
+<a name="line80"></a> * The logger for PortOperator.
+<a name="line81"></a> * @type {goog.debug.Logger}
+<a name="line82"></a> * @private
+<a name="line83"></a> */
+<a name="line84"></a>goog.messaging.PortOperator.prototype.logger_ =
+<a name="line85"></a>    goog.debug.Logger.getLogger(&#39;goog.messaging.PortOperator&#39;);
+<a name="line86"></a>
+<a name="line87"></a>
+<a name="line88"></a>/** @override */
+<a name="line89"></a>goog.messaging.PortOperator.prototype.dial = function(name) {
+<a name="line90"></a>  this.connectSelfToPort_(name);
+<a name="line91"></a>  return this.connections_[name];
+<a name="line92"></a>};
+<a name="line93"></a>
+<a name="line94"></a>
+<a name="line95"></a>/**
+<a name="line96"></a> * Adds a caller to the network with the given name. This port should have no
+<a name="line97"></a> * services registered on it. It will be disposed along with the PortOperator.
+<a name="line98"></a> *
+<a name="line99"></a> * @param {string} name The name of the port to add.
+<a name="line100"></a> * @param {!goog.messaging.MessageChannel} port The port to add. Must be either
+<a name="line101"></a> *     a {@link goog.messaging.PortChannel} or a decorator wrapping a
+<a name="line102"></a> *     PortChannel; in particular, it must be able to send and receive
+<a name="line103"></a> *     {@link MessagePort}s.
+<a name="line104"></a> */
+<a name="line105"></a>goog.messaging.PortOperator.prototype.addPort = function(name, port) {
+<a name="line106"></a>  this.switchboard_[name] = port;
+<a name="line107"></a>  port.registerService(goog.messaging.PortNetwork.REQUEST_CONNECTION_SERVICE,
+<a name="line108"></a>                       goog.bind(this.requestConnection_, this, name));
+<a name="line109"></a>};
+<a name="line110"></a>
+<a name="line111"></a>
+<a name="line112"></a>/**
+<a name="line113"></a> * Connects two contexts by creating a {@link MessageChannel} and sending one
+<a name="line114"></a> * end to one context and the other end to the other. Called when we receive a
+<a name="line115"></a> * request from a caller to connect it to another context (including potentially
+<a name="line116"></a> * the operator).
+<a name="line117"></a> *
+<a name="line118"></a> * @param {string} sourceName The name of the context requesting the connection.
+<a name="line119"></a> * @param {string} requestedName The name of the context to which the connection
+<a name="line120"></a> *     is requested.
+<a name="line121"></a> * @private
+<a name="line122"></a> */
+<a name="line123"></a>goog.messaging.PortOperator.prototype.requestConnection_ = function(
+<a name="line124"></a>    sourceName, requestedName) {
+<a name="line125"></a>  if (requestedName == this.name_) {
+<a name="line126"></a>    this.connectSelfToPort_(sourceName);
+<a name="line127"></a>    return;
+<a name="line128"></a>  }
+<a name="line129"></a>
+<a name="line130"></a>  var sourceChannel = this.switchboard_[sourceName];
+<a name="line131"></a>  var requestedChannel = this.switchboard_[requestedName];
+<a name="line132"></a>
+<a name="line133"></a>  goog.asserts.assert(goog.isDefAndNotNull(sourceChannel));
+<a name="line134"></a>  if (!requestedChannel) {
+<a name="line135"></a>    var err = &#39;Port &quot;&#39; + sourceName + &#39;&quot; requested a connection to port &quot;&#39; +
+<a name="line136"></a>        requestedName + &#39;&quot;, which doesn\&#39;t exist&#39;;
+<a name="line137"></a>    this.logger_.warning(err);
+<a name="line138"></a>    sourceChannel.send(goog.messaging.PortNetwork.GRANT_CONNECTION_SERVICE,
+<a name="line139"></a>                       {&#39;success&#39;: false, &#39;message&#39;: err});
+<a name="line140"></a>    return;
+<a name="line141"></a>  }
+<a name="line142"></a>
+<a name="line143"></a>  var messageChannel = new MessageChannel();
+<a name="line144"></a>  sourceChannel.send(goog.messaging.PortNetwork.GRANT_CONNECTION_SERVICE, {
+<a name="line145"></a>    &#39;success&#39;: true,
+<a name="line146"></a>    &#39;name&#39;: requestedName,
+<a name="line147"></a>    &#39;port&#39;: messageChannel.port1
+<a name="line148"></a>  });
+<a name="line149"></a>  requestedChannel.send(goog.messaging.PortNetwork.GRANT_CONNECTION_SERVICE, {
+<a name="line150"></a>    &#39;success&#39;: true,
+<a name="line151"></a>    &#39;name&#39;: sourceName,
+<a name="line152"></a>    &#39;port&#39;: messageChannel.port2
+<a name="line153"></a>  });
+<a name="line154"></a>};
+<a name="line155"></a>
+<a name="line156"></a>
+<a name="line157"></a>/**
+<a name="line158"></a> * Connects together the operator and a caller by creating a
+<a name="line159"></a> * {@link MessageChannel} and sending one end to the remote context.
+<a name="line160"></a> *
+<a name="line161"></a> * @param {string} contextName The name of the context to which to connect the
+<a name="line162"></a> *     operator.
+<a name="line163"></a> * @private
+<a name="line164"></a> */
+<a name="line165"></a>goog.messaging.PortOperator.prototype.connectSelfToPort_ = function(
+<a name="line166"></a>    contextName) {
+<a name="line167"></a>  if (contextName in this.connections_) {
+<a name="line168"></a>    // We&#39;ve already established a connection with this port.
+<a name="line169"></a>    return;
+<a name="line170"></a>  }
+<a name="line171"></a>
+<a name="line172"></a>  var contextChannel = this.switchboard_[contextName];
+<a name="line173"></a>  if (!contextChannel) {
+<a name="line174"></a>    throw Error(&#39;Port &quot;&#39; + contextName + &#39;&quot; doesn\&#39;t exist&#39;);
+<a name="line175"></a>  }
+<a name="line176"></a>
+<a name="line177"></a>  var messageChannel = new MessageChannel();
+<a name="line178"></a>  contextChannel.send(goog.messaging.PortNetwork.GRANT_CONNECTION_SERVICE, {
+<a name="line179"></a>    &#39;success&#39;: true,
+<a name="line180"></a>    &#39;name&#39;: this.name_,
+<a name="line181"></a>    &#39;port&#39;: messageChannel.port1
+<a name="line182"></a>  });
+<a name="line183"></a>  messageChannel.port2.start();
+<a name="line184"></a>  this.connections_[contextName] =
+<a name="line185"></a>      new goog.messaging.PortChannel(messageChannel.port2);
+<a name="line186"></a>};
+<a name="line187"></a>
+<a name="line188"></a>
+<a name="line189"></a>/** @override */
+<a name="line190"></a>goog.messaging.PortOperator.prototype.disposeInternal = function() {
+<a name="line191"></a>  goog.object.forEach(this.switchboard_, goog.dispose);
+<a name="line192"></a>  goog.object.forEach(this.connections_, goog.dispose);
+<a name="line193"></a>  delete this.switchboard_;
+<a name="line194"></a>  delete this.connections_;
+<a name="line195"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line196"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>nativemessagingtransport.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_net_xpc_nativemessagingtransport.js.html">nativemessagingtransport.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Contains the class which uses native messaging
+<a name="line17"></a> * facilities for cross domain communication.
+<a name="line18"></a> *
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.net.xpc.NativeMessagingTransport&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.events&#39;);
+<a name="line25"></a>goog.require(&#39;goog.net.xpc&#39;);
+<a name="line26"></a>goog.require(&#39;goog.net.xpc.CrossPageChannelRole&#39;);
+<a name="line27"></a>goog.require(&#39;goog.net.xpc.Transport&#39;);
+<a name="line28"></a>
+<a name="line29"></a>
+<a name="line30"></a>
+<a name="line31"></a>/**
+<a name="line32"></a> * The native messaging transport
+<a name="line33"></a> *
+<a name="line34"></a> * Uses document.postMessage() to send messages to other documents.
+<a name="line35"></a> * Receiving is done by listening on &#39;message&#39;-events on the document.
+<a name="line36"></a> *
+<a name="line37"></a> * @param {goog.net.xpc.CrossPageChannel} channel The channel this
+<a name="line38"></a> *     transport belongs to.
+<a name="line39"></a> * @param {string} peerHostname The hostname (protocol, domain, and port) of the
+<a name="line40"></a> *     peer.
+<a name="line41"></a> * @param {goog.dom.DomHelper=} opt_domHelper The dom helper to use for
+<a name="line42"></a> *     finding the correct window/document.
+<a name="line43"></a> * @constructor
+<a name="line44"></a> * @extends {goog.net.xpc.Transport}
+<a name="line45"></a> */
+<a name="line46"></a>goog.net.xpc.NativeMessagingTransport = function(channel, peerHostname,
+<a name="line47"></a>    opt_domHelper) {
+<a name="line48"></a>  goog.base(this, opt_domHelper);
+<a name="line49"></a>
+<a name="line50"></a>  /**
+<a name="line51"></a>   * The channel this transport belongs to.
+<a name="line52"></a>   * @type {goog.net.xpc.CrossPageChannel}
+<a name="line53"></a>   * @private
+<a name="line54"></a>   */
+<a name="line55"></a>  this.channel_ = channel;
+<a name="line56"></a>
+<a name="line57"></a>  /**
+<a name="line58"></a>   * The hostname of the peer. This parameterizes all calls to postMessage, and
+<a name="line59"></a>   * should contain the precise protocol, domain, and port of the peer window.
+<a name="line60"></a>   * @type {string}
+<a name="line61"></a>   * @private
+<a name="line62"></a>   */
+<a name="line63"></a>  this.peerHostname_ = peerHostname || &#39;*&#39;;
+<a name="line64"></a>};
+<a name="line65"></a>goog.inherits(goog.net.xpc.NativeMessagingTransport, goog.net.xpc.Transport);
+<a name="line66"></a>
+<a name="line67"></a>
+<a name="line68"></a>/**
+<a name="line69"></a> * Flag indicating if this instance of the transport has been initialized.
+<a name="line70"></a> * @type {boolean}
+<a name="line71"></a> * @private
+<a name="line72"></a> */
+<a name="line73"></a>goog.net.xpc.NativeMessagingTransport.prototype.initialized_ = false;
+<a name="line74"></a>
+<a name="line75"></a>
+<a name="line76"></a>/**
+<a name="line77"></a> * The transport type.
+<a name="line78"></a> * @type {number}
+<a name="line79"></a> */
+<a name="line80"></a>goog.net.xpc.NativeMessagingTransport.prototype.transportType =
+<a name="line81"></a>    goog.net.xpc.TransportTypes.NATIVE_MESSAGING;
+<a name="line82"></a>
+<a name="line83"></a>
+<a name="line84"></a>/**
+<a name="line85"></a> * Tracks the number of NativeMessagingTransport channels that have been
+<a name="line86"></a> * initialized but not disposed yet in a map keyed by the UID of the window
+<a name="line87"></a> * object.  This allows for multiple windows to be initiallized and listening
+<a name="line88"></a> * for messages.
+<a name="line89"></a> * @type {Object.&lt;number&gt;}
+<a name="line90"></a> * @private
+<a name="line91"></a> */
+<a name="line92"></a>goog.net.xpc.NativeMessagingTransport.activeCount_ = {};
+<a name="line93"></a>
+<a name="line94"></a>
+<a name="line95"></a>/**
+<a name="line96"></a> * Initializes this transport. Registers a listener for &#39;message&#39;-events
+<a name="line97"></a> * on the document.
+<a name="line98"></a> * @param {Window} listenWindow The window to listen to events on.
+<a name="line99"></a> * @private
+<a name="line100"></a> */
+<a name="line101"></a>goog.net.xpc.NativeMessagingTransport.initialize_ = function(listenWindow) {
+<a name="line102"></a>  var uid = goog.getUid(listenWindow);
+<a name="line103"></a>  var value = goog.net.xpc.NativeMessagingTransport.activeCount_[uid];
+<a name="line104"></a>  if (!goog.isNumber(value)) {
+<a name="line105"></a>    value = 0;
+<a name="line106"></a>  }
+<a name="line107"></a>  if (value == 0) {
+<a name="line108"></a>    // Listen for message-events. These are fired on window in FF3 and on
+<a name="line109"></a>    // document in Opera.
+<a name="line110"></a>    goog.events.listen(
+<a name="line111"></a>        listenWindow.postMessage ? listenWindow : listenWindow.document,
+<a name="line112"></a>        &#39;message&#39;,
+<a name="line113"></a>        goog.net.xpc.NativeMessagingTransport.messageReceived_,
+<a name="line114"></a>        false,
+<a name="line115"></a>        goog.net.xpc.NativeMessagingTransport);
+<a name="line116"></a>  }
+<a name="line117"></a>  goog.net.xpc.NativeMessagingTransport.activeCount_[uid] = value + 1;
+<a name="line118"></a>};
+<a name="line119"></a>
+<a name="line120"></a>
+<a name="line121"></a>/**
+<a name="line122"></a> * Processes an incoming message-event.
+<a name="line123"></a> * @param {goog.events.BrowserEvent} msgEvt The message event.
+<a name="line124"></a> * @return {boolean} True if message was successfully delivered to a channel.
+<a name="line125"></a> * @private
+<a name="line126"></a> */
+<a name="line127"></a>goog.net.xpc.NativeMessagingTransport.messageReceived_ = function(msgEvt) {
+<a name="line128"></a>  var data = msgEvt.getBrowserEvent().data;
+<a name="line129"></a>
+<a name="line130"></a>  if (!goog.isString(data)) {
+<a name="line131"></a>    return false;
+<a name="line132"></a>  }
+<a name="line133"></a>
+<a name="line134"></a>  var headDelim = data.indexOf(&#39;|&#39;);
+<a name="line135"></a>  var serviceDelim = data.indexOf(&#39;:&#39;);
+<a name="line136"></a>
+<a name="line137"></a>  // make sure we got something reasonable
+<a name="line138"></a>  if (headDelim == -1 || serviceDelim == -1) {
+<a name="line139"></a>    return false;
+<a name="line140"></a>  }
+<a name="line141"></a>
+<a name="line142"></a>  var channelName = data.substring(0, headDelim);
+<a name="line143"></a>  var service = data.substring(headDelim + 1, serviceDelim);
+<a name="line144"></a>  var payload = data.substring(serviceDelim + 1);
+<a name="line145"></a>
+<a name="line146"></a>  goog.net.xpc.logger.fine(&#39;messageReceived: channel=&#39; + channelName +
+<a name="line147"></a>                           &#39;, service=&#39; + service + &#39;, payload=&#39; + payload);
+<a name="line148"></a>
+<a name="line149"></a>  // Attempt to deliver message to the channel. Keep in mind that it may not
+<a name="line150"></a>  // exist for several reasons, including but not limited to:
+<a name="line151"></a>  //  - a malformed message
+<a name="line152"></a>  //  - the channel simply has not been created
+<a name="line153"></a>  //  - channel was created in a different namespace
+<a name="line154"></a>  //  - message was sent to the wrong window
+<a name="line155"></a>  //  - channel has become stale (e.g. caching iframes and back clicks)
+<a name="line156"></a>  var channel = goog.net.xpc.channels_[channelName];
+<a name="line157"></a>  if (channel) {
+<a name="line158"></a>    channel.deliver_(service, payload, msgEvt.getBrowserEvent().origin);
+<a name="line159"></a>    return true;
+<a name="line160"></a>  }
+<a name="line161"></a>
+<a name="line162"></a>  // Check if there are any stale channel names that can be updated.
+<a name="line163"></a>  for (var staleChannelName in goog.net.xpc.channels_) {
+<a name="line164"></a>    var staleChannel = goog.net.xpc.channels_[staleChannelName];
+<a name="line165"></a>    if (staleChannel.getRole() == goog.net.xpc.CrossPageChannelRole.INNER &amp;&amp;
+<a name="line166"></a>        !staleChannel.isConnected() &amp;&amp;
+<a name="line167"></a>        service == goog.net.xpc.TRANSPORT_SERVICE_ &amp;&amp;
+<a name="line168"></a>        payload == goog.net.xpc.SETUP) {
+<a name="line169"></a>      // Inner peer received SETUP message but channel names did not match.
+<a name="line170"></a>      // Start using the channel name sent from outer peer. The channel name
+<a name="line171"></a>      // of the inner peer can easily become out of date, as iframe&#39;s and their
+<a name="line172"></a>      // JS state get cached in many browsers upon page reload or history
+<a name="line173"></a>      // navigation (particularly Firefox 1.5+). We can trust the outer peer,
+<a name="line174"></a>      // since we only accept postMessage messages from the same hostname that
+<a name="line175"></a>      // originally setup the channel.
+<a name="line176"></a>      goog.net.xpc.logger.fine(&#39;changing channel name to &#39; + channelName);
+<a name="line177"></a>      staleChannel.name = channelName;
+<a name="line178"></a>      // Remove old stale pointer to channel.
+<a name="line179"></a>      delete goog.net.xpc.channels_[staleChannelName];
+<a name="line180"></a>      // Create fresh pointer to channel.
+<a name="line181"></a>      goog.net.xpc.channels_[channelName] = staleChannel;
+<a name="line182"></a>      staleChannel.deliver_(service, payload);
+<a name="line183"></a>      return true;
+<a name="line184"></a>    }
+<a name="line185"></a>  }
+<a name="line186"></a>
+<a name="line187"></a>  // Failed to find a channel to deliver this message to, so simply ignore it.
+<a name="line188"></a>  goog.net.xpc.logger.info(&#39;channel name mismatch; message ignored&quot;&#39;);
+<a name="line189"></a>  return false;
+<a name="line190"></a>};
+<a name="line191"></a>
+<a name="line192"></a>
+<a name="line193"></a>/**
+<a name="line194"></a> * Handles transport service messages.
+<a name="line195"></a> * @param {string} payload The message content.
+<a name="line196"></a> */
+<a name="line197"></a>goog.net.xpc.NativeMessagingTransport.prototype.transportServiceHandler =
+<a name="line198"></a>    function(payload) {
+<a name="line199"></a>  switch (payload) {
+<a name="line200"></a>    case goog.net.xpc.SETUP:
+<a name="line201"></a>      this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP_ACK_);
+<a name="line202"></a>      break;
+<a name="line203"></a>    case goog.net.xpc.SETUP_ACK_:
+<a name="line204"></a>      this.channel_.notifyConnected_();
+<a name="line205"></a>      break;
+<a name="line206"></a>  }
+<a name="line207"></a>};
+<a name="line208"></a>
+<a name="line209"></a>
+<a name="line210"></a>/**
+<a name="line211"></a> * Connects this transport.
+<a name="line212"></a> */
+<a name="line213"></a>goog.net.xpc.NativeMessagingTransport.prototype.connect = function() {
+<a name="line214"></a>  goog.net.xpc.NativeMessagingTransport.initialize_(this.getWindow());
+<a name="line215"></a>  this.initialized_ = true;
+<a name="line216"></a>  this.connectWithRetries_();
+<a name="line217"></a>};
+<a name="line218"></a>
+<a name="line219"></a>
+<a name="line220"></a>/**
+<a name="line221"></a> * Connects to other peer. In the case of the outer peer, the setup messages are
+<a name="line222"></a> * likely sent before the inner peer is ready to receive them. Therefore, this
+<a name="line223"></a> * function will continue trying to send the SETUP message until the inner peer
+<a name="line224"></a> * responds. In the case of the inner peer, it will occasionally have its
+<a name="line225"></a> * channel name fall out of sync with the outer peer, particularly during
+<a name="line226"></a> * soft-reloads and history navigations.
+<a name="line227"></a> * @private
+<a name="line228"></a> */
+<a name="line229"></a>goog.net.xpc.NativeMessagingTransport.prototype.connectWithRetries_ =
+<a name="line230"></a>    function() {
+<a name="line231"></a>  if (this.channel_.isConnected() || this.isDisposed()) {
+<a name="line232"></a>    return;
+<a name="line233"></a>  }
+<a name="line234"></a>  this.send(goog.net.xpc.TRANSPORT_SERVICE_, goog.net.xpc.SETUP);
+<a name="line235"></a>  this.getWindow().setTimeout(goog.bind(this.connectWithRetries_, this), 100);
+<a name="line236"></a>};
+<a name="line237"></a>
+<a name="line238"></a>
+<a name="line239"></a>/**
+<a name="line240"></a> * Sends a message.
+<a name="line241"></a> * @param {string} service The name off the service the message is to be
+<a name="line242"></a> * delivered to.
+<a name="line243"></a> * @param {string} payload The message content.
+<a name="line244"></a> */
+<a name="line245"></a>goog.net.xpc.NativeMessagingTransport.prototype.send = function(service,
+<a name="line246"></a>                                                                payload) {
+<a name="line247"></a>  var win = this.channel_.peerWindowObject_;
+<a name="line248"></a>  if (!win) {
+<a name="line249"></a>    goog.net.xpc.logger.fine(&#39;send(): window not ready&#39;);
+<a name="line250"></a>    return;
+<a name="line251"></a>  }
+<a name="line252"></a>
+<a name="line253"></a>  // postMessage is a method of the window object, except in some versions of
+<a name="line254"></a>  // Opera, where it is a method of the document object.
+<a name="line255"></a>  var obj = win.postMessage ? win : win.document;
+<a name="line256"></a>  this.send = function(service, payload) {
+<a name="line257"></a>    goog.net.xpc.logger.fine(&#39;send(): payload=&#39; + payload +
+<a name="line258"></a>                             &#39; to hostname=&#39; + this.peerHostname_);
+<a name="line259"></a>    obj.postMessage(this.channel_.name + &#39;|&#39; + service + &#39;:&#39; + payload,
+<a name="line260"></a>                    this.peerHostname_);
+<a name="line261"></a>  };
+<a name="line262"></a>  this.send(service, payload);
+<a name="line263"></a>};
+<a name="line264"></a>
+<a name="line265"></a>
+<a name="line266"></a>/** @override */
+<a name="line267"></a>goog.net.xpc.NativeMessagingTransport.prototype.disposeInternal = function() {
+<a name="line268"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line269"></a>  if (this.initialized_) {
+<a name="line270"></a>    var listenWindow = this.getWindow();
+<a name="line271"></a>    var uid = goog.getUid(listenWindow);
+<a name="line272"></a>    var value = goog.net.xpc.NativeMessagingTransport.activeCount_[uid];
+<a name="line273"></a>    goog.net.xpc.NativeMessagingTransport.activeCount_[uid] = value - 1;
+<a name="line274"></a>    if (value == 1) {
+<a name="line275"></a>      goog.events.unlisten(
+<a name="line276"></a>          listenWindow.postMessage ? listenWindow : listenWindow.document,
+<a name="line277"></a>          &#39;message&#39;,
+<a name="line278"></a>          goog.net.xpc.NativeMessagingTransport.messageReceived_,
+<a name="line279"></a>          false,
+<a name="line280"></a>          goog.net.xpc.NativeMessagingTransport);
+<a name="line281"></a>    }
+<a name="line282"></a>  }
+<a name="line283"></a>  // Cleaning up this.send as it is an instance method, created in
+<a name="line284"></a>  // goog.net.xpc.NativeMessagingTransport.prototype.send and has a closure over
+<a name="line285"></a>  // this.channel_.peerWindowObject_.
+<a name="line286"></a>  delete this.send;
+<a name="line287"></a>};
+</pre>
+
+
+</body>
+</html>

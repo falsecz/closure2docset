@@ -1,0 +1,624 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>textarea.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_textarea.js.html">textarea.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A content-aware textarea control that grows and shrinks
+<a name="line17"></a> * automatically. This implementation extends {@link goog.ui.Control}.
+<a name="line18"></a> * This code is inspired by Dojo Dijit&#39;s Textarea implementation with
+<a name="line19"></a> * modifications to support native (when available) textarea resizing and
+<a name="line20"></a> * minHeight and maxHeight enforcement.
+<a name="line21"></a> *
+<a name="line22"></a> * @see ../demos/textarea.html
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.ui.Textarea&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.Timer&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line29"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line30"></a>goog.require(&#39;goog.style&#39;);
+<a name="line31"></a>goog.require(&#39;goog.ui.Control&#39;);
+<a name="line32"></a>goog.require(&#39;goog.ui.TextareaRenderer&#39;);
+<a name="line33"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line34"></a>goog.require(&#39;goog.userAgent.product&#39;);
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>
+<a name="line38"></a>/**
+<a name="line39"></a> * A textarea control to handle growing/shrinking with textarea.value.
+<a name="line40"></a> *
+<a name="line41"></a> * @param {string} content Text to set as the textarea&#39;s value.
+<a name="line42"></a> * @param {goog.ui.TextareaRenderer=} opt_renderer Renderer used to render or
+<a name="line43"></a> *     decorate the textarea. Defaults to {@link goog.ui.TextareaRenderer}.
+<a name="line44"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM hepler, used for
+<a name="line45"></a> *     document interaction.
+<a name="line46"></a> * @constructor
+<a name="line47"></a> * @extends {goog.ui.Control}
+<a name="line48"></a> */
+<a name="line49"></a>goog.ui.Textarea = function(content, opt_renderer, opt_domHelper) {
+<a name="line50"></a>  goog.ui.Control.call(this, content, opt_renderer ||
+<a name="line51"></a>      goog.ui.TextareaRenderer.getInstance(), opt_domHelper);
+<a name="line52"></a>
+<a name="line53"></a>  this.setHandleMouseEvents(false);
+<a name="line54"></a>  this.setAllowTextSelection(true);
+<a name="line55"></a>  if (!content) {
+<a name="line56"></a>    this.setContentInternal(&#39;&#39;);
+<a name="line57"></a>  }
+<a name="line58"></a>};
+<a name="line59"></a>goog.inherits(goog.ui.Textarea, goog.ui.Control);
+<a name="line60"></a>
+<a name="line61"></a>
+<a name="line62"></a>/**
+<a name="line63"></a> * Some UAs will shrink the textarea automatically, some won&#39;t.
+<a name="line64"></a> * @type {boolean}
+<a name="line65"></a> * @private
+<a name="line66"></a> */
+<a name="line67"></a>goog.ui.Textarea.NEEDS_HELP_SHRINKING_ = goog.userAgent.GECKO ||
+<a name="line68"></a>    goog.userAgent.WEBKIT;
+<a name="line69"></a>
+<a name="line70"></a>
+<a name="line71"></a>/**
+<a name="line72"></a> * True if the resizing function is executing, false otherwise.
+<a name="line73"></a> * @type {boolean}
+<a name="line74"></a> * @private
+<a name="line75"></a> */
+<a name="line76"></a>goog.ui.Textarea.prototype.isResizing_ = false;
+<a name="line77"></a>
+<a name="line78"></a>
+<a name="line79"></a>/**
+<a name="line80"></a> * The height of the textarea as last measured.
+<a name="line81"></a> * @type {number}
+<a name="line82"></a> * @private
+<a name="line83"></a> */
+<a name="line84"></a>goog.ui.Textarea.prototype.height_ = 0;
+<a name="line85"></a>
+<a name="line86"></a>
+<a name="line87"></a>/**
+<a name="line88"></a> * A maximum height for the textarea. When set to 0, the default, there is no
+<a name="line89"></a> * enforcement of this value during resize.
+<a name="line90"></a> * @type {number}
+<a name="line91"></a> * @private
+<a name="line92"></a> */
+<a name="line93"></a>goog.ui.Textarea.prototype.maxHeight_ = 0;
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * A minimum height for the textarea. When set to 0, the default, there is no
+<a name="line98"></a> * enforcement of this value during resize.
+<a name="line99"></a> * @type {number}
+<a name="line100"></a> * @private
+<a name="line101"></a> */
+<a name="line102"></a>goog.ui.Textarea.prototype.minHeight_ = 0;
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * Whether or not textarea rendering characteristics have been discovered.
+<a name="line107"></a> * Specifically we determine, at runtime:
+<a name="line108"></a> *    If the padding and border box is included in offsetHeight.
+<a name="line109"></a> *    @see {goog.ui.Textarea.prototype.needsPaddingBorderFix_}
+<a name="line110"></a> *    If the padding and border box is included in scrollHeight.
+<a name="line111"></a> *    @see {goog.ui.Textarea.prototype.scrollHeightIncludesPadding_} and
+<a name="line112"></a> *    @see {goog.ui.Textarea.prototype.scrollHeightIncludesBorder_}
+<a name="line113"></a> * TODO(user): See if we can determine goog.ui.Textarea.NEEDS_HELP_SHRINKING_.
+<a name="line114"></a> * @type {boolean}
+<a name="line115"></a> * @private
+<a name="line116"></a> */
+<a name="line117"></a>goog.ui.Textarea.prototype.hasDiscoveredTextareaCharacteristics_ = false;
+<a name="line118"></a>
+<a name="line119"></a>
+<a name="line120"></a>/**
+<a name="line121"></a> * If a user agent doesn&#39;t correctly support the box-sizing:border-box CSS
+<a name="line122"></a> * value then we&#39;ll need to adjust our height calculations.
+<a name="line123"></a> * @see {goog.ui.Textarea.prototype.discoverTextareaCharacteristics_}
+<a name="line124"></a> * @type {boolean}
+<a name="line125"></a> * @private
+<a name="line126"></a> */
+<a name="line127"></a>goog.ui.Textarea.prototype.needsPaddingBorderFix_ = false;
+<a name="line128"></a>
+<a name="line129"></a>
+<a name="line130"></a>/**
+<a name="line131"></a> * Whether or not scrollHeight of a textarea includes the padding box.
+<a name="line132"></a> * @type {boolean}
+<a name="line133"></a> * @private
+<a name="line134"></a> */
+<a name="line135"></a>goog.ui.Textarea.prototype.scrollHeightIncludesPadding_ = false;
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * Whether or not scrollHeight of a textarea includes the border box.
+<a name="line140"></a> * @type {boolean}
+<a name="line141"></a> * @private
+<a name="line142"></a> */
+<a name="line143"></a>goog.ui.Textarea.prototype.scrollHeightIncludesBorder_ = false;
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * For storing the padding box size during enterDocument, to prevent possible
+<a name="line148"></a> * measurement differences that can happen after text zooming.
+<a name="line149"></a> * Note: runtime padding changes will cause problems with this.
+<a name="line150"></a> * @type {goog.math.Box}
+<a name="line151"></a> * @private
+<a name="line152"></a> */
+<a name="line153"></a>goog.ui.Textarea.prototype.paddingBox_;
+<a name="line154"></a>
+<a name="line155"></a>
+<a name="line156"></a>/**
+<a name="line157"></a> * For storing the border box size during enterDocument, to prevent possible
+<a name="line158"></a> * measurement differences that can happen after text zooming.
+<a name="line159"></a> * Note: runtime border width changes will cause problems with this.
+<a name="line160"></a> * @type {goog.math.Box}
+<a name="line161"></a> * @private
+<a name="line162"></a> */
+<a name="line163"></a>goog.ui.Textarea.prototype.borderBox_;
+<a name="line164"></a>
+<a name="line165"></a>
+<a name="line166"></a>/**
+<a name="line167"></a> * @return {number} The padding plus the border box height.
+<a name="line168"></a> * @private
+<a name="line169"></a> */
+<a name="line170"></a>goog.ui.Textarea.prototype.getPaddingBorderBoxHeight_ = function() {
+<a name="line171"></a>  var paddingBorderBoxHeight = this.paddingBox_.top + this.paddingBox_.bottom +
+<a name="line172"></a>      this.borderBox_.top + this.borderBox_.bottom;
+<a name="line173"></a>  return paddingBorderBoxHeight;
+<a name="line174"></a>};
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * @return {number} The minHeight value.
+<a name="line179"></a> */
+<a name="line180"></a>goog.ui.Textarea.prototype.getMinHeight = function() {
+<a name="line181"></a>  return this.minHeight_;
+<a name="line182"></a>};
+<a name="line183"></a>
+<a name="line184"></a>
+<a name="line185"></a>/**
+<a name="line186"></a> * @return {number} The minHeight value with a potential padding fix.
+<a name="line187"></a> * @private
+<a name="line188"></a> */
+<a name="line189"></a>goog.ui.Textarea.prototype.getMinHeight_ = function() {
+<a name="line190"></a>  var minHeight = this.minHeight_;
+<a name="line191"></a>  var textarea = this.getElement();
+<a name="line192"></a>  if (minHeight &amp;&amp; textarea &amp;&amp; this.needsPaddingBorderFix_) {
+<a name="line193"></a>    minHeight -= this.getPaddingBorderBoxHeight_();
+<a name="line194"></a>  }
+<a name="line195"></a>  return minHeight;
+<a name="line196"></a>};
+<a name="line197"></a>
+<a name="line198"></a>
+<a name="line199"></a>/**
+<a name="line200"></a> * Sets a minimum height for the textarea, and calls resize if rendered.
+<a name="line201"></a> * @param {number} height New minHeight value.
+<a name="line202"></a> */
+<a name="line203"></a>goog.ui.Textarea.prototype.setMinHeight = function(height) {
+<a name="line204"></a>  this.minHeight_ = height;
+<a name="line205"></a>  this.resize();
+<a name="line206"></a>};
+<a name="line207"></a>
+<a name="line208"></a>
+<a name="line209"></a>/**
+<a name="line210"></a> * @return {number} The maxHeight value.
+<a name="line211"></a> */
+<a name="line212"></a>goog.ui.Textarea.prototype.getMaxHeight = function() {
+<a name="line213"></a>  return this.maxHeight_;
+<a name="line214"></a>};
+<a name="line215"></a>
+<a name="line216"></a>
+<a name="line217"></a>/**
+<a name="line218"></a> * @return {number} The maxHeight value with a potential padding fix.
+<a name="line219"></a> * @private
+<a name="line220"></a> */
+<a name="line221"></a>goog.ui.Textarea.prototype.getMaxHeight_ = function() {
+<a name="line222"></a>  var maxHeight = this.maxHeight_;
+<a name="line223"></a>  var textarea = this.getElement();
+<a name="line224"></a>  if (maxHeight &amp;&amp; textarea &amp;&amp; this.needsPaddingBorderFix_) {
+<a name="line225"></a>    maxHeight -= this.getPaddingBorderBoxHeight_();
+<a name="line226"></a>  }
+<a name="line227"></a>  return maxHeight;
+<a name="line228"></a>};
+<a name="line229"></a>
+<a name="line230"></a>
+<a name="line231"></a>/**
+<a name="line232"></a> * Sets a minimum height for the textarea, and calls resize if rendered.
+<a name="line233"></a> * @param {number} height New maxHeight value.
+<a name="line234"></a> */
+<a name="line235"></a>goog.ui.Textarea.prototype.setMaxHeight = function(height) {
+<a name="line236"></a>  this.maxHeight_ = height;
+<a name="line237"></a>  this.resize();
+<a name="line238"></a>};
+<a name="line239"></a>
+<a name="line240"></a>
+<a name="line241"></a>/**
+<a name="line242"></a> * Sets the textarea&#39;s value.
+<a name="line243"></a> * @param {*} value The value property for the textarea, will be cast to a
+<a name="line244"></a> *     string by the browser when setting textarea.value.
+<a name="line245"></a> */
+<a name="line246"></a>goog.ui.Textarea.prototype.setValue = function(value) {
+<a name="line247"></a>  this.setContent(String(value));
+<a name="line248"></a>};
+<a name="line249"></a>
+<a name="line250"></a>
+<a name="line251"></a>/**
+<a name="line252"></a> * Gets the textarea&#39;s value.
+<a name="line253"></a> * @return {string} value The value of the textarea.
+<a name="line254"></a> */
+<a name="line255"></a>goog.ui.Textarea.prototype.getValue = function() {
+<a name="line256"></a>  return this.getElement().value;
+<a name="line257"></a>};
+<a name="line258"></a>
+<a name="line259"></a>
+<a name="line260"></a>/** @override */
+<a name="line261"></a>goog.ui.Textarea.prototype.setContent = function(content) {
+<a name="line262"></a>  goog.ui.Textarea.superClass_.setContent.call(this, content);
+<a name="line263"></a>  this.resize();
+<a name="line264"></a>};
+<a name="line265"></a>
+<a name="line266"></a>
+<a name="line267"></a>/** @override **/
+<a name="line268"></a>goog.ui.Textarea.prototype.setEnabled = function(enable) {
+<a name="line269"></a>  goog.ui.Textarea.superClass_.setEnabled.call(this, enable);
+<a name="line270"></a>  this.getElement().disabled = !enable;
+<a name="line271"></a>};
+<a name="line272"></a>
+<a name="line273"></a>
+<a name="line274"></a>/**
+<a name="line275"></a> * Resizes the textarea vertically.
+<a name="line276"></a> */
+<a name="line277"></a>goog.ui.Textarea.prototype.resize = function() {
+<a name="line278"></a>  if (this.getElement()) {
+<a name="line279"></a>    this.grow_();
+<a name="line280"></a>  }
+<a name="line281"></a>};
+<a name="line282"></a>
+<a name="line283"></a>
+<a name="line284"></a>/** @override **/
+<a name="line285"></a>goog.ui.Textarea.prototype.enterDocument = function() {
+<a name="line286"></a>  var textarea = this.getElement();
+<a name="line287"></a>
+<a name="line288"></a>  // Eliminates the vertical scrollbar and changes the box-sizing mode for the
+<a name="line289"></a>  // textarea to the border-box (aka quirksmode) paradigm.
+<a name="line290"></a>  goog.style.setStyle(textarea, {
+<a name="line291"></a>    &#39;overflowY&#39;: &#39;hidden&#39;,
+<a name="line292"></a>    &#39;overflowX&#39;: &#39;auto&#39;,
+<a name="line293"></a>    &#39;boxSizing&#39;: &#39;border-box&#39;,
+<a name="line294"></a>    &#39;MsBoxSizing&#39;: &#39;border-box&#39;,
+<a name="line295"></a>    &#39;WebkitBoxSizing&#39;: &#39;border-box&#39;,
+<a name="line296"></a>    &#39;MozBoxSizing&#39;: &#39;border-box&#39;});
+<a name="line297"></a>
+<a name="line298"></a>  this.paddingBox_ = goog.style.getPaddingBox(textarea);
+<a name="line299"></a>  this.borderBox_ = goog.style.getBorderBox(textarea);
+<a name="line300"></a>
+<a name="line301"></a>  this.getHandler().
+<a name="line302"></a>      listen(textarea, goog.events.EventType.SCROLL, this.grow_).
+<a name="line303"></a>      listen(textarea, goog.events.EventType.FOCUS, this.grow_).
+<a name="line304"></a>      listen(textarea, goog.events.EventType.KEYUP, this.grow_).
+<a name="line305"></a>      listen(textarea, goog.events.EventType.MOUSEUP, this.mouseUpListener_);
+<a name="line306"></a>
+<a name="line307"></a>  this.resize();
+<a name="line308"></a>};
+<a name="line309"></a>
+<a name="line310"></a>
+<a name="line311"></a>/**
+<a name="line312"></a> * Gets the textarea&#39;s content height + padding height + border height.
+<a name="line313"></a> * This is done by getting the scrollHeight and adjusting from there.
+<a name="line314"></a> * In the end this result is what we want the new offsetHeight to equal.
+<a name="line315"></a> * @return {number} The height of the textarea.
+<a name="line316"></a> * @private
+<a name="line317"></a> */
+<a name="line318"></a>goog.ui.Textarea.prototype.getHeight_ = function() {
+<a name="line319"></a>  this.discoverTextareaCharacteristics_();
+<a name="line320"></a>  var textarea = this.getElement();
+<a name="line321"></a>  // Accounts for a possible (though unlikely) horizontal scrollbar.
+<a name="line322"></a>  var height = this.getElement().scrollHeight +
+<a name="line323"></a>      this.getHorizontalScrollBarHeight_();
+<a name="line324"></a>  if (this.needsPaddingBorderFix_) {
+<a name="line325"></a>    height -= this.getPaddingBorderBoxHeight_();
+<a name="line326"></a>  } else {
+<a name="line327"></a>    if (!this.scrollHeightIncludesPadding_) {
+<a name="line328"></a>      var paddingBox = this.paddingBox_;
+<a name="line329"></a>      var paddingBoxHeight = paddingBox.top + paddingBox.bottom;
+<a name="line330"></a>      height += paddingBoxHeight;
+<a name="line331"></a>    }
+<a name="line332"></a>    if (!this.scrollHeightIncludesBorder_) {
+<a name="line333"></a>      var borderBox = goog.style.getBorderBox(textarea);
+<a name="line334"></a>      var borderBoxHeight = borderBox.top + borderBox.bottom;
+<a name="line335"></a>      height += borderBoxHeight;
+<a name="line336"></a>    }
+<a name="line337"></a>  }
+<a name="line338"></a>  return height;
+<a name="line339"></a>};
+<a name="line340"></a>
+<a name="line341"></a>
+<a name="line342"></a>/**
+<a name="line343"></a> * Sets the textarea&#39;s height.
+<a name="line344"></a> * @param {number} height The height to set.
+<a name="line345"></a> * @private
+<a name="line346"></a> */
+<a name="line347"></a>goog.ui.Textarea.prototype.setHeight_ = function(height) {
+<a name="line348"></a>  if (this.height_ != height) {
+<a name="line349"></a>    this.height_ = height;
+<a name="line350"></a>    this.getElement().style.height = height + &#39;px&#39;;
+<a name="line351"></a>  }
+<a name="line352"></a>};
+<a name="line353"></a>
+<a name="line354"></a>
+<a name="line355"></a>/**
+<a name="line356"></a> * Sets the textarea&#39;s rows attribute to be the number of newlines + 1.
+<a name="line357"></a> * This is necessary when the textarea is hidden, in which case scrollHeight
+<a name="line358"></a> * is not available.
+<a name="line359"></a> * @private
+<a name="line360"></a> */
+<a name="line361"></a>goog.ui.Textarea.prototype.setHeightToEstimate_ = function() {
+<a name="line362"></a>  var textarea = this.getElement();
+<a name="line363"></a>  textarea.style.height = &#39;auto&#39;;
+<a name="line364"></a>  var newlines = textarea.value.match(/\n/g) || [];
+<a name="line365"></a>  textarea.rows = newlines.length + 1;
+<a name="line366"></a>};
+<a name="line367"></a>
+<a name="line368"></a>
+<a name="line369"></a>/**
+<a name="line370"></a> * Gets the the height of (possibly present) horizontal scrollbar.
+<a name="line371"></a> * @return {number} The height of the horizontal scrollbar.
+<a name="line372"></a> * @private
+<a name="line373"></a> */
+<a name="line374"></a>goog.ui.Textarea.prototype.getHorizontalScrollBarHeight_ =
+<a name="line375"></a>    function() {
+<a name="line376"></a>  var textarea = this.getElement();
+<a name="line377"></a>  var height = textarea.offsetHeight - textarea.clientHeight;
+<a name="line378"></a>  if (!this.scrollHeightIncludesPadding_) {
+<a name="line379"></a>    var paddingBox = this.paddingBox_;
+<a name="line380"></a>    var paddingBoxHeight = paddingBox.top + paddingBox.bottom;
+<a name="line381"></a>    height -= paddingBoxHeight;
+<a name="line382"></a>  }
+<a name="line383"></a>  if (!this.scrollHeightIncludesBorder_) {
+<a name="line384"></a>    var borderBox = goog.style.getBorderBox(textarea);
+<a name="line385"></a>    var borderBoxHeight = borderBox.top + borderBox.bottom;
+<a name="line386"></a>    height -= borderBoxHeight;
+<a name="line387"></a>  }
+<a name="line388"></a>  // Prevent negative number results, which sometimes show up.
+<a name="line389"></a>  return height &gt; 0 ? height : 0;
+<a name="line390"></a>};
+<a name="line391"></a>
+<a name="line392"></a>
+<a name="line393"></a>/**
+<a name="line394"></a> * In order to assess the correct height for a textarea, we need to know
+<a name="line395"></a> * whether the scrollHeight (the full height of the text) property includes
+<a name="line396"></a> * the values for padding and borders. We can also test whether the
+<a name="line397"></a> * box-sizing: border-box setting is working and then tweak accordingly.
+<a name="line398"></a> * Instead of hardcoding a list of currently known behaviors and testing
+<a name="line399"></a> * for quirksmode, we do a runtime check out of the flow. The performance
+<a name="line400"></a> * impact should be very small.
+<a name="line401"></a> * @private
+<a name="line402"></a> */
+<a name="line403"></a>goog.ui.Textarea.prototype.discoverTextareaCharacteristics_ = function() {
+<a name="line404"></a>  if (!this.hasDiscoveredTextareaCharacteristics_) {
+<a name="line405"></a>    var textarea = /** @type {!Element} */ (this.getElement().cloneNode(false));
+<a name="line406"></a>    // We need to overwrite/write box model specific styles that might
+<a name="line407"></a>    // affect height.
+<a name="line408"></a>    goog.style.setStyle(textarea, {
+<a name="line409"></a>      &#39;position&#39;: &#39;absolute&#39;,
+<a name="line410"></a>      &#39;height&#39;: &#39;auto&#39;,
+<a name="line411"></a>      &#39;top&#39;: &#39;-9999px&#39;,
+<a name="line412"></a>      &#39;margin&#39;: &#39;0&#39;,
+<a name="line413"></a>      &#39;padding&#39;: &#39;1px&#39;,
+<a name="line414"></a>      &#39;border&#39;: &#39;1px solid #000&#39;,
+<a name="line415"></a>      &#39;overflow&#39;: &#39;hidden&#39;
+<a name="line416"></a>    });
+<a name="line417"></a>    goog.dom.appendChild(this.getDomHelper().getDocument().body, textarea);
+<a name="line418"></a>    var initialScrollHeight = textarea.scrollHeight;
+<a name="line419"></a>
+<a name="line420"></a>    textarea.style.padding = &#39;10px&#39;;
+<a name="line421"></a>    var paddingScrollHeight = textarea.scrollHeight;
+<a name="line422"></a>    this.scrollHeightIncludesPadding_ = paddingScrollHeight &gt;
+<a name="line423"></a>        initialScrollHeight;
+<a name="line424"></a>
+<a name="line425"></a>    initialScrollHeight = paddingScrollHeight;
+<a name="line426"></a>    textarea.style.borderWidth = &#39;10px&#39;;
+<a name="line427"></a>    var borderScrollHeight = textarea.scrollHeight;
+<a name="line428"></a>    this.scrollHeightIncludesBorder_ = borderScrollHeight &gt; initialScrollHeight;
+<a name="line429"></a>
+<a name="line430"></a>    // Tests if border-box sizing is working or not.
+<a name="line431"></a>    textarea.style.height = &#39;100px&#39;;
+<a name="line432"></a>    var offsetHeightAtHeight100 = textarea.offsetHeight;
+<a name="line433"></a>    if (offsetHeightAtHeight100 != 100) {
+<a name="line434"></a>      this.needsPaddingBorderFix_ = true;
+<a name="line435"></a>    }
+<a name="line436"></a>
+<a name="line437"></a>    goog.dom.removeNode(textarea);
+<a name="line438"></a>    this.hasDiscoveredTextareaCharacteristics_ = true;
+<a name="line439"></a>  }
+<a name="line440"></a>};
+<a name="line441"></a>
+<a name="line442"></a>
+<a name="line443"></a>/**
+<a name="line444"></a> * Resizes the textarea to grow/shrink to match its contents.
+<a name="line445"></a> * @param {goog.events.Event=} opt_e The browser event.
+<a name="line446"></a> * @private
+<a name="line447"></a> */
+<a name="line448"></a>goog.ui.Textarea.prototype.grow_ = function(opt_e) {
+<a name="line449"></a>  if (this.isResizing_) {
+<a name="line450"></a>    return;
+<a name="line451"></a>  }
+<a name="line452"></a>  var shouldCallShrink = false;
+<a name="line453"></a>  this.isResizing_ = true;
+<a name="line454"></a>  var textarea = this.getElement();
+<a name="line455"></a>  if (textarea.scrollHeight) {
+<a name="line456"></a>    var setMinHeight = false;
+<a name="line457"></a>    var setMaxHeight = false;
+<a name="line458"></a>    var newHeight = this.getHeight_();
+<a name="line459"></a>    var currentHeight = textarea.offsetHeight;
+<a name="line460"></a>    var minHeight = this.getMinHeight_();
+<a name="line461"></a>    var maxHeight = this.getMaxHeight_();
+<a name="line462"></a>    if (minHeight &amp;&amp; newHeight &lt; minHeight) {
+<a name="line463"></a>      this.setHeight_(minHeight);
+<a name="line464"></a>      setMinHeight = true;
+<a name="line465"></a>    } else if (maxHeight &amp;&amp; newHeight &gt; maxHeight) {
+<a name="line466"></a>      this.setHeight_(maxHeight);
+<a name="line467"></a>      // If the content is greater than the height, we&#39;ll want the vertical
+<a name="line468"></a>      // scrollbar back.
+<a name="line469"></a>      textarea.style.overflowY = &#39;&#39;;
+<a name="line470"></a>      setMaxHeight = true;
+<a name="line471"></a>    } else if (currentHeight != newHeight) {
+<a name="line472"></a>      this.setHeight_(newHeight);
+<a name="line473"></a>    // Makes sure that height_ is at least set.
+<a name="line474"></a>    } else if (!this.height_) {
+<a name="line475"></a>      this.height_ = newHeight;
+<a name="line476"></a>    }
+<a name="line477"></a>    if (!setMinHeight &amp;&amp; !setMaxHeight &amp;&amp;
+<a name="line478"></a>        goog.ui.Textarea.NEEDS_HELP_SHRINKING_) {
+<a name="line479"></a>      shouldCallShrink = true;
+<a name="line480"></a>    }
+<a name="line481"></a>  } else {
+<a name="line482"></a>    this.setHeightToEstimate_();
+<a name="line483"></a>  }
+<a name="line484"></a>  this.isResizing_ = false;
+<a name="line485"></a>
+<a name="line486"></a>  if (shouldCallShrink) {
+<a name="line487"></a>    this.shrink_();
+<a name="line488"></a>  }
+<a name="line489"></a>};
+<a name="line490"></a>
+<a name="line491"></a>
+<a name="line492"></a>/**
+<a name="line493"></a> * Resizes the texarea to shrink to fit its contents. The way this works is
+<a name="line494"></a> * by increasing the padding of the textarea by 1px (it&#39;s important here that
+<a name="line495"></a> * we&#39;re in box-sizing: border-box mode). If the size of the textarea grows,
+<a name="line496"></a> * then the box is filled up to the padding box with text.
+<a name="line497"></a> * If it doesn&#39;t change, then we can shrink.
+<a name="line498"></a> * @private
+<a name="line499"></a> */
+<a name="line500"></a>goog.ui.Textarea.prototype.shrink_ = function() {
+<a name="line501"></a>  var textarea = this.getElement();
+<a name="line502"></a>  if (!this.isResizing_) {
+<a name="line503"></a>    this.isResizing_ = true;
+<a name="line504"></a>    var isEmpty = false;
+<a name="line505"></a>    if (!textarea.value) {
+<a name="line506"></a>      // Prevents height from becoming 0.
+<a name="line507"></a>      textarea.value = &#39; &#39;;
+<a name="line508"></a>      isEmpty = true;
+<a name="line509"></a>    }
+<a name="line510"></a>    var scrollHeight = textarea.scrollHeight;
+<a name="line511"></a>    if (!scrollHeight) {
+<a name="line512"></a>      this.setHeightToEstimate_();
+<a name="line513"></a>    } else {
+<a name="line514"></a>      var currentHeight = this.getHeight_();
+<a name="line515"></a>      var minHeight = this.getMinHeight_();
+<a name="line516"></a>      var maxHeight = this.getMaxHeight_();
+<a name="line517"></a>      if (!(minHeight &amp;&amp; currentHeight &lt;= minHeight) &amp;&amp;
+<a name="line518"></a>          !(maxHeight &amp;&amp; currentHeight &gt;= maxHeight)) {
+<a name="line519"></a>        // Nudge the padding by 1px.
+<a name="line520"></a>        var paddingBox = this.paddingBox_;
+<a name="line521"></a>        textarea.style.paddingBottom = paddingBox.bottom + 1 + &#39;px&#39;;
+<a name="line522"></a>        var heightAfterNudge = this.getHeight_();
+<a name="line523"></a>        // If the one px of padding had no effect, then we can shrink.
+<a name="line524"></a>        if (heightAfterNudge == currentHeight) {
+<a name="line525"></a>          textarea.style.paddingBottom = paddingBox.bottom + scrollHeight +
+<a name="line526"></a>              &#39;px&#39;;
+<a name="line527"></a>          textarea.scrollTop = 0;
+<a name="line528"></a>          var shrinkToHeight = this.getHeight_() - scrollHeight;
+<a name="line529"></a>          if (shrinkToHeight &gt;= minHeight) {
+<a name="line530"></a>            this.setHeight_(shrinkToHeight);
+<a name="line531"></a>          } else {
+<a name="line532"></a>            this.setHeight_(minHeight);
+<a name="line533"></a>          }
+<a name="line534"></a>        }
+<a name="line535"></a>        textarea.style.paddingBottom = paddingBox.bottom + &#39;px&#39;;
+<a name="line536"></a>      }
+<a name="line537"></a>    }
+<a name="line538"></a>    if (isEmpty) {
+<a name="line539"></a>      textarea.value = &#39;&#39;;
+<a name="line540"></a>    }
+<a name="line541"></a>    this.isResizing_ = false;
+<a name="line542"></a>  }
+<a name="line543"></a>};
+<a name="line544"></a>
+<a name="line545"></a>
+<a name="line546"></a>/**
+<a name="line547"></a> * We use this listener to check if the textarea has been natively resized
+<a name="line548"></a> * and if so we reset minHeight so that we don&#39;t ever shrink smaller than
+<a name="line549"></a> * the user&#39;s manually set height. Note that we cannot check size on mousedown
+<a name="line550"></a> * and then just compare here because we cannot capture mousedown on
+<a name="line551"></a> * the textarea resizer, while mouseup fires reliably.
+<a name="line552"></a> * @param {goog.events.BrowserEvent} e The mousedown event.
+<a name="line553"></a> * @private
+<a name="line554"></a> */
+<a name="line555"></a>goog.ui.Textarea.prototype.mouseUpListener_ = function(e) {
+<a name="line556"></a>  var textarea = this.getElement();
+<a name="line557"></a>  var height = textarea.offsetHeight;
+<a name="line558"></a>
+<a name="line559"></a>  // This solves for when the MSIE DropShadow filter is enabled,
+<a name="line560"></a>  // as it affects the offsetHeight value, even with MsBoxSizing:border-box.
+<a name="line561"></a>  if (textarea[&#39;filters&#39;] &amp;&amp; textarea[&#39;filters&#39;].length) {
+<a name="line562"></a>    var dropShadow =
+<a name="line563"></a>        textarea[&#39;filters&#39;][&#39;item&#39;](&#39;DXImageTransform.Microsoft.DropShadow&#39;);
+<a name="line564"></a>    if (dropShadow) {
+<a name="line565"></a>      height -= dropShadow[&#39;offX&#39;];
+<a name="line566"></a>    }
+<a name="line567"></a>  }
+<a name="line568"></a>
+<a name="line569"></a>  if (height != this.height_) {
+<a name="line570"></a>    this.minHeight_ = height;
+<a name="line571"></a>    this.height_ = height;
+<a name="line572"></a>  }
+<a name="line573"></a>};
+</pre>
+
+
+</body>
+</html>

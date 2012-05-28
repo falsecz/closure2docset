@@ -1,0 +1,344 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>dimensionpicker.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_dimensionpicker.js.html">dimensionpicker.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A dimension picker control.  A dimension picker allows the
+<a name="line17"></a> * user to visually select a row and column count.
+<a name="line18"></a> *
+<a name="line19"></a> * @author robbyw@google.com (Robby Walker)
+<a name="line20"></a> * @author abefettig@google.com (Abe Fettig)
+<a name="line21"></a> * @see ../demos/dimensionpicker.html
+<a name="line22"></a> * @see ../demos/dimensionpicker_rtl.html
+<a name="line23"></a> */
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.ui.DimensionPicker&#39;);
+<a name="line26"></a>
+<a name="line27"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line28"></a>goog.require(&#39;goog.math.Size&#39;);
+<a name="line29"></a>goog.require(&#39;goog.ui.Control&#39;);
+<a name="line30"></a>goog.require(&#39;goog.ui.DimensionPickerRenderer&#39;);
+<a name="line31"></a>goog.require(&#39;goog.ui.registry&#39;);
+<a name="line32"></a>
+<a name="line33"></a>
+<a name="line34"></a>
+<a name="line35"></a>/**
+<a name="line36"></a> * A dimension picker allows the user to visually select a row and column
+<a name="line37"></a> * count using their mouse and keyboard.
+<a name="line38"></a> *
+<a name="line39"></a> * The currently selected dimension is controlled by an ACTION event.  Event
+<a name="line40"></a> * listeners may retrieve the selected item using the
+<a name="line41"></a> * {@link #getValue} method.
+<a name="line42"></a> *
+<a name="line43"></a> * @param {goog.ui.DimensionPickerRenderer=} opt_renderer Renderer used to
+<a name="line44"></a> *     render or decorate the palette; defaults to
+<a name="line45"></a> *     {@link goog.ui.DimensionPickerRenderer}.
+<a name="line46"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper, used for
+<a name="line47"></a> *     document interaction.
+<a name="line48"></a> * @constructor
+<a name="line49"></a> * @extends {goog.ui.Control}
+<a name="line50"></a> */
+<a name="line51"></a>goog.ui.DimensionPicker = function(opt_renderer, opt_domHelper) {
+<a name="line52"></a> goog.ui.Control.call(this, null,
+<a name="line53"></a>      opt_renderer || goog.ui.DimensionPickerRenderer.getInstance(),
+<a name="line54"></a>      opt_domHelper);
+<a name="line55"></a>
+<a name="line56"></a>  this.size_ = new goog.math.Size(this.minColumns, this.minRows);
+<a name="line57"></a>};
+<a name="line58"></a>goog.inherits(goog.ui.DimensionPicker, goog.ui.Control);
+<a name="line59"></a>
+<a name="line60"></a>
+<a name="line61"></a>/**
+<a name="line62"></a> * Minimum number of columns to show in the grid.
+<a name="line63"></a> * @type {number}
+<a name="line64"></a> */
+<a name="line65"></a>goog.ui.DimensionPicker.prototype.minColumns = 5;
+<a name="line66"></a>
+<a name="line67"></a>
+<a name="line68"></a>/**
+<a name="line69"></a> * Minimum number of rows to show in the grid.
+<a name="line70"></a> * @type {number}
+<a name="line71"></a> */
+<a name="line72"></a>goog.ui.DimensionPicker.prototype.minRows = 5;
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a> * Maximum number of columns to show in the grid.
+<a name="line77"></a> * @type {number}
+<a name="line78"></a> */
+<a name="line79"></a>goog.ui.DimensionPicker.prototype.maxColumns = 20;
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>/**
+<a name="line83"></a> * Maximum number of rows to show in the grid.
+<a name="line84"></a> * @type {number}
+<a name="line85"></a> */
+<a name="line86"></a>goog.ui.DimensionPicker.prototype.maxRows = 20;
+<a name="line87"></a>
+<a name="line88"></a>
+<a name="line89"></a>/**
+<a name="line90"></a> * Palette dimensions (columns x rows).
+<a name="line91"></a> * @type {goog.math.Size}
+<a name="line92"></a> * @private
+<a name="line93"></a> */
+<a name="line94"></a>goog.ui.DimensionPicker.prototype.size_;
+<a name="line95"></a>
+<a name="line96"></a>
+<a name="line97"></a>/**
+<a name="line98"></a> * Currently highlighted row count.
+<a name="line99"></a> * @type {number}
+<a name="line100"></a> * @private
+<a name="line101"></a> */
+<a name="line102"></a>goog.ui.DimensionPicker.prototype.highlightedRows_ = 0;
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * Currently highlighted column count.
+<a name="line107"></a> * @type {number}
+<a name="line108"></a> * @private
+<a name="line109"></a> */
+<a name="line110"></a>goog.ui.DimensionPicker.prototype.highlightedColumns_ = 0;
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/** @override */
+<a name="line114"></a>goog.ui.DimensionPicker.prototype.enterDocument = function() {
+<a name="line115"></a>  goog.ui.DimensionPicker.superClass_.enterDocument.call(this);
+<a name="line116"></a>
+<a name="line117"></a>  var handler = this.getHandler();
+<a name="line118"></a>  handler.
+<a name="line119"></a>      listen(this.getRenderer().getMouseMoveElement(this),
+<a name="line120"></a>          goog.events.EventType.MOUSEMOVE, this.handleMouseMove).
+<a name="line121"></a>      listen(this.getDomHelper().getWindow(), goog.events.EventType.RESIZE,
+<a name="line122"></a>          this.handleWindowResize);
+<a name="line123"></a>
+<a name="line124"></a>  var parent = this.getParent();
+<a name="line125"></a>  if (parent) {
+<a name="line126"></a>    handler.listen(parent, goog.ui.Component.EventType.SHOW, this.handleShow_);
+<a name="line127"></a>  }
+<a name="line128"></a>};
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>/** @override */
+<a name="line132"></a>goog.ui.DimensionPicker.prototype.exitDocument = function() {
+<a name="line133"></a>  goog.ui.DimensionPicker.superClass_.exitDocument.call(this);
+<a name="line134"></a>
+<a name="line135"></a>  var handler = this.getHandler();
+<a name="line136"></a>  handler.
+<a name="line137"></a>      unlisten(this.getRenderer().getMouseMoveElement(this),
+<a name="line138"></a>          goog.events.EventType.MOUSEMOVE, this.handleMouseMove).
+<a name="line139"></a>      unlisten(this.getDomHelper().getWindow(), goog.events.EventType.RESIZE,
+<a name="line140"></a>          this.handleWindowResize);
+<a name="line141"></a>
+<a name="line142"></a>  var parent = this.getParent();
+<a name="line143"></a>  if (parent) {
+<a name="line144"></a>    handler.unlisten(parent, goog.ui.Component.EventType.SHOW,
+<a name="line145"></a>        this.handleShow_);
+<a name="line146"></a>  }
+<a name="line147"></a>};
+<a name="line148"></a>
+<a name="line149"></a>
+<a name="line150"></a>/**
+<a name="line151"></a> * Resets the highlighted size when the picker is shown.
+<a name="line152"></a> * @private
+<a name="line153"></a> */
+<a name="line154"></a>goog.ui.DimensionPicker.prototype.handleShow_ = function() {
+<a name="line155"></a>  if (this.isVisible()) {
+<a name="line156"></a>    this.setValue(0, 0);
+<a name="line157"></a>  }
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/** @override */
+<a name="line162"></a>goog.ui.DimensionPicker.prototype.disposeInternal = function() {
+<a name="line163"></a>  goog.ui.DimensionPicker.superClass_.disposeInternal.call(this);
+<a name="line164"></a>  delete this.size_;
+<a name="line165"></a>};
+<a name="line166"></a>
+<a name="line167"></a>
+<a name="line168"></a>// Palette event handling.
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/**
+<a name="line172"></a> * Handles mousemove events.  Determines which palette size was moused over and
+<a name="line173"></a> * highlights it.
+<a name="line174"></a> * @param {goog.events.BrowserEvent} e Mouse event to handle.
+<a name="line175"></a> * @protected
+<a name="line176"></a> */
+<a name="line177"></a>goog.ui.DimensionPicker.prototype.handleMouseMove = function(e) {
+<a name="line178"></a>  var highlightedSizeX = this.getRenderer().getGridOffsetX(this,
+<a name="line179"></a>      this.isRightToLeft() ? e.target.offsetWidth - e.offsetX : e.offsetX);
+<a name="line180"></a>  var highlightedSizeY = this.getRenderer().getGridOffsetY(this, e.offsetY);
+<a name="line181"></a>
+<a name="line182"></a>  if (this.highlightedColumns_ != highlightedSizeX ||
+<a name="line183"></a>      this.highlightedRows_ != highlightedSizeY) {
+<a name="line184"></a>    this.setValue(highlightedSizeX, highlightedSizeY);
+<a name="line185"></a>  }
+<a name="line186"></a>};
+<a name="line187"></a>
+<a name="line188"></a>
+<a name="line189"></a>/**
+<a name="line190"></a> * Handles window resize events.  Ensures no scrollbars are introduced by the
+<a name="line191"></a> * renderer&#39;s mouse catcher.
+<a name="line192"></a> * @param {goog.events.Event} e Resize event to handle.
+<a name="line193"></a> * @protected
+<a name="line194"></a> */
+<a name="line195"></a>goog.ui.DimensionPicker.prototype.handleWindowResize = function(e) {
+<a name="line196"></a>  this.getRenderer().positionMouseCatcher(this);
+<a name="line197"></a>};
+<a name="line198"></a>
+<a name="line199"></a>
+<a name="line200"></a>/**
+<a name="line201"></a> * Handle key events if supported, so the user can use the keyboard to
+<a name="line202"></a> * manipulate the highlighted rows and columns.
+<a name="line203"></a> * @param {goog.events.KeyEvent} e The key event object.
+<a name="line204"></a> * @return {boolean} Whether the key event was handled.
+<a name="line205"></a> */
+<a name="line206"></a>goog.ui.DimensionPicker.prototype.handleKeyEvent = function(e) {
+<a name="line207"></a>  var rows = this.highlightedRows_;
+<a name="line208"></a>  var columns = this.highlightedColumns_;
+<a name="line209"></a>  switch (e.keyCode) {
+<a name="line210"></a>    case goog.events.KeyCodes.DOWN:
+<a name="line211"></a>      rows = Math.min(this.maxRows, rows + 1);
+<a name="line212"></a>      break;
+<a name="line213"></a>    case goog.events.KeyCodes.UP:
+<a name="line214"></a>      rows = Math.max(1, rows - 1);
+<a name="line215"></a>      break;
+<a name="line216"></a>    case goog.events.KeyCodes.LEFT:
+<a name="line217"></a>      if (columns == 1) {
+<a name="line218"></a>        // Delegate to parent.
+<a name="line219"></a>        return false;
+<a name="line220"></a>      } else {
+<a name="line221"></a>        columns = Math.max(1, columns - 1);
+<a name="line222"></a>      }
+<a name="line223"></a>      break;
+<a name="line224"></a>    case goog.events.KeyCodes.RIGHT:
+<a name="line225"></a>      columns = Math.min(this.maxColumns, columns + 1);
+<a name="line226"></a>      break;
+<a name="line227"></a>    default:
+<a name="line228"></a>      return goog.ui.DimensionPicker.superClass_.handleKeyEvent.call(this, e);
+<a name="line229"></a>  }
+<a name="line230"></a>  this.setValue(columns, rows);
+<a name="line231"></a>  return true;
+<a name="line232"></a>};
+<a name="line233"></a>
+<a name="line234"></a>
+<a name="line235"></a>// Palette management.
+<a name="line236"></a>
+<a name="line237"></a>
+<a name="line238"></a>/**
+<a name="line239"></a> * @return {goog.math.Size} Current table size shown (columns x rows).
+<a name="line240"></a> */
+<a name="line241"></a>goog.ui.DimensionPicker.prototype.getSize = function() {
+<a name="line242"></a>  return this.size_;
+<a name="line243"></a>};
+<a name="line244"></a>
+<a name="line245"></a>
+<a name="line246"></a>/**
+<a name="line247"></a> * @return {goog.math.Size} size The currently highlighted dimensions.
+<a name="line248"></a> */
+<a name="line249"></a>goog.ui.DimensionPicker.prototype.getValue = function() {
+<a name="line250"></a>  return new goog.math.Size(this.highlightedColumns_, this.highlightedRows_);
+<a name="line251"></a>};
+<a name="line252"></a>
+<a name="line253"></a>
+<a name="line254"></a>/**
+<a name="line255"></a> * Sets the currently highlighted dimensions.
+<a name="line256"></a> * @param {number} columns The number of columns to highlight, or a
+<a name="line257"></a> *     goog.math.Size object containing both.
+<a name="line258"></a> * @param {number=} opt_rows The number of rows to highlight.  Can be
+<a name="line259"></a> *     omitted when columns is a good.math.Size object.
+<a name="line260"></a> */
+<a name="line261"></a>goog.ui.DimensionPicker.prototype.setValue = function(columns,
+<a name="line262"></a>    opt_rows) {
+<a name="line263"></a>  if (!goog.isDef(opt_rows)) {
+<a name="line264"></a>    opt_rows = columns.height;
+<a name="line265"></a>    columns = columns.width;
+<a name="line266"></a>  }
+<a name="line267"></a>
+<a name="line268"></a>  if (this.highlightedColumns_ != columns ||
+<a name="line269"></a>      this.highlightedRows_ != opt_rows) {
+<a name="line270"></a>    var renderer = this.getRenderer();
+<a name="line271"></a>    // Show one more row/column than highlighted so the user understands the
+<a name="line272"></a>    // palette can grow.
+<a name="line273"></a>    this.size_.width = Math.max(
+<a name="line274"></a>        Math.min(columns + 1, this.maxColumns), this.minColumns);
+<a name="line275"></a>    this.size_.height = Math.max(
+<a name="line276"></a>        Math.min(opt_rows + 1, this.maxRows), this.minRows);
+<a name="line277"></a>    renderer.updateSize(this, this.getElement());
+<a name="line278"></a>
+<a name="line279"></a>    this.highlightedColumns_ = columns;
+<a name="line280"></a>    this.highlightedRows_ = opt_rows;
+<a name="line281"></a>    renderer.setHighlightedSize(this, columns, opt_rows);
+<a name="line282"></a>  }
+<a name="line283"></a>};
+<a name="line284"></a>
+<a name="line285"></a>
+<a name="line286"></a>/**
+<a name="line287"></a> * Register this control so it can be created from markup
+<a name="line288"></a> */
+<a name="line289"></a>goog.ui.registry.setDecoratorByClassName(
+<a name="line290"></a>    goog.ui.DimensionPickerRenderer.CSS_CLASS,
+<a name="line291"></a>    function() {
+<a name="line292"></a>      return new goog.ui.DimensionPicker();
+<a name="line293"></a>    });
+</pre>
+
+
+</body>
+</html>

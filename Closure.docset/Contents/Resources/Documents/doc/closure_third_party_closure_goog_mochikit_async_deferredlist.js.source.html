@@ -1,0 +1,250 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>deferredlist.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_third_party_closure_goog_mochikit_async_deferredlist.js.html">deferredlist.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2005 Bob Ippolito. All Rights Reserved.
+<a name="line2"></a>// Modifications Copyright 2009 The Closure Library Authors.
+<a name="line3"></a>// All Rights Reserved.
+<a name="line4"></a>
+<a name="line5"></a>/**
+<a name="line6"></a> * @license Portions of this code are from MochiKit, received by The Closure
+<a name="line7"></a> * Library Authors under the MIT license. All other code is Copyright
+<a name="line8"></a> * 2005-2009 The Closure Library Authors. All Rights Reserved.
+<a name="line9"></a> */
+<a name="line10"></a>
+<a name="line11"></a>/**
+<a name="line12"></a> * @fileoverview Class for tracking multiple asynchronous operations and
+<a name="line13"></a> * handling the results. The DeferredList object here is patterned after the
+<a name="line14"></a> * DeferredList object in the Twisted python networking framework.
+<a name="line15"></a> *
+<a name="line16"></a> * Based on the MochiKit code.
+<a name="line17"></a> *
+<a name="line18"></a> * See: http://twistedmatrix.com/projects/core/documentation/howto/defer.html
+<a name="line19"></a> *
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.async.DeferredList&#39;);
+<a name="line23"></a>
+<a name="line24"></a>goog.require(&#39;goog.array&#39;);
+<a name="line25"></a>goog.require(&#39;goog.async.Deferred&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Constructs an object that waits on the results of multiple asynchronous
+<a name="line31"></a> * operations and marshals the results. It is itself a &lt;code&gt;Deferred&lt;/code&gt;,
+<a name="line32"></a> * and sends results to its registered callback chain. Each instance is single
+<a name="line33"></a> * use and may only fire once.
+<a name="line34"></a> *
+<a name="line35"></a> * Unless overridden by one of the options below, the &lt;code&gt;DeferredList&lt;/code&gt;
+<a name="line36"></a> * will wait for a result from every input &lt;code&gt;Deferred&lt;/code&gt;. The results
+<a name="line37"></a> * are stored in a list of two-element arrays as &lt;code&gt;[success, result]&lt;/code&gt;,
+<a name="line38"></a> * where &lt;code&gt;success&lt;/code&gt; is whether that result was from a callback or
+<a name="line39"></a> * errback. Once all results are available, the &lt;code&gt;DeferredList&lt;/code&gt;&#39;s
+<a name="line40"></a> * callback chain is invoked with the full result list.
+<a name="line41"></a> *
+<a name="line42"></a> * @param {!Array.&lt;!goog.async.Deferred&gt;} list An array of deferred objects to
+<a name="line43"></a> *     wait for.
+<a name="line44"></a> * @param {boolean=} opt_fireOnOneCallback Whether to stop waiting as soon as
+<a name="line45"></a> *     one input completes successfully. In this case, the
+<a name="line46"></a> *     &lt;code&gt;DeferredList&lt;/code&gt;&#39;s callback chain will be called with a two
+<a name="line47"></a> *     element array, &lt;code&gt;[index, result]&lt;/code&gt;, where &lt;code&gt;index&lt;/code&gt;
+<a name="line48"></a> *     identifies which input &lt;code&gt;Deferred&lt;/code&gt; produced the
+<a name="line49"></a> *     &lt;code&gt;result&lt;/code&gt;.
+<a name="line50"></a> * @param {boolean=} opt_fireOnOneErrback Whether to stop waiting as soon as one
+<a name="line51"></a> *     input reports an error. The error result is passed to the
+<a name="line52"></a> *     &lt;code&gt;DeferredList&lt;/code&gt;&#39;s error callback chain.
+<a name="line53"></a> * @param {boolean=} opt_consumeErrors When true, will stop propagation of the
+<a name="line54"></a> *     error callback chain for input deferred objects. If the failing deferred
+<a name="line55"></a> *     has a registered callback after this &lt;code&gt;DeferredList&lt;/code&gt;, it will
+<a name="line56"></a> *     be called with null instead of an &lt;code&gt;Error&lt;/code&gt;.
+<a name="line57"></a> * @param {Function=} opt_canceller A function that will be called if the
+<a name="line58"></a> *     deferred list is canceled.
+<a name="line59"></a> * @param {Object=} opt_defaultScope The default scope to call callbacks with.
+<a name="line60"></a> * @constructor
+<a name="line61"></a> * @extends {goog.async.Deferred}
+<a name="line62"></a> */
+<a name="line63"></a>goog.async.DeferredList = function(list,
+<a name="line64"></a>                                   opt_fireOnOneCallback,
+<a name="line65"></a>                                   opt_fireOnOneErrback,
+<a name="line66"></a>                                   opt_consumeErrors,
+<a name="line67"></a>                                   opt_canceller,
+<a name="line68"></a>                                   opt_defaultScope) {
+<a name="line69"></a>  goog.async.Deferred.call(this, opt_canceller, opt_defaultScope);
+<a name="line70"></a>
+<a name="line71"></a>  /**
+<a name="line72"></a>   * The list of Deferred objects to wait for.
+<a name="line73"></a>   * @type {!Array.&lt;!goog.async.Deferred&gt;}
+<a name="line74"></a>   * @private
+<a name="line75"></a>   */
+<a name="line76"></a>  this.list_ = list;
+<a name="line77"></a>
+<a name="line78"></a>  /**
+<a name="line79"></a>   * The stored return values of the Deferred objects.
+<a name="line80"></a>   * @type {!Array}
+<a name="line81"></a>   * @private
+<a name="line82"></a>   */
+<a name="line83"></a>  this.deferredResults_ = [];
+<a name="line84"></a>
+<a name="line85"></a>  /**
+<a name="line86"></a>   * Whether to fire on the first successful callback instead of waiting for
+<a name="line87"></a>   * every Deferred to complete.
+<a name="line88"></a>   * @type {boolean}
+<a name="line89"></a>   * @private
+<a name="line90"></a>   */
+<a name="line91"></a>  this.fireOnOneCallback_ = !!opt_fireOnOneCallback;
+<a name="line92"></a>
+<a name="line93"></a>  /**
+<a name="line94"></a>   * Whether to fire on the first error result received instead of waiting for
+<a name="line95"></a>   * every Deferred to complete.
+<a name="line96"></a>   * @type {boolean}
+<a name="line97"></a>   * @private
+<a name="line98"></a>   */
+<a name="line99"></a>  this.fireOnOneErrback_ = !!opt_fireOnOneErrback;
+<a name="line100"></a>
+<a name="line101"></a>  /**
+<a name="line102"></a>   * Whether to stop error propagation on the input Deferred objects. If the
+<a name="line103"></a>   * DeferredList sees an error from one of the Deferred inputs, the error will
+<a name="line104"></a>   * be captured, and the Deferred will be returned to success state with a null
+<a name="line105"></a>   * return value.
+<a name="line106"></a>   * @type {boolean}
+<a name="line107"></a>   * @private
+<a name="line108"></a>   */
+<a name="line109"></a>  this.consumeErrors_ = !!opt_consumeErrors;
+<a name="line110"></a>
+<a name="line111"></a>  for (var i = 0; i &lt; list.length; i++) {
+<a name="line112"></a>    var d = list[i];
+<a name="line113"></a>    d.addCallbacks(goog.bind(this.handleCallback_, this, i, true),
+<a name="line114"></a>                   goog.bind(this.handleCallback_, this, i, false));
+<a name="line115"></a>  }
+<a name="line116"></a>
+<a name="line117"></a>  if (list.length == 0 &amp;&amp; !this.fireOnOneCallback_) {
+<a name="line118"></a>    this.callback(this.deferredResults_);
+<a name="line119"></a>  }
+<a name="line120"></a>};
+<a name="line121"></a>goog.inherits(goog.async.DeferredList, goog.async.Deferred);
+<a name="line122"></a>
+<a name="line123"></a>
+<a name="line124"></a>/**
+<a name="line125"></a> * The number of input deferred objects that have fired.
+<a name="line126"></a> * @type {number}
+<a name="line127"></a> * @private
+<a name="line128"></a> */
+<a name="line129"></a>goog.async.DeferredList.prototype.numFinished_ = 0;
+<a name="line130"></a>
+<a name="line131"></a>
+<a name="line132"></a>/**
+<a name="line133"></a> * Registers the result from an input deferred callback or errback. The result
+<a name="line134"></a> * is returned and may be passed to additional handlers in the callback chain.
+<a name="line135"></a> *
+<a name="line136"></a> * @param {number} index The index of the firing deferred object in the input
+<a name="line137"></a> *     list.
+<a name="line138"></a> * @param {boolean} success Whether the result is from a callback or errback.
+<a name="line139"></a> * @param {*} result The result of the callback or errback.
+<a name="line140"></a> * @return {*} The result, to be handled by the next handler in the deferred&#39;s
+<a name="line141"></a> *     callback chain (if any). If consumeErrors is set, an error result is
+<a name="line142"></a> *     replaced with null.
+<a name="line143"></a> * @private
+<a name="line144"></a> */
+<a name="line145"></a>goog.async.DeferredList.prototype.handleCallback_ = function(index,
+<a name="line146"></a>                                                             success,
+<a name="line147"></a>                                                             result) {
+<a name="line148"></a>  this.numFinished_++;
+<a name="line149"></a>  this.deferredResults_[index] = [success, result];
+<a name="line150"></a>
+<a name="line151"></a>  if (!this.hasFired()) {
+<a name="line152"></a>    if (this.fireOnOneCallback_ &amp;&amp; success) {
+<a name="line153"></a>      this.callback([index, result]);
+<a name="line154"></a>    } else if (this.fireOnOneErrback_ &amp;&amp; !success) {
+<a name="line155"></a>      this.errback(result);
+<a name="line156"></a>    } else if (this.numFinished_ == this.list_.length) {
+<a name="line157"></a>      this.callback(this.deferredResults_);
+<a name="line158"></a>    }
+<a name="line159"></a>  }
+<a name="line160"></a>
+<a name="line161"></a>  if (this.consumeErrors_ &amp;&amp; !success) {
+<a name="line162"></a>    result = null;
+<a name="line163"></a>  }
+<a name="line164"></a>
+<a name="line165"></a>  return result;
+<a name="line166"></a>};
+<a name="line167"></a>
+<a name="line168"></a>
+<a name="line169"></a>/** @inheritDoc */
+<a name="line170"></a>goog.async.DeferredList.prototype.errback = function(res) {
+<a name="line171"></a>  goog.async.DeferredList.superClass_.errback.call(this, res);
+<a name="line172"></a>  // On error, cancel any pending requests.
+<a name="line173"></a>  goog.array.forEach(this.list_, function(item) {
+<a name="line174"></a>    item.cancel();
+<a name="line175"></a>  });
+<a name="line176"></a>};
+<a name="line177"></a>
+<a name="line178"></a>
+<a name="line179"></a>/**
+<a name="line180"></a> * Creates a &lt;code&gt;DeferredList&lt;/code&gt; that gathers results from multiple
+<a name="line181"></a> * &lt;code&gt;Deferred&lt;/code&gt; inputs. If all inputs succeed, the callback is fired
+<a name="line182"></a> * with the list of results as a flat array. If any input fails, the errback is
+<a name="line183"></a> * fired with the error.
+<a name="line184"></a> *
+<a name="line185"></a> * @param {!Array.&lt;!goog.async.Deferred&gt;} list The list of deferred objects to
+<a name="line186"></a> *     wait for.
+<a name="line187"></a> * @return {!goog.async.DeferredList} A new deferred list.
+<a name="line188"></a> */
+<a name="line189"></a>goog.async.DeferredList.gatherResults = function(list) {
+<a name="line190"></a>  var d = new goog.async.DeferredList(list, false, true);
+<a name="line191"></a>
+<a name="line192"></a>  d.addCallback(function(results) {
+<a name="line193"></a>    return goog.array.map(results, function(res) {
+<a name="line194"></a>      return res[1];
+<a name="line195"></a>    });
+<a name="line196"></a>  });
+<a name="line197"></a>
+<a name="line198"></a>  return d;
+<a name="line199"></a>};
+</pre>
+
+
+</body>
+</html>

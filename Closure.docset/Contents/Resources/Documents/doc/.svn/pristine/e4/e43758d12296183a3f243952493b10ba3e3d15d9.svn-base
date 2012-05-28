@@ -1,0 +1,283 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>functions.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_functions_functions.js.html">functions.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities for creating functions. Loosely inspired by the
+<a name="line17"></a> * java classes: http://go/functions.java and http://go/predicate.java.
+<a name="line18"></a> *
+<a name="line19"></a> * @author nicksantos@google.com (Nick Santos)
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>
+<a name="line23"></a>goog.provide(&#39;goog.functions&#39;);
+<a name="line24"></a>
+<a name="line25"></a>
+<a name="line26"></a>/**
+<a name="line27"></a> * Creates a function that always returns the same value.
+<a name="line28"></a> * @param {*} retValue The value to return.
+<a name="line29"></a> * @return {!Function} The new function.
+<a name="line30"></a> */
+<a name="line31"></a>goog.functions.constant = function(retValue) {
+<a name="line32"></a>  return function() {
+<a name="line33"></a>    return retValue;
+<a name="line34"></a>  };
+<a name="line35"></a>};
+<a name="line36"></a>
+<a name="line37"></a>
+<a name="line38"></a>/**
+<a name="line39"></a> * Always returns false.
+<a name="line40"></a> * @type {function(...): boolean}
+<a name="line41"></a> */
+<a name="line42"></a>goog.functions.FALSE = goog.functions.constant(false);
+<a name="line43"></a>
+<a name="line44"></a>
+<a name="line45"></a>/**
+<a name="line46"></a> * Always returns true.
+<a name="line47"></a> * @type {function(...): boolean}
+<a name="line48"></a> */
+<a name="line49"></a>goog.functions.TRUE = goog.functions.constant(true);
+<a name="line50"></a>
+<a name="line51"></a>
+<a name="line52"></a>/**
+<a name="line53"></a> * Always returns NULL.
+<a name="line54"></a> * @type {function(...): null}
+<a name="line55"></a> */
+<a name="line56"></a>goog.functions.NULL = goog.functions.constant(null);
+<a name="line57"></a>
+<a name="line58"></a>
+<a name="line59"></a>/**
+<a name="line60"></a> * A simple function that returns the first argument of whatever is passed
+<a name="line61"></a> * into it.
+<a name="line62"></a> * @param {*=} opt_returnValue The single value that will be returned.
+<a name="line63"></a> * @param {...*} var_args Optional trailing arguments. These are ignored.
+<a name="line64"></a> * @return {*} The first argument passed in, or undefined if nothing was passed.
+<a name="line65"></a> */
+<a name="line66"></a>goog.functions.identity = function(opt_returnValue, var_args) {
+<a name="line67"></a>  return opt_returnValue;
+<a name="line68"></a>};
+<a name="line69"></a>
+<a name="line70"></a>
+<a name="line71"></a>/**
+<a name="line72"></a> * Creates a function that always throws an error with the given message.
+<a name="line73"></a> * @param {string} message The error message.
+<a name="line74"></a> * @return {!Function} The error-throwing function.
+<a name="line75"></a> */
+<a name="line76"></a>goog.functions.error = function(message) {
+<a name="line77"></a>  return function() {
+<a name="line78"></a>    throw Error(message);
+<a name="line79"></a>  };
+<a name="line80"></a>};
+<a name="line81"></a>
+<a name="line82"></a>
+<a name="line83"></a>/**
+<a name="line84"></a> * Given a function, create a function that silently discards all additional
+<a name="line85"></a> * arguments.
+<a name="line86"></a> * @param {Function} f The original function.
+<a name="line87"></a> * @return {!Function} A version of f that discards its arguments.
+<a name="line88"></a> */
+<a name="line89"></a>goog.functions.lock = function(f) {
+<a name="line90"></a>  return function() {
+<a name="line91"></a>    return f.call(this);
+<a name="line92"></a>  };
+<a name="line93"></a>};
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * Given a function, create a new function that swallows its return value
+<a name="line98"></a> * and replaces it with a new one.
+<a name="line99"></a> * @param {Function} f A function.
+<a name="line100"></a> * @param {*} retValue A new return value.
+<a name="line101"></a> * @return {!Function} A new function.
+<a name="line102"></a> */
+<a name="line103"></a>goog.functions.withReturnValue = function(f, retValue) {
+<a name="line104"></a>  return goog.functions.sequence(f, goog.functions.constant(retValue));
+<a name="line105"></a>};
+<a name="line106"></a>
+<a name="line107"></a>
+<a name="line108"></a>/**
+<a name="line109"></a> * Creates the composition of the functions passed in.
+<a name="line110"></a> * For example, (goog.functions.compose(f, g))(a) is equivalent to f(g(a)).
+<a name="line111"></a> * @param {...Function} var_args A list of functions.
+<a name="line112"></a> * @return {!Function} The composition of all inputs.
+<a name="line113"></a> */
+<a name="line114"></a>goog.functions.compose = function(var_args) {
+<a name="line115"></a>  var functions = arguments;
+<a name="line116"></a>  var length = functions.length;
+<a name="line117"></a>  return function() {
+<a name="line118"></a>    var result;
+<a name="line119"></a>    if (length) {
+<a name="line120"></a>      result = functions[length - 1].apply(this, arguments);
+<a name="line121"></a>    }
+<a name="line122"></a>
+<a name="line123"></a>    for (var i = length - 2; i &gt;= 0; i--) {
+<a name="line124"></a>      result = functions[i].call(this, result);
+<a name="line125"></a>    }
+<a name="line126"></a>    return result;
+<a name="line127"></a>  };
+<a name="line128"></a>};
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>/**
+<a name="line132"></a> * Creates a function that calls the functions passed in in sequence, and
+<a name="line133"></a> * returns the value of the last function. For example,
+<a name="line134"></a> * (goog.functions.sequence(f, g))(x) is equivalent to f(x),g(x).
+<a name="line135"></a> * @param {...Function} var_args A list of functions.
+<a name="line136"></a> * @return {!Function} A function that calls all inputs in sequence.
+<a name="line137"></a> */
+<a name="line138"></a>goog.functions.sequence = function(var_args) {
+<a name="line139"></a>  var functions = arguments;
+<a name="line140"></a>  var length = functions.length;
+<a name="line141"></a>  return function() {
+<a name="line142"></a>    var result;
+<a name="line143"></a>    for (var i = 0; i &lt; length; i++) {
+<a name="line144"></a>      result = functions[i].apply(this, arguments);
+<a name="line145"></a>    }
+<a name="line146"></a>    return result;
+<a name="line147"></a>  };
+<a name="line148"></a>};
+<a name="line149"></a>
+<a name="line150"></a>
+<a name="line151"></a>/**
+<a name="line152"></a> * Creates a function that returns true if each of its components evaluates
+<a name="line153"></a> * to true. The components are evaluated in order, and the evaluation will be
+<a name="line154"></a> * short-circuited as soon as a function returns false.
+<a name="line155"></a> * For example, (goog.functions.and(f, g))(x) is equivalent to f(x) &amp;&amp; g(x).
+<a name="line156"></a> * @param {...Function} var_args A list of functions.
+<a name="line157"></a> * @return {!Function} A function that ANDs its component functions.
+<a name="line158"></a> */
+<a name="line159"></a>goog.functions.and = function(var_args) {
+<a name="line160"></a>  var functions = arguments;
+<a name="line161"></a>  var length = functions.length;
+<a name="line162"></a>  return function() {
+<a name="line163"></a>    for (var i = 0; i &lt; length; i++) {
+<a name="line164"></a>      if (!functions[i].apply(this, arguments)) {
+<a name="line165"></a>        return false;
+<a name="line166"></a>      }
+<a name="line167"></a>    }
+<a name="line168"></a>    return true;
+<a name="line169"></a>  };
+<a name="line170"></a>};
+<a name="line171"></a>
+<a name="line172"></a>
+<a name="line173"></a>/**
+<a name="line174"></a> * Creates a function that returns true if any of its components evaluates
+<a name="line175"></a> * to true. The components are evaluated in order, and the evaluation will be
+<a name="line176"></a> * short-circuited as soon as a function returns true.
+<a name="line177"></a> * For example, (goog.functions.or(f, g))(x) is equivalent to f(x) || g(x).
+<a name="line178"></a> * @param {...Function} var_args A list of functions.
+<a name="line179"></a> * @return {!Function} A function that ORs its component functions.
+<a name="line180"></a> */
+<a name="line181"></a>goog.functions.or = function(var_args) {
+<a name="line182"></a>  var functions = arguments;
+<a name="line183"></a>  var length = functions.length;
+<a name="line184"></a>  return function() {
+<a name="line185"></a>    for (var i = 0; i &lt; length; i++) {
+<a name="line186"></a>      if (functions[i].apply(this, arguments)) {
+<a name="line187"></a>        return true;
+<a name="line188"></a>      }
+<a name="line189"></a>    }
+<a name="line190"></a>    return false;
+<a name="line191"></a>  };
+<a name="line192"></a>};
+<a name="line193"></a>
+<a name="line194"></a>
+<a name="line195"></a>/**
+<a name="line196"></a> * Creates a function that returns the Boolean opposite of a provided function.
+<a name="line197"></a> * For example, (goog.functions.not(f))(x) is equivalent to !f(x).
+<a name="line198"></a> * @param {!Function} f The original function.
+<a name="line199"></a> * @return {!Function} A function that delegates to f and returns opposite.
+<a name="line200"></a> */
+<a name="line201"></a>goog.functions.not = function(f) {
+<a name="line202"></a>  return function() {
+<a name="line203"></a>    return !f.apply(this, arguments);
+<a name="line204"></a>  };
+<a name="line205"></a>};
+<a name="line206"></a>
+<a name="line207"></a>
+<a name="line208"></a>/**
+<a name="line209"></a> * Generic factory function to construct an object given the constructor
+<a name="line210"></a> * and the arguments. Intended to be bound to create object factories.
+<a name="line211"></a> *
+<a name="line212"></a> * Callers should cast the result to the appropriate type for proper type
+<a name="line213"></a> * checking by the compiler.
+<a name="line214"></a> * @param {!Function} constructor The constructor for the Object.
+<a name="line215"></a> * @param {...*} var_args The arguments to be passed to the constructor.
+<a name="line216"></a> * @return {!Object} A new instance of the class given in {@code constructor}.
+<a name="line217"></a> */
+<a name="line218"></a>goog.functions.create = function(constructor, var_args) {
+<a name="line219"></a>  /** @constructor */
+<a name="line220"></a>  var temp = function() {};
+<a name="line221"></a>  temp.prototype = constructor.prototype;
+<a name="line222"></a>
+<a name="line223"></a>  // obj will have constructor&#39;s prototype in its chain and
+<a name="line224"></a>  // &#39;obj instanceof constructor&#39; will be true.
+<a name="line225"></a>  var obj = new temp();
+<a name="line226"></a>
+<a name="line227"></a>  // obj is initialized by constructor.
+<a name="line228"></a>  // arguments is only array-like so lacks shift(), but can be used with
+<a name="line229"></a>  // the Array prototype function.
+<a name="line230"></a>  constructor.apply(obj, Array.prototype.slice.call(arguments, 1));
+<a name="line231"></a>  return obj;
+<a name="line232"></a>};
+</pre>
+
+
+</body>
+</html>

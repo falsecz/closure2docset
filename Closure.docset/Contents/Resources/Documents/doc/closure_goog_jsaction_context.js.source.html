@@ -1,0 +1,144 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>context.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_jsaction_context.js.html">context.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview The jsaction context object.
+<a name="line17"></a> *
+<a name="line18"></a> * Context is passed to action handlers to provide
+<a name="line19"></a> * them with access to the element the jsaction was found on,
+<a name="line20"></a> * as well as the event object and the action being invoked.
+<a name="line21"></a> *
+<a name="line22"></a> */
+<a name="line23"></a>
+<a name="line24"></a>
+<a name="line25"></a>goog.provide(&#39;goog.jsaction.Context&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>
+<a name="line29"></a>/**
+<a name="line30"></a> * Constructs a Context instance.
+<a name="line31"></a> * @param {string} action The action.
+<a name="line32"></a> * @param {!Element} element The element.
+<a name="line33"></a> * @param {!Event} e The event object.
+<a name="line34"></a> * @param {number} time The time when the event occurred.
+<a name="line35"></a> * @constructor
+<a name="line36"></a> */
+<a name="line37"></a>goog.jsaction.Context = function(action, element, e, time) {
+<a name="line38"></a>  /**
+<a name="line39"></a>   * @type {string}
+<a name="line40"></a>   * @private
+<a name="line41"></a>   */
+<a name="line42"></a>  this.action_ = action;
+<a name="line43"></a>
+<a name="line44"></a>  /**
+<a name="line45"></a>   * @type {!Element}
+<a name="line46"></a>   * @private
+<a name="line47"></a>   */
+<a name="line48"></a>  this.element_ = element;
+<a name="line49"></a>
+<a name="line50"></a>  /**
+<a name="line51"></a>   * @type {!Event}
+<a name="line52"></a>   * @private
+<a name="line53"></a>   */
+<a name="line54"></a>  this.event_ = e;
+<a name="line55"></a>
+<a name="line56"></a>  /**
+<a name="line57"></a>   * @type {number}
+<a name="line58"></a>   * @private
+<a name="line59"></a>   */
+<a name="line60"></a>  this.time_ = time;
+<a name="line61"></a>};
+<a name="line62"></a>
+<a name="line63"></a>
+<a name="line64"></a>/**
+<a name="line65"></a> * @return {string} The action.
+<a name="line66"></a> */
+<a name="line67"></a>goog.jsaction.Context.prototype.getAction = function() {
+<a name="line68"></a>  return this.action_;
+<a name="line69"></a>};
+<a name="line70"></a>
+<a name="line71"></a>
+<a name="line72"></a>/**
+<a name="line73"></a> * @return {!Element} The element.
+<a name="line74"></a> */
+<a name="line75"></a>goog.jsaction.Context.prototype.getElement = function() {
+<a name="line76"></a>  return this.element_;
+<a name="line77"></a>};
+<a name="line78"></a>
+<a name="line79"></a>
+<a name="line80"></a>/**
+<a name="line81"></a> * @return {!Event} The event object.
+<a name="line82"></a> */
+<a name="line83"></a>goog.jsaction.Context.prototype.getEvent = function() {
+<a name="line84"></a>  return this.event_;
+<a name="line85"></a>};
+<a name="line86"></a>
+<a name="line87"></a>
+<a name="line88"></a>/**
+<a name="line89"></a> * @return {number} The time the event occurred.
+<a name="line90"></a> */
+<a name="line91"></a>goog.jsaction.Context.prototype.getTime = function() {
+<a name="line92"></a>  return this.time_;
+<a name="line93"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>path.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_string_path.js.html">path.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Utilities for dealing with POSIX path strings. Based on
+<a name="line17"></a> * Python&#39;s os.path and posixpath.
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.string.path&#39;);
+<a name="line21"></a>
+<a name="line22"></a>goog.require(&#39;goog.array&#39;);
+<a name="line23"></a>goog.require(&#39;goog.string&#39;);
+<a name="line24"></a>
+<a name="line25"></a>
+<a name="line26"></a>/**
+<a name="line27"></a> * Joins one or more path components (e.g. &#39;foo/&#39; and &#39;bar&#39; make &#39;foo/bar&#39;).
+<a name="line28"></a> * An absolute component will discard all previous component.
+<a name="line29"></a> * See http://docs.python.org/library/os.path.html#os.path.join
+<a name="line30"></a> * @param {...string} var_args One of more path components.
+<a name="line31"></a> * @return {string} The path components joined.
+<a name="line32"></a> */
+<a name="line33"></a>goog.string.path.join = function(var_args) {
+<a name="line34"></a>  var path = arguments[0];
+<a name="line35"></a>
+<a name="line36"></a>  for (var i = 1; i &lt; arguments.length; i++) {
+<a name="line37"></a>    var arg = arguments[i];
+<a name="line38"></a>    if (goog.string.startsWith(arg, &#39;/&#39;)) {
+<a name="line39"></a>      path = arg;
+<a name="line40"></a>    } else if (path == &#39;&#39; || goog.string.endsWith(arg, &#39;/&#39;)) {
+<a name="line41"></a>      path += arg;
+<a name="line42"></a>    } else {
+<a name="line43"></a>      path += &#39;/&#39; + arg;
+<a name="line44"></a>    }
+<a name="line45"></a>  }
+<a name="line46"></a>
+<a name="line47"></a>  return path;
+<a name="line48"></a>};
+<a name="line49"></a>
+<a name="line50"></a>
+<a name="line51"></a>/**
+<a name="line52"></a> * Normalizes a pathname by collapsing duplicate separators, parent directory
+<a name="line53"></a> * references (&#39;..&#39;), and current directory references (&#39;.&#39;).
+<a name="line54"></a> * See http://docs.python.org/library/os.path.html#os.path.normpath
+<a name="line55"></a> * @param {string} path One or more path components.
+<a name="line56"></a> * @return {string} The path after normalization.
+<a name="line57"></a> */
+<a name="line58"></a>goog.string.path.normalizePath = function(path) {
+<a name="line59"></a>  if (path == &#39;&#39;) {
+<a name="line60"></a>    return &#39;.&#39;;
+<a name="line61"></a>  }
+<a name="line62"></a>
+<a name="line63"></a>  var initialSlashes = &#39;&#39;;
+<a name="line64"></a>  // POSIX will keep two slashes, but three or more will be collapsed to one.
+<a name="line65"></a>  if (goog.string.startsWith(path, &#39;/&#39;)) {
+<a name="line66"></a>    initialSlashes = &#39;/&#39;;
+<a name="line67"></a>    if (goog.string.startsWith(path, &#39;//&#39;) &amp;&amp;
+<a name="line68"></a>        !goog.string.startsWith(path, &#39;///&#39;)) {
+<a name="line69"></a>      initialSlashes = &#39;//&#39;;
+<a name="line70"></a>    }
+<a name="line71"></a>  }
+<a name="line72"></a>
+<a name="line73"></a>  var parts = path.split(&#39;/&#39;);
+<a name="line74"></a>  var newParts = [];
+<a name="line75"></a>
+<a name="line76"></a>  for (var i = 0; i &lt; parts.length; i++) {
+<a name="line77"></a>    var part = parts[i];
+<a name="line78"></a>
+<a name="line79"></a>    // &#39;&#39; and &#39;.&#39; don&#39;t change the directory, ignore.
+<a name="line80"></a>    if (part == &#39;&#39; || part == &#39;.&#39;) {
+<a name="line81"></a>      continue;
+<a name="line82"></a>    }
+<a name="line83"></a>
+<a name="line84"></a>    // A &#39;..&#39; should pop a directory unless this is not an absolute path and
+<a name="line85"></a>    // we&#39;re at the root, or we&#39;ve travelled upwards relatively in the last
+<a name="line86"></a>    // iteration.
+<a name="line87"></a>    if (part != &#39;..&#39; ||
+<a name="line88"></a>        (!initialSlashes &amp;&amp; !newParts.length) ||
+<a name="line89"></a>        goog.array.peek(newParts) == &#39;..&#39;) {
+<a name="line90"></a>      newParts.push(part);
+<a name="line91"></a>    } else {
+<a name="line92"></a>      newParts.pop();
+<a name="line93"></a>    }
+<a name="line94"></a>  }
+<a name="line95"></a>
+<a name="line96"></a>  var returnPath = initialSlashes + newParts.join(&#39;/&#39;);
+<a name="line97"></a>  return returnPath || &#39;.&#39;;
+<a name="line98"></a>};
+<a name="line99"></a>
+<a name="line100"></a>// TODO(user): Implement other useful functions from os.path
+</pre>
+
+
+</body>
+</html>

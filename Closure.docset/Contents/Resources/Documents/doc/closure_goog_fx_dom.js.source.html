@@ -1,0 +1,661 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>dom.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_fx_dom.js.html">dom.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2005 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Predefined DHTML animations such as slide, resize and fade.
+<a name="line17"></a> *
+<a name="line18"></a> * @see ../demos/effects.html
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.fx.dom&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.fx.dom.BgColorTransform&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.fx.dom.ColorTransform&#39;);
+<a name="line24"></a>goog.provide(&#39;goog.fx.dom.Fade&#39;);
+<a name="line25"></a>goog.provide(&#39;goog.fx.dom.FadeIn&#39;);
+<a name="line26"></a>goog.provide(&#39;goog.fx.dom.FadeInAndShow&#39;);
+<a name="line27"></a>goog.provide(&#39;goog.fx.dom.FadeOut&#39;);
+<a name="line28"></a>goog.provide(&#39;goog.fx.dom.FadeOutAndHide&#39;);
+<a name="line29"></a>goog.provide(&#39;goog.fx.dom.PredefinedEffect&#39;);
+<a name="line30"></a>goog.provide(&#39;goog.fx.dom.Resize&#39;);
+<a name="line31"></a>goog.provide(&#39;goog.fx.dom.ResizeHeight&#39;);
+<a name="line32"></a>goog.provide(&#39;goog.fx.dom.ResizeWidth&#39;);
+<a name="line33"></a>goog.provide(&#39;goog.fx.dom.Scroll&#39;);
+<a name="line34"></a>goog.provide(&#39;goog.fx.dom.Slide&#39;);
+<a name="line35"></a>goog.provide(&#39;goog.fx.dom.SlideFrom&#39;);
+<a name="line36"></a>goog.provide(&#39;goog.fx.dom.Swipe&#39;);
+<a name="line37"></a>
+<a name="line38"></a>goog.require(&#39;goog.color&#39;);
+<a name="line39"></a>goog.require(&#39;goog.events&#39;);
+<a name="line40"></a>goog.require(&#39;goog.fx.Animation&#39;);
+<a name="line41"></a>goog.require(&#39;goog.fx.Transition.EventType&#39;);
+<a name="line42"></a>goog.require(&#39;goog.style&#39;);
+<a name="line43"></a>
+<a name="line44"></a>
+<a name="line45"></a>
+<a name="line46"></a>/**
+<a name="line47"></a> * Abstract class that provides reusable functionality for predefined animations
+<a name="line48"></a> * that manipulate a single DOM element
+<a name="line49"></a> *
+<a name="line50"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line51"></a> * @param {Array.&lt;number&gt;} start Array for start coordinates.
+<a name="line52"></a> * @param {Array.&lt;number&gt;} end Array for end coordinates.
+<a name="line53"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line54"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line55"></a> * @extends {goog.fx.Animation}
+<a name="line56"></a> * @constructor
+<a name="line57"></a> */
+<a name="line58"></a>goog.fx.dom.PredefinedEffect = function(element, start, end, time, opt_acc) {
+<a name="line59"></a>  goog.fx.Animation.call(this, start, end, time, opt_acc);
+<a name="line60"></a>
+<a name="line61"></a>  /**
+<a name="line62"></a>   * DOM Node that will be used in the animation
+<a name="line63"></a>   * @type {Element}
+<a name="line64"></a>   */
+<a name="line65"></a>  this.element = element;
+<a name="line66"></a>};
+<a name="line67"></a>goog.inherits(goog.fx.dom.PredefinedEffect, goog.fx.Animation);
+<a name="line68"></a>
+<a name="line69"></a>
+<a name="line70"></a>/**
+<a name="line71"></a> * Called to update the style of the element.
+<a name="line72"></a> * @protected
+<a name="line73"></a> */
+<a name="line74"></a>goog.fx.dom.PredefinedEffect.prototype.updateStyle = goog.nullFunction;
+<a name="line75"></a>
+<a name="line76"></a>
+<a name="line77"></a>/** @override */
+<a name="line78"></a>goog.fx.dom.PredefinedEffect.prototype.onAnimate = function() {
+<a name="line79"></a>  this.updateStyle();
+<a name="line80"></a>  goog.fx.dom.PredefinedEffect.superClass_.onAnimate.call(this);
+<a name="line81"></a>};
+<a name="line82"></a>
+<a name="line83"></a>
+<a name="line84"></a>/** @override */
+<a name="line85"></a>goog.fx.dom.PredefinedEffect.prototype.onEnd = function() {
+<a name="line86"></a>  this.updateStyle();
+<a name="line87"></a>  goog.fx.dom.PredefinedEffect.superClass_.onEnd.call(this);
+<a name="line88"></a>};
+<a name="line89"></a>
+<a name="line90"></a>
+<a name="line91"></a>/** @override */
+<a name="line92"></a>goog.fx.dom.PredefinedEffect.prototype.onBegin = function() {
+<a name="line93"></a>  this.updateStyle();
+<a name="line94"></a>  goog.fx.dom.PredefinedEffect.superClass_.onBegin.call(this);
+<a name="line95"></a>};
+<a name="line96"></a>
+<a name="line97"></a>
+<a name="line98"></a>
+<a name="line99"></a>/**
+<a name="line100"></a> * Creates an animation object that will slide an element from A to B.  (This
+<a name="line101"></a> * in effect automatically sets up the onanimate event for an Animation object)
+<a name="line102"></a> *
+<a name="line103"></a> * Start and End should be 2 dimensional arrays
+<a name="line104"></a> *
+<a name="line105"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line106"></a> * @param {Array.&lt;number&gt;} start 2D array for start coordinates (X, Y).
+<a name="line107"></a> * @param {Array.&lt;number&gt;} end 2D array for end coordinates (X, Y).
+<a name="line108"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line109"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line110"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line111"></a> * @constructor
+<a name="line112"></a> */
+<a name="line113"></a>goog.fx.dom.Slide = function(element, start, end, time, opt_acc) {
+<a name="line114"></a>  if (start.length != 2 || end.length != 2) {
+<a name="line115"></a>    throw Error(&#39;Start and end points must be 2D&#39;);
+<a name="line116"></a>  }
+<a name="line117"></a>  goog.fx.dom.PredefinedEffect.apply(this, arguments);
+<a name="line118"></a>};
+<a name="line119"></a>goog.inherits(goog.fx.dom.Slide, goog.fx.dom.PredefinedEffect);
+<a name="line120"></a>
+<a name="line121"></a>
+<a name="line122"></a>/** @override */
+<a name="line123"></a>goog.fx.dom.Slide.prototype.updateStyle = function() {
+<a name="line124"></a>  this.element.style.left = Math.round(this.coords[0]) + &#39;px&#39;;
+<a name="line125"></a>  this.element.style.top = Math.round(this.coords[1]) + &#39;px&#39;;
+<a name="line126"></a>};
+<a name="line127"></a>
+<a name="line128"></a>
+<a name="line129"></a>
+<a name="line130"></a>/**
+<a name="line131"></a> * Slides an element from its current position.
+<a name="line132"></a> *
+<a name="line133"></a> * @param {Element} element DOM node to be used in the animation.
+<a name="line134"></a> * @param {Array.&lt;number&gt;} end 2D array for end coordinates (X, Y).
+<a name="line135"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line136"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line137"></a> * @extends {goog.fx.dom.Slide}
+<a name="line138"></a> * @constructor
+<a name="line139"></a> */
+<a name="line140"></a>goog.fx.dom.SlideFrom = function(element, end, time, opt_acc) {
+<a name="line141"></a>  var start = [element.offsetLeft, element.offsetTop];
+<a name="line142"></a>  goog.fx.dom.Slide.call(this, element, start, end, time, opt_acc);
+<a name="line143"></a>};
+<a name="line144"></a>goog.inherits(goog.fx.dom.SlideFrom, goog.fx.dom.Slide);
+<a name="line145"></a>
+<a name="line146"></a>
+<a name="line147"></a>/** @override */
+<a name="line148"></a>goog.fx.dom.SlideFrom.prototype.onBegin = function() {
+<a name="line149"></a>  this.startPoint = [this.element.offsetLeft, this.element.offsetTop];
+<a name="line150"></a>  goog.fx.dom.SlideFrom.superClass_.onBegin.call(this);
+<a name="line151"></a>};
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>
+<a name="line155"></a>/**
+<a name="line156"></a> * Creates an animation object that will slide an element into its final size.
+<a name="line157"></a> * Requires that the element is absolutely positioned.
+<a name="line158"></a> *
+<a name="line159"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line160"></a> * @param {Array.&lt;number&gt;} start 2D array for start size (W, H).
+<a name="line161"></a> * @param {Array.&lt;number&gt;} end 2D array for end size (W, H).
+<a name="line162"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line163"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line164"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line165"></a> * @constructor
+<a name="line166"></a> */
+<a name="line167"></a>goog.fx.dom.Swipe = function(element, start, end, time, opt_acc) {
+<a name="line168"></a>  if (start.length != 2 || end.length != 2) {
+<a name="line169"></a>    throw Error(&#39;Start and end points must be 2D&#39;);
+<a name="line170"></a>  }
+<a name="line171"></a>  goog.fx.dom.PredefinedEffect.apply(this, arguments);
+<a name="line172"></a>
+<a name="line173"></a>  /*
+<a name="line174"></a>   * Maximum width for element.
+<a name="line175"></a>   * @type {number}
+<a name="line176"></a>   * @private
+<a name="line177"></a>   */
+<a name="line178"></a>  this.maxWidth_ = Math.max(this.endPoint[0], this.startPoint[0]);
+<a name="line179"></a>
+<a name="line180"></a>  /*
+<a name="line181"></a>   * Maximum height for element.
+<a name="line182"></a>   * @type {number}
+<a name="line183"></a>   * @private
+<a name="line184"></a>   */
+<a name="line185"></a>  this.maxHeight_ = Math.max(this.endPoint[1], this.startPoint[1]);
+<a name="line186"></a>};
+<a name="line187"></a>goog.inherits(goog.fx.dom.Swipe, goog.fx.dom.PredefinedEffect);
+<a name="line188"></a>
+<a name="line189"></a>
+<a name="line190"></a>/**
+<a name="line191"></a> * Animation event handler that will resize an element by setting its width,
+<a name="line192"></a> * height and clipping.
+<a name="line193"></a> * @protected
+<a name="line194"></a> * @override
+<a name="line195"></a> */
+<a name="line196"></a>goog.fx.dom.Swipe.prototype.updateStyle = function() {
+<a name="line197"></a>  var x = this.coords[0];
+<a name="line198"></a>  var y = this.coords[1];
+<a name="line199"></a>  this.clip_(Math.round(x), Math.round(y), this.maxWidth_, this.maxHeight_);
+<a name="line200"></a>  this.element.style.width = Math.round(x) + &#39;px&#39;;
+<a name="line201"></a>  this.element.style.marginLeft = Math.round(x) - this.maxWidth_ + &#39;px&#39;;
+<a name="line202"></a>  this.element.style.marginTop = Math.round(y) - this.maxHeight_ + &#39;px&#39;;
+<a name="line203"></a>};
+<a name="line204"></a>
+<a name="line205"></a>
+<a name="line206"></a>/**
+<a name="line207"></a> * Helper function for setting element clipping.
+<a name="line208"></a> * @param {number} x Current element width.
+<a name="line209"></a> * @param {number} y Current element height.
+<a name="line210"></a> * @param {number} w Maximum element width.
+<a name="line211"></a> * @param {number} h Maximum element height.
+<a name="line212"></a> * @private
+<a name="line213"></a> */
+<a name="line214"></a>goog.fx.dom.Swipe.prototype.clip_ = function(x, y, w, h) {
+<a name="line215"></a>  this.element.style.clip =
+<a name="line216"></a>      &#39;rect(&#39; + (h - y) + &#39;px &#39; + w + &#39;px &#39; + h + &#39;px &#39; + (w - x) + &#39;px)&#39;;
+<a name="line217"></a>};
+<a name="line218"></a>
+<a name="line219"></a>
+<a name="line220"></a>
+<a name="line221"></a>/**
+<a name="line222"></a> * Creates an animation object that will scroll an element from A to B.
+<a name="line223"></a> *
+<a name="line224"></a> * Start and End should be 2 dimensional arrays
+<a name="line225"></a> *
+<a name="line226"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line227"></a> * @param {Array.&lt;number&gt;} start 2D array for start scroll left and top.
+<a name="line228"></a> * @param {Array.&lt;number&gt;} end 2D array for end scroll left and top.
+<a name="line229"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line230"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line231"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line232"></a> * @constructor
+<a name="line233"></a> */
+<a name="line234"></a>goog.fx.dom.Scroll = function(element, start, end, time, opt_acc) {
+<a name="line235"></a>  if (start.length != 2 || end.length != 2) {
+<a name="line236"></a>    throw Error(&#39;Start and end points must be 2D&#39;);
+<a name="line237"></a>  }
+<a name="line238"></a>  goog.fx.dom.PredefinedEffect.apply(this, arguments);
+<a name="line239"></a>};
+<a name="line240"></a>goog.inherits(goog.fx.dom.Scroll, goog.fx.dom.PredefinedEffect);
+<a name="line241"></a>
+<a name="line242"></a>
+<a name="line243"></a>/**
+<a name="line244"></a> * Animation event handler that will set the scroll posiiton of an element
+<a name="line245"></a> * @protected
+<a name="line246"></a> * @override
+<a name="line247"></a> */
+<a name="line248"></a>goog.fx.dom.Scroll.prototype.updateStyle = function() {
+<a name="line249"></a>  this.element.scrollLeft = Math.round(this.coords[0]);
+<a name="line250"></a>  this.element.scrollTop = Math.round(this.coords[1]);
+<a name="line251"></a>};
+<a name="line252"></a>
+<a name="line253"></a>
+<a name="line254"></a>
+<a name="line255"></a>/**
+<a name="line256"></a> * Creates an animation object that will resize an element between two widths
+<a name="line257"></a> * and heights.
+<a name="line258"></a> *
+<a name="line259"></a> * Start and End should be 2 dimensional arrays
+<a name="line260"></a> *
+<a name="line261"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line262"></a> * @param {Array.&lt;number&gt;} start 2D array for start width and height.
+<a name="line263"></a> * @param {Array.&lt;number&gt;} end 2D array for end width and height.
+<a name="line264"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line265"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line266"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line267"></a> * @constructor
+<a name="line268"></a> */
+<a name="line269"></a>goog.fx.dom.Resize = function(element, start, end, time, opt_acc) {
+<a name="line270"></a>  if (start.length != 2 || end.length != 2) {
+<a name="line271"></a>    throw Error(&#39;Start and end points must be 2D&#39;);
+<a name="line272"></a>  }
+<a name="line273"></a>  goog.fx.dom.PredefinedEffect.apply(this, arguments);
+<a name="line274"></a>};
+<a name="line275"></a>goog.inherits(goog.fx.dom.Resize, goog.fx.dom.PredefinedEffect);
+<a name="line276"></a>
+<a name="line277"></a>
+<a name="line278"></a>/**
+<a name="line279"></a> * Animation event handler that will resize an element by setting its width and
+<a name="line280"></a> * height.
+<a name="line281"></a> * @protected
+<a name="line282"></a> * @override
+<a name="line283"></a> */
+<a name="line284"></a>goog.fx.dom.Resize.prototype.updateStyle = function() {
+<a name="line285"></a>  this.element.style.width = Math.round(this.coords[0]) + &#39;px&#39;;
+<a name="line286"></a>  this.element.style.height = Math.round(this.coords[1]) + &#39;px&#39;;
+<a name="line287"></a>};
+<a name="line288"></a>
+<a name="line289"></a>
+<a name="line290"></a>
+<a name="line291"></a>/**
+<a name="line292"></a> * Creates an animation object that will resize an element between two widths
+<a name="line293"></a> *
+<a name="line294"></a> * Start and End should be numbers
+<a name="line295"></a> *
+<a name="line296"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line297"></a> * @param {number} start Start width.
+<a name="line298"></a> * @param {number} end End width.
+<a name="line299"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line300"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line301"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line302"></a> * @constructor
+<a name="line303"></a> */
+<a name="line304"></a>goog.fx.dom.ResizeWidth = function(element, start, end, time, opt_acc) {
+<a name="line305"></a>  goog.fx.dom.PredefinedEffect.call(this, element, [start],
+<a name="line306"></a>                                    [end], time, opt_acc);
+<a name="line307"></a>};
+<a name="line308"></a>goog.inherits(goog.fx.dom.ResizeWidth, goog.fx.dom.PredefinedEffect);
+<a name="line309"></a>
+<a name="line310"></a>
+<a name="line311"></a>/**
+<a name="line312"></a> * Animation event handler that will resize an element by setting its width.
+<a name="line313"></a> * @protected
+<a name="line314"></a> * @override
+<a name="line315"></a> */
+<a name="line316"></a>goog.fx.dom.ResizeWidth.prototype.updateStyle = function() {
+<a name="line317"></a>  this.element.style.width = Math.round(this.coords[0]) + &#39;px&#39;;
+<a name="line318"></a>};
+<a name="line319"></a>
+<a name="line320"></a>
+<a name="line321"></a>
+<a name="line322"></a>/**
+<a name="line323"></a> * Creates an animation object that will resize an element between two heights
+<a name="line324"></a> *
+<a name="line325"></a> * Start and End should be numbers
+<a name="line326"></a> *
+<a name="line327"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line328"></a> * @param {number} start Start height.
+<a name="line329"></a> * @param {number} end End height.
+<a name="line330"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line331"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line332"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line333"></a> * @constructor
+<a name="line334"></a> */
+<a name="line335"></a>goog.fx.dom.ResizeHeight = function(element, start, end, time, opt_acc) {
+<a name="line336"></a>  goog.fx.dom.PredefinedEffect.call(this, element, [start],
+<a name="line337"></a>                                    [end], time, opt_acc);
+<a name="line338"></a>};
+<a name="line339"></a>goog.inherits(goog.fx.dom.ResizeHeight, goog.fx.dom.PredefinedEffect);
+<a name="line340"></a>
+<a name="line341"></a>
+<a name="line342"></a>/**
+<a name="line343"></a> * Animation event handler that will resize an element by setting its height.
+<a name="line344"></a> * @protected
+<a name="line345"></a> * @override
+<a name="line346"></a> */
+<a name="line347"></a>goog.fx.dom.ResizeHeight.prototype.updateStyle = function() {
+<a name="line348"></a>  this.element.style.height = Math.round(this.coords[0]) + &#39;px&#39;;
+<a name="line349"></a>};
+<a name="line350"></a>
+<a name="line351"></a>
+<a name="line352"></a>
+<a name="line353"></a>/**
+<a name="line354"></a> * Creates an animation object that fades the opacity of an element between two
+<a name="line355"></a> * limits.
+<a name="line356"></a> *
+<a name="line357"></a> * Start and End should be floats between 0 and 1
+<a name="line358"></a> *
+<a name="line359"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line360"></a> * @param {Array.&lt;number&gt;|number} start 1D Array or Number with start opacity.
+<a name="line361"></a> * @param {Array.&lt;number&gt;|number} end 1D Array or Number for end opacity.
+<a name="line362"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line363"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line364"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line365"></a> * @constructor
+<a name="line366"></a> */
+<a name="line367"></a>goog.fx.dom.Fade = function(element, start, end, time, opt_acc) {
+<a name="line368"></a>  if (goog.isNumber(start)) start = [start];
+<a name="line369"></a>  if (goog.isNumber(end)) end = [end];
+<a name="line370"></a>
+<a name="line371"></a>  goog.fx.dom.PredefinedEffect.call(this, element, start, end, time, opt_acc);
+<a name="line372"></a>
+<a name="line373"></a>  if (start.length != 1 || end.length != 1) {
+<a name="line374"></a>    throw Error(&#39;Start and end points must be 1D&#39;);
+<a name="line375"></a>  }
+<a name="line376"></a>};
+<a name="line377"></a>goog.inherits(goog.fx.dom.Fade, goog.fx.dom.PredefinedEffect);
+<a name="line378"></a>
+<a name="line379"></a>
+<a name="line380"></a>/**
+<a name="line381"></a> * Animation event handler that will set the opacity of an element.
+<a name="line382"></a> * @protected
+<a name="line383"></a> * @override
+<a name="line384"></a> */
+<a name="line385"></a>goog.fx.dom.Fade.prototype.updateStyle = function() {
+<a name="line386"></a>  goog.style.setOpacity(this.element, this.coords[0]);
+<a name="line387"></a>};
+<a name="line388"></a>
+<a name="line389"></a>
+<a name="line390"></a>/**
+<a name="line391"></a> * Animation event handler that will show the element.
+<a name="line392"></a> */
+<a name="line393"></a>goog.fx.dom.Fade.prototype.show = function() {
+<a name="line394"></a>  this.element.style.display = &#39;&#39;;
+<a name="line395"></a>};
+<a name="line396"></a>
+<a name="line397"></a>
+<a name="line398"></a>/**
+<a name="line399"></a> * Animation event handler that will hide the element
+<a name="line400"></a> */
+<a name="line401"></a>goog.fx.dom.Fade.prototype.hide = function() {
+<a name="line402"></a>  this.element.style.display = &#39;none&#39;;
+<a name="line403"></a>};
+<a name="line404"></a>
+<a name="line405"></a>
+<a name="line406"></a>
+<a name="line407"></a>/**
+<a name="line408"></a> * Fades an element out from full opacity to completely transparent.
+<a name="line409"></a> *
+<a name="line410"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line411"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line412"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line413"></a> * @extends {goog.fx.dom.Fade}
+<a name="line414"></a> * @constructor
+<a name="line415"></a> */
+<a name="line416"></a>goog.fx.dom.FadeOut = function(element, time, opt_acc) {
+<a name="line417"></a>  goog.fx.dom.Fade.call(this, element, 1, 0, time, opt_acc);
+<a name="line418"></a>};
+<a name="line419"></a>goog.inherits(goog.fx.dom.FadeOut, goog.fx.dom.Fade);
+<a name="line420"></a>
+<a name="line421"></a>
+<a name="line422"></a>
+<a name="line423"></a>/**
+<a name="line424"></a> * Fades an element in from completely transparent to fully opacity.
+<a name="line425"></a> *
+<a name="line426"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line427"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line428"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line429"></a> * @extends {goog.fx.dom.Fade}
+<a name="line430"></a> * @constructor
+<a name="line431"></a> */
+<a name="line432"></a>goog.fx.dom.FadeIn = function(element, time, opt_acc) {
+<a name="line433"></a>  goog.fx.dom.Fade.call(this, element, 0, 1, time, opt_acc);
+<a name="line434"></a>};
+<a name="line435"></a>goog.inherits(goog.fx.dom.FadeIn, goog.fx.dom.Fade);
+<a name="line436"></a>
+<a name="line437"></a>
+<a name="line438"></a>
+<a name="line439"></a>/**
+<a name="line440"></a> * Fades an element out from full opacity to completely transparent and then
+<a name="line441"></a> * sets the display to &#39;none&#39;
+<a name="line442"></a> *
+<a name="line443"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line444"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line445"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line446"></a> * @extends {goog.fx.dom.Fade}
+<a name="line447"></a> * @constructor
+<a name="line448"></a> */
+<a name="line449"></a>goog.fx.dom.FadeOutAndHide = function(element, time, opt_acc) {
+<a name="line450"></a>  goog.fx.dom.Fade.call(this, element, 1, 0, time, opt_acc);
+<a name="line451"></a>};
+<a name="line452"></a>goog.inherits(goog.fx.dom.FadeOutAndHide, goog.fx.dom.Fade);
+<a name="line453"></a>
+<a name="line454"></a>
+<a name="line455"></a>/** @override */
+<a name="line456"></a>goog.fx.dom.FadeOutAndHide.prototype.onBegin = function() {
+<a name="line457"></a>  this.show();
+<a name="line458"></a>  goog.fx.dom.FadeOutAndHide.superClass_.onBegin.call(this);
+<a name="line459"></a>};
+<a name="line460"></a>
+<a name="line461"></a>
+<a name="line462"></a>/** @override */
+<a name="line463"></a>goog.fx.dom.FadeOutAndHide.prototype.onEnd = function() {
+<a name="line464"></a>  this.hide();
+<a name="line465"></a>  goog.fx.dom.FadeOutAndHide.superClass_.onEnd.call(this);
+<a name="line466"></a>};
+<a name="line467"></a>
+<a name="line468"></a>
+<a name="line469"></a>
+<a name="line470"></a>/**
+<a name="line471"></a> * Sets an element&#39;s display to be visible and then fades an element in from
+<a name="line472"></a> * completely transparent to fully opacity
+<a name="line473"></a> *
+<a name="line474"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line475"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line476"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line477"></a> * @extends {goog.fx.dom.Fade}
+<a name="line478"></a> * @constructor
+<a name="line479"></a> */
+<a name="line480"></a>goog.fx.dom.FadeInAndShow = function(element, time, opt_acc) {
+<a name="line481"></a>  goog.fx.dom.Fade.call(this, element, 0, 1, time, opt_acc);
+<a name="line482"></a>};
+<a name="line483"></a>goog.inherits(goog.fx.dom.FadeInAndShow, goog.fx.dom.Fade);
+<a name="line484"></a>
+<a name="line485"></a>
+<a name="line486"></a>/** @override */
+<a name="line487"></a>goog.fx.dom.FadeInAndShow.prototype.onBegin = function() {
+<a name="line488"></a>  this.show();
+<a name="line489"></a>  goog.fx.dom.FadeInAndShow.superClass_.onBegin.call(this);
+<a name="line490"></a>};
+<a name="line491"></a>
+<a name="line492"></a>
+<a name="line493"></a>
+<a name="line494"></a>/**
+<a name="line495"></a> * Provides a transformation of an elements background-color.
+<a name="line496"></a> *
+<a name="line497"></a> * Start and End should be 3D arrays representing R,G,B
+<a name="line498"></a> *
+<a name="line499"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line500"></a> * @param {Array.&lt;number&gt;} start 3D Array for RGB of start color.
+<a name="line501"></a> * @param {Array.&lt;number&gt;} end 3D Array for RGB of end color.
+<a name="line502"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line503"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line504"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line505"></a> * @constructor
+<a name="line506"></a> */
+<a name="line507"></a>goog.fx.dom.BgColorTransform = function(element, start, end, time, opt_acc) {
+<a name="line508"></a>  if (start.length != 3 || end.length != 3) {
+<a name="line509"></a>    throw Error(&#39;Start and end points must be 3D&#39;);
+<a name="line510"></a>  }
+<a name="line511"></a>  goog.fx.dom.PredefinedEffect.apply(this, arguments);
+<a name="line512"></a>};
+<a name="line513"></a>goog.inherits(goog.fx.dom.BgColorTransform, goog.fx.dom.PredefinedEffect);
+<a name="line514"></a>
+<a name="line515"></a>
+<a name="line516"></a>/**
+<a name="line517"></a> * Animation event handler that will set the background-color of an element
+<a name="line518"></a> */
+<a name="line519"></a>goog.fx.dom.BgColorTransform.prototype.setColor = function() {
+<a name="line520"></a>  var coordsAsInts = [];
+<a name="line521"></a>  for (var i = 0; i &lt; this.coords.length; i++) {
+<a name="line522"></a>    coordsAsInts[i] = Math.round(this.coords[i]);
+<a name="line523"></a>  }
+<a name="line524"></a>  var color = &#39;rgb(&#39; + coordsAsInts.join(&#39;,&#39;) + &#39;)&#39;;
+<a name="line525"></a>  this.element.style.backgroundColor = color;
+<a name="line526"></a>};
+<a name="line527"></a>
+<a name="line528"></a>
+<a name="line529"></a>/** @override */
+<a name="line530"></a>goog.fx.dom.BgColorTransform.prototype.updateStyle = function() {
+<a name="line531"></a>  this.setColor();
+<a name="line532"></a>};
+<a name="line533"></a>
+<a name="line534"></a>
+<a name="line535"></a>/**
+<a name="line536"></a> * Fade elements background color from start color to the element&#39;s current
+<a name="line537"></a> * background color.
+<a name="line538"></a> *
+<a name="line539"></a> * Start should be a 3D array representing R,G,B
+<a name="line540"></a> *
+<a name="line541"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line542"></a> * @param {Array.&lt;number&gt;} start 3D Array for RGB of start color.
+<a name="line543"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line544"></a> * @param {goog.events.EventHandler=} opt_eventHandler Optional event handler
+<a name="line545"></a> *     to use when listening for events.
+<a name="line546"></a> */
+<a name="line547"></a>goog.fx.dom.bgColorFadeIn = function(element, start, time, opt_eventHandler) {
+<a name="line548"></a>  var initialBgColor = element.style.backgroundColor || &#39;&#39;;
+<a name="line549"></a>  var computedBgColor = goog.style.getBackgroundColor(element);
+<a name="line550"></a>  var end;
+<a name="line551"></a>
+<a name="line552"></a>  if (computedBgColor &amp;&amp; computedBgColor != &#39;transparent&#39; &amp;&amp;
+<a name="line553"></a>      computedBgColor != &#39;rgba(0, 0, 0, 0)&#39;) {
+<a name="line554"></a>    end = goog.color.hexToRgb(goog.color.parse(computedBgColor).hex);
+<a name="line555"></a>  } else {
+<a name="line556"></a>    end = [255, 255, 255];
+<a name="line557"></a>  }
+<a name="line558"></a>
+<a name="line559"></a>  var anim = new goog.fx.dom.BgColorTransform(element, start, end, time);
+<a name="line560"></a>
+<a name="line561"></a>  function setBgColor() {
+<a name="line562"></a>    element.style.backgroundColor = initialBgColor;
+<a name="line563"></a>  }
+<a name="line564"></a>
+<a name="line565"></a>  if (opt_eventHandler) {
+<a name="line566"></a>    opt_eventHandler.listen(
+<a name="line567"></a>        anim, goog.fx.Transition.EventType.END, setBgColor);
+<a name="line568"></a>  } else {
+<a name="line569"></a>    goog.events.listen(
+<a name="line570"></a>        anim, goog.fx.Transition.EventType.END, setBgColor);
+<a name="line571"></a>  }
+<a name="line572"></a>
+<a name="line573"></a>  anim.play();
+<a name="line574"></a>};
+<a name="line575"></a>
+<a name="line576"></a>
+<a name="line577"></a>
+<a name="line578"></a>/**
+<a name="line579"></a> * Provides a transformation of an elements color.
+<a name="line580"></a> *
+<a name="line581"></a> * @param {Element} element Dom Node to be used in the animation.
+<a name="line582"></a> * @param {Array.&lt;number&gt;} start 3D Array representing R,G,B.
+<a name="line583"></a> * @param {Array.&lt;number&gt;} end 3D Array representing R,G,B.
+<a name="line584"></a> * @param {number} time Length of animation in milliseconds.
+<a name="line585"></a> * @param {Function=} opt_acc Acceleration function, returns 0-1 for inputs 0-1.
+<a name="line586"></a> * @constructor
+<a name="line587"></a> * @extends {goog.fx.dom.PredefinedEffect}
+<a name="line588"></a> */
+<a name="line589"></a>goog.fx.dom.ColorTransform = function(element, start, end, time, opt_acc) {
+<a name="line590"></a>  if (start.length != 3 || end.length != 3) {
+<a name="line591"></a>    throw Error(&#39;Start and end points must be 3D&#39;);
+<a name="line592"></a>  }
+<a name="line593"></a>  goog.fx.dom.PredefinedEffect.apply(this, arguments);
+<a name="line594"></a>};
+<a name="line595"></a>goog.inherits(goog.fx.dom.ColorTransform, goog.fx.dom.PredefinedEffect);
+<a name="line596"></a>
+<a name="line597"></a>
+<a name="line598"></a>/**
+<a name="line599"></a> * Animation event handler that will set the color of an element.
+<a name="line600"></a> * @protected
+<a name="line601"></a> * @override
+<a name="line602"></a> */
+<a name="line603"></a>goog.fx.dom.ColorTransform.prototype.updateStyle = function() {
+<a name="line604"></a>  var coordsAsInts = [];
+<a name="line605"></a>  for (var i = 0; i &lt; this.coords.length; i++) {
+<a name="line606"></a>    coordsAsInts[i] = Math.round(this.coords[i]);
+<a name="line607"></a>  }
+<a name="line608"></a>  var color = &#39;rgb(&#39; + coordsAsInts.join(&#39;,&#39;) + &#39;)&#39;;
+<a name="line609"></a>  this.element.style.color = color;
+<a name="line610"></a>};
+</pre>
+
+
+</body>
+</html>

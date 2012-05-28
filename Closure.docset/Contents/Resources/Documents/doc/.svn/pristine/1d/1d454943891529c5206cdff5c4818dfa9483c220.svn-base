@@ -1,0 +1,1337 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>inputhandler.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_autocomplete_inputhandler.js.html">inputhandler.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2006 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Class for managing the interactions between an
+<a name="line17"></a> * auto-complete object and a text-input or textarea.
+<a name="line18"></a> *
+<a name="line19"></a> * IME note:
+<a name="line20"></a> *
+<a name="line21"></a> * We used to suspend autocomplete while there are IME preedit characters, but
+<a name="line22"></a> * now for parity with Search we do not. We still detect the beginning and end
+<a name="line23"></a> * of IME entry because we need to listen to more events while an IME commit is
+<a name="line24"></a> * happening, but we update continuously as the user types.
+<a name="line25"></a> *
+<a name="line26"></a> * IMEs vary across operating systems, browsers, and even input languages. This
+<a name="line27"></a> * class tries to handle IME for:
+<a name="line28"></a> * - Windows x {FF3, IE7, Chrome} x MS IME 2002 (Japanese)
+<a name="line29"></a> * - Mac     x {FF3, Safari3}     x Kotoeri (Japanese)
+<a name="line30"></a> * - Linux   x {FF3}              x UIM + Anthy (Japanese)
+<a name="line31"></a> *
+<a name="line32"></a> * TODO(user): We cannot handle {Mac, Linux} x FF3 correctly.
+<a name="line33"></a> * TODO(user): We need to support Windows x Google IME.
+<a name="line34"></a> *
+<a name="line35"></a> * This class was tested with hiragana input. The event sequence when inputting
+<a name="line36"></a> * &#39;ai&lt;enter&gt;&#39; with IME on (which commits two characters) is as follows:
+<a name="line37"></a> *
+<a name="line38"></a> * Notation: [key down code, key press, key up code]
+<a name="line39"></a> *           key code or +: event fired
+<a name="line40"></a> *           -: event not fired
+<a name="line41"></a> *
+<a name="line42"></a> * - Win/FF3: [WIN_IME, +, A], [-, -, ENTER]
+<a name="line43"></a> *            Note: No events are fired for &#39;i&#39;.
+<a name="line44"></a> *
+<a name="line45"></a> * - Win/IE7: [WIN_IME, -, A], [WIN_IME, -, I], [WIN_IME, -, ENTER]
+<a name="line46"></a> *
+<a name="line47"></a> * - Win/Chrome: Same as Win/IE7
+<a name="line48"></a> *
+<a name="line49"></a> * - Mac/FF3: [A, -, A], [I, -, I], [ENTER, -, ENTER]
+<a name="line50"></a> *
+<a name="line51"></a> * - Mac/Safari3: Same as Win/IE7
+<a name="line52"></a> *
+<a name="line53"></a> * - Linux/FF3: No events are generated.
+<a name="line54"></a> *
+<a name="line55"></a> * With IME off,
+<a name="line56"></a> *
+<a name="line57"></a> * - ALL: [A, +, A], [I, +, I], [ENTER, +, ENTER]
+<a name="line58"></a> *        Note: Key code of key press event varies across configuration.
+<a name="line59"></a> *
+<a name="line60"></a> * With Microsoft Pinyin IME 3.0 (Simplified Chinese),
+<a name="line61"></a> *
+<a name="line62"></a> * - Win/IE7: Same as Win/IE7 with MS IME 2002 (Japanese)
+<a name="line63"></a> *
+<a name="line64"></a> *   The issue with this IME is that the key sequence that ends preedit is not
+<a name="line65"></a> *   a single ENTER key up.
+<a name="line66"></a> *   - ENTER key up following either ENTER or SPACE ends preedit.
+<a name="line67"></a> *   - SPACE key up following even number of LEFT, RIGHT, or SPACE (any
+<a name="line68"></a> *     combination) ends preedit.
+<a name="line69"></a> *   TODO(user): We only support SPACE-then-ENTER sequence.
+<a name="line70"></a> *   TODO(mpd): With the change to autocomplete during IME, this might not be an
+<a name="line71"></a> *   issue. Remove this comment once tested.
+<a name="line72"></a> *
+<a name="line73"></a> * With Microsoft Korean IME 2002,
+<a name="line74"></a> *
+<a name="line75"></a> * - Win/IE7: Same as Win/IE7 with MS IME 2002 (Japanese), but there is no
+<a name="line76"></a> *   sequence that ends the preedit.
+<a name="line77"></a> *
+<a name="line78"></a> * The following is the algorithm we use to detect IME preedit:
+<a name="line79"></a> *
+<a name="line80"></a> * - WIN_IME key down starts predit.
+<a name="line81"></a> * - (1) ENTER key up or (2) CTRL-M key up ends preedit.
+<a name="line82"></a> * - Any key press not immediately following WIN_IME key down signifies that
+<a name="line83"></a> *   preedit has ended.
+<a name="line84"></a> *
+<a name="line85"></a> * If you need to change this algorithm, please note the OS, browser, language,
+<a name="line86"></a> * and behavior above so that we can avoid regressions. Contact mpd or yuzo
+<a name="line87"></a> * if you have questions or concerns.
+<a name="line88"></a> *
+<a name="line89"></a> */
+<a name="line90"></a>
+<a name="line91"></a>
+<a name="line92"></a>goog.provide(&#39;goog.ui.AutoComplete.InputHandler&#39;);
+<a name="line93"></a>
+<a name="line94"></a>goog.require(&#39;goog.Disposable&#39;);
+<a name="line95"></a>goog.require(&#39;goog.Timer&#39;);
+<a name="line96"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line97"></a>goog.require(&#39;goog.dom.a11y&#39;);
+<a name="line98"></a>goog.require(&#39;goog.dom.selection&#39;);
+<a name="line99"></a>goog.require(&#39;goog.events.EventHandler&#39;);
+<a name="line100"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line101"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line102"></a>goog.require(&#39;goog.events.KeyHandler&#39;);
+<a name="line103"></a>goog.require(&#39;goog.events.KeyHandler.EventType&#39;);
+<a name="line104"></a>goog.require(&#39;goog.string&#39;);
+<a name="line105"></a>goog.require(&#39;goog.ui.AutoComplete&#39;);
+<a name="line106"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line107"></a>goog.require(&#39;goog.userAgent.product&#39;);
+<a name="line108"></a>
+<a name="line109"></a>
+<a name="line110"></a>
+<a name="line111"></a>/**
+<a name="line112"></a> * Class for managing the interaction between an auto-complete object and a
+<a name="line113"></a> * text-input or textarea.
+<a name="line114"></a> *
+<a name="line115"></a> * @param {?string=} opt_separators Separators to split multiple entries.
+<a name="line116"></a> * @param {?string=} opt_literals Characters used to delimit text literals.
+<a name="line117"></a> * @param {?boolean=} opt_multi Whether to allow multiple entries
+<a name="line118"></a> *     (Default: true).
+<a name="line119"></a> * @param {?number=} opt_throttleTime Number of milliseconds to throttle
+<a name="line120"></a> *     keyevents with (Default: 150). Use -1 to disable updates on typing. Note
+<a name="line121"></a> *     that typing the separator will update autocomplete suggestions.
+<a name="line122"></a> * @constructor
+<a name="line123"></a> * @extends {goog.Disposable}
+<a name="line124"></a> */
+<a name="line125"></a>goog.ui.AutoComplete.InputHandler = function(opt_separators, opt_literals,
+<a name="line126"></a>    opt_multi, opt_throttleTime) {
+<a name="line127"></a>  goog.Disposable.call(this);
+<a name="line128"></a>  var throttleTime = opt_throttleTime || 150;
+<a name="line129"></a>
+<a name="line130"></a>  this.setSeparators(goog.isDefAndNotNull(opt_separators) ? opt_separators :
+<a name="line131"></a>      goog.ui.AutoComplete.InputHandler.STANDARD_LIST_SEPARATORS);
+<a name="line132"></a>
+<a name="line133"></a>  /**
+<a name="line134"></a>   * Characters that are used to delimit literal text. Separarator characters
+<a name="line135"></a>   * found within literal text are not processed as separators
+<a name="line136"></a>   * @type {string}
+<a name="line137"></a>   * @private
+<a name="line138"></a>   */
+<a name="line139"></a>  this.literals_ = opt_literals || &#39;&#39;;
+<a name="line140"></a>
+<a name="line141"></a>  /**
+<a name="line142"></a>   * Whether this input accepts multiple values
+<a name="line143"></a>   * @type {boolean}
+<a name="line144"></a>   * @private
+<a name="line145"></a>   */
+<a name="line146"></a>  this.multi_ = opt_multi != null ? opt_multi : true;
+<a name="line147"></a>
+<a name="line148"></a>  /**
+<a name="line149"></a>   * Whether to prevent the default behavior (moving focus to another element)
+<a name="line150"></a>   * when tab is pressed.  This occurs by default only for multi-value mode.
+<a name="line151"></a>   * @type {boolean}
+<a name="line152"></a>   * @private
+<a name="line153"></a>   */
+<a name="line154"></a>  this.preventDefaultOnTab_ = this.multi_;
+<a name="line155"></a>
+<a name="line156"></a>  /**
+<a name="line157"></a>   * A timer object used to monitor for changes when an element is active.
+<a name="line158"></a>   *
+<a name="line159"></a>   * TODO(user): Consider tuning the throttle time, so that it takes into
+<a name="line160"></a>   * account the length of the token.  When the token is short it is likely to
+<a name="line161"></a>   * match lots of rows, therefore we want to check less frequently.  Even
+<a name="line162"></a>   * something as simple as &lt;3-chars = 150ms, then 100ms otherwise.
+<a name="line163"></a>   *
+<a name="line164"></a>   * @type {goog.Timer}
+<a name="line165"></a>   * @private
+<a name="line166"></a>   */
+<a name="line167"></a>  this.timer_ = throttleTime &gt; 0 ? new goog.Timer(throttleTime) : null;
+<a name="line168"></a>
+<a name="line169"></a>  /**
+<a name="line170"></a>   * Event handler used by the input handler to manage events.
+<a name="line171"></a>   * @type {goog.events.EventHandler}
+<a name="line172"></a>   * @private
+<a name="line173"></a>   */
+<a name="line174"></a>  this.eh_ = new goog.events.EventHandler(this);
+<a name="line175"></a>
+<a name="line176"></a>  /**
+<a name="line177"></a>   * Event handler to help us find an input element that already has the focus.
+<a name="line178"></a>   * @type {goog.events.EventHandler}
+<a name="line179"></a>   * @private
+<a name="line180"></a>   */
+<a name="line181"></a>  this.activateHandler_ = new goog.events.EventHandler(this);
+<a name="line182"></a>
+<a name="line183"></a>  /**
+<a name="line184"></a>   * The keyhandler used for listening on most key events.  This takes care of
+<a name="line185"></a>   * abstracting away some of the browser differences.
+<a name="line186"></a>   * @type {goog.events.KeyHandler}
+<a name="line187"></a>   * @private
+<a name="line188"></a>   */
+<a name="line189"></a>  this.keyHandler_ = new goog.events.KeyHandler();
+<a name="line190"></a>
+<a name="line191"></a>  /**
+<a name="line192"></a>   * The last key down key code.
+<a name="line193"></a>   * @type {number}
+<a name="line194"></a>   * @private
+<a name="line195"></a>   */
+<a name="line196"></a>  this.lastKeyCode_ = -1;  // Initialize to a non-existent value.
+<a name="line197"></a>};
+<a name="line198"></a>goog.inherits(goog.ui.AutoComplete.InputHandler, goog.Disposable);
+<a name="line199"></a>
+<a name="line200"></a>
+<a name="line201"></a>/**
+<a name="line202"></a> * Whether or not we need to pause the execution of the blur handler in order
+<a name="line203"></a> * to allow the execution of the selection handler to run first. This is
+<a name="line204"></a> * currently true when running on IOS version prior to 4.2, since we need
+<a name="line205"></a> * some special logic for these devices to handle bug 4484488.
+<a name="line206"></a> * @type {boolean}
+<a name="line207"></a> * @private
+<a name="line208"></a> */
+<a name="line209"></a>goog.ui.AutoComplete.InputHandler.REQUIRES_ASYNC_BLUR_ =
+<a name="line210"></a>    (goog.userAgent.product.IPHONE || goog.userAgent.product.IPAD) &amp;&amp;
+<a name="line211"></a>        // Check the webkit version against the version for iOS 4.2.1.
+<a name="line212"></a>        !goog.userAgent.isVersion(&#39;533.17.9&#39;);
+<a name="line213"></a>
+<a name="line214"></a>
+<a name="line215"></a>/**
+<a name="line216"></a> * Standard list separators.
+<a name="line217"></a> * @type {string}
+<a name="line218"></a> */
+<a name="line219"></a>goog.ui.AutoComplete.InputHandler.STANDARD_LIST_SEPARATORS = &#39;,;&#39;;
+<a name="line220"></a>
+<a name="line221"></a>
+<a name="line222"></a>/**
+<a name="line223"></a> * Literals for quotes.
+<a name="line224"></a> * @type {string}
+<a name="line225"></a> */
+<a name="line226"></a>goog.ui.AutoComplete.InputHandler.QUOTE_LITERALS = &#39;&quot;&#39;;
+<a name="line227"></a>
+<a name="line228"></a>
+<a name="line229"></a>/**
+<a name="line230"></a> * The AutoComplete instance this inputhandler is associated with.
+<a name="line231"></a> * @type {goog.ui.AutoComplete}
+<a name="line232"></a> */
+<a name="line233"></a>goog.ui.AutoComplete.InputHandler.prototype.ac_;
+<a name="line234"></a>
+<a name="line235"></a>
+<a name="line236"></a>/**
+<a name="line237"></a> * Characters that can be used to split multiple entries in an input string
+<a name="line238"></a> * @type {string}
+<a name="line239"></a> * @private
+<a name="line240"></a> */
+<a name="line241"></a>goog.ui.AutoComplete.InputHandler.prototype.separators_;
+<a name="line242"></a>
+<a name="line243"></a>
+<a name="line244"></a>/**
+<a name="line245"></a> * The separator we use to reconstruct the string
+<a name="line246"></a> * @type {string}
+<a name="line247"></a> * @private
+<a name="line248"></a> */
+<a name="line249"></a>goog.ui.AutoComplete.InputHandler.prototype.defaultSeparator_;
+<a name="line250"></a>
+<a name="line251"></a>
+<a name="line252"></a>/**
+<a name="line253"></a> * Regular expression used from trimming tokens or null for no trimming.
+<a name="line254"></a> * @type {RegExp}
+<a name="line255"></a> * @private
+<a name="line256"></a> */
+<a name="line257"></a>goog.ui.AutoComplete.InputHandler.prototype.trimmer_;
+<a name="line258"></a>
+<a name="line259"></a>
+<a name="line260"></a>/**
+<a name="line261"></a> * Regular expression to test whether a separator exists
+<a name="line262"></a> * @type {RegExp}
+<a name="line263"></a> * @private
+<a name="line264"></a> */
+<a name="line265"></a>goog.ui.AutoComplete.InputHandler.prototype.separatorCheck_;
+<a name="line266"></a>
+<a name="line267"></a>
+<a name="line268"></a>/**
+<a name="line269"></a> * Should auto-completed tokens be wrapped in whitespace?  Used in selectRow.
+<a name="line270"></a> * @type {boolean}
+<a name="line271"></a> * @private
+<a name="line272"></a> */
+<a name="line273"></a>goog.ui.AutoComplete.InputHandler.prototype.whitespaceWrapEntries_ = true;
+<a name="line274"></a>
+<a name="line275"></a>
+<a name="line276"></a>/**
+<a name="line277"></a> * Should the occurrence of a literal indicate a token boundary?
+<a name="line278"></a> * @type {boolean}
+<a name="line279"></a> * @private
+<a name="line280"></a> */
+<a name="line281"></a>goog.ui.AutoComplete.InputHandler.prototype.generateNewTokenOnLiteral_ = true;
+<a name="line282"></a>
+<a name="line283"></a>
+<a name="line284"></a>/**
+<a name="line285"></a> * Whether to flip the orientation of up &amp; down for hiliting next
+<a name="line286"></a> * and previous autocomplete entries.
+<a name="line287"></a> * @type {boolean}
+<a name="line288"></a> * @private
+<a name="line289"></a> */
+<a name="line290"></a>goog.ui.AutoComplete.InputHandler.prototype.upsideDown_ = false;
+<a name="line291"></a>
+<a name="line292"></a>
+<a name="line293"></a>/**
+<a name="line294"></a> * If we&#39;re in &#39;multi&#39; mode, does typing a separator force the updating of
+<a name="line295"></a> * suggestions?
+<a name="line296"></a> * For example, if somebody finishes typing &quot;obama, hillary,&quot;, should the last
+<a name="line297"></a> * comma trigger updating suggestions in a guaranteed manner? Especially useful
+<a name="line298"></a> * when the suggestions depend on complete keywords. Note that &quot;obama, hill&quot;
+<a name="line299"></a> * (a leading sub-string of &quot;obama, hillary&quot; will lead to different and possibly
+<a name="line300"></a> * irrelevant suggestions.
+<a name="line301"></a> * @type {boolean}
+<a name="line302"></a> * @private
+<a name="line303"></a> */
+<a name="line304"></a>goog.ui.AutoComplete.InputHandler.prototype.separatorUpdates_ = true;
+<a name="line305"></a>
+<a name="line306"></a>
+<a name="line307"></a>/**
+<a name="line308"></a> * If we&#39;re in &#39;multi&#39; mode, does typing a separator force the current term to
+<a name="line309"></a> * autocomplete?
+<a name="line310"></a> * For example, if &#39;tomato&#39; is a suggested completion and the user has typed
+<a name="line311"></a> * &#39;to,&#39;, do we autocomplete to turn that into &#39;tomato,&#39;?
+<a name="line312"></a> * @type {boolean}
+<a name="line313"></a> * @private
+<a name="line314"></a> */
+<a name="line315"></a>goog.ui.AutoComplete.InputHandler.prototype.separatorSelects_ = true;
+<a name="line316"></a>
+<a name="line317"></a>
+<a name="line318"></a>/**
+<a name="line319"></a> * The id of the currently active timeout, so it can be cleared if required.
+<a name="line320"></a> * @type {?number}
+<a name="line321"></a> * @private
+<a name="line322"></a> */
+<a name="line323"></a>goog.ui.AutoComplete.InputHandler.prototype.activeTimeoutId_ = null;
+<a name="line324"></a>
+<a name="line325"></a>
+<a name="line326"></a>/**
+<a name="line327"></a> * The element that is currently active.
+<a name="line328"></a> * @type {Element}
+<a name="line329"></a> * @private
+<a name="line330"></a> */
+<a name="line331"></a>goog.ui.AutoComplete.InputHandler.prototype.activeElement_ = null;
+<a name="line332"></a>
+<a name="line333"></a>
+<a name="line334"></a>/**
+<a name="line335"></a> * The previous value of the active element.
+<a name="line336"></a> * @type {string}
+<a name="line337"></a> * @private
+<a name="line338"></a> */
+<a name="line339"></a>goog.ui.AutoComplete.InputHandler.prototype.lastValue_ = &#39;&#39;;
+<a name="line340"></a>
+<a name="line341"></a>
+<a name="line342"></a>/**
+<a name="line343"></a> * Flag used to indicate that the IME key has been seen and we need to wait for
+<a name="line344"></a> * the up event.
+<a name="line345"></a> * @type {boolean}
+<a name="line346"></a> * @private
+<a name="line347"></a> */
+<a name="line348"></a>goog.ui.AutoComplete.InputHandler.prototype.waitingForIme_ = false;
+<a name="line349"></a>
+<a name="line350"></a>
+<a name="line351"></a>/**
+<a name="line352"></a> * Flag used to indicate that the user just selected a row and we should
+<a name="line353"></a> * therefore ignore the change of the input value.
+<a name="line354"></a> * @type {boolean}
+<a name="line355"></a> * @private
+<a name="line356"></a> */
+<a name="line357"></a>goog.ui.AutoComplete.InputHandler.prototype.rowJustSelected_ = false;
+<a name="line358"></a>
+<a name="line359"></a>
+<a name="line360"></a>/**
+<a name="line361"></a> * Flag indicating whether the result list should be updated continuously
+<a name="line362"></a> * during typing or only after a short pause.
+<a name="line363"></a> * @type {boolean}
+<a name="line364"></a> * @private
+<a name="line365"></a> */
+<a name="line366"></a>goog.ui.AutoComplete.InputHandler.prototype.updateDuringTyping_ = true;
+<a name="line367"></a>
+<a name="line368"></a>
+<a name="line369"></a>/**
+<a name="line370"></a> * Attach an instance of an AutoComplete
+<a name="line371"></a> * @param {goog.ui.AutoComplete} ac Autocomplete object.
+<a name="line372"></a> */
+<a name="line373"></a>goog.ui.AutoComplete.InputHandler.prototype.attachAutoComplete = function(ac) {
+<a name="line374"></a>  this.ac_ = ac;
+<a name="line375"></a>};
+<a name="line376"></a>
+<a name="line377"></a>
+<a name="line378"></a>/**
+<a name="line379"></a> * Returns the associated autocomplete instance.
+<a name="line380"></a> * @return {goog.ui.AutoComplete} The associated autocomplete instance.
+<a name="line381"></a> */
+<a name="line382"></a>goog.ui.AutoComplete.InputHandler.prototype.getAutoComplete = function() {
+<a name="line383"></a>  return this.ac_;
+<a name="line384"></a>};
+<a name="line385"></a>
+<a name="line386"></a>
+<a name="line387"></a>/**
+<a name="line388"></a> * Returns the current active element.
+<a name="line389"></a> * @return {Element} The currently active element.
+<a name="line390"></a> */
+<a name="line391"></a>goog.ui.AutoComplete.InputHandler.prototype.getActiveElement = function() {
+<a name="line392"></a>  return this.activeElement_;
+<a name="line393"></a>};
+<a name="line394"></a>
+<a name="line395"></a>
+<a name="line396"></a>/**
+<a name="line397"></a> * Returns the value of the current active element.
+<a name="line398"></a> * @return {string} The value of the current active element.
+<a name="line399"></a> */
+<a name="line400"></a>goog.ui.AutoComplete.InputHandler.prototype.getValue = function() {
+<a name="line401"></a>  return this.activeElement_.value;
+<a name="line402"></a>};
+<a name="line403"></a>
+<a name="line404"></a>
+<a name="line405"></a>/**
+<a name="line406"></a> * Sets the value of the current active element.
+<a name="line407"></a> * @param {string} value The new value.
+<a name="line408"></a> */
+<a name="line409"></a>goog.ui.AutoComplete.InputHandler.prototype.setValue = function(value) {
+<a name="line410"></a>  this.activeElement_.value = value;
+<a name="line411"></a>};
+<a name="line412"></a>
+<a name="line413"></a>
+<a name="line414"></a>/**
+<a name="line415"></a> * Returns the current cursor position.
+<a name="line416"></a> * @return {number} The index of the cursor position.
+<a name="line417"></a> */
+<a name="line418"></a>goog.ui.AutoComplete.InputHandler.prototype.getCursorPosition = function() {
+<a name="line419"></a>  return goog.dom.selection.getStart(this.activeElement_);
+<a name="line420"></a>};
+<a name="line421"></a>
+<a name="line422"></a>
+<a name="line423"></a>/**
+<a name="line424"></a> * Sets the cursor at the given position.
+<a name="line425"></a> * @param {number} pos The index of the cursor position.
+<a name="line426"></a> */
+<a name="line427"></a>goog.ui.AutoComplete.InputHandler.prototype.setCursorPosition = function(pos) {
+<a name="line428"></a>  goog.dom.selection.setStart(this.activeElement_, pos);
+<a name="line429"></a>  goog.dom.selection.setEnd(this.activeElement_, pos);
+<a name="line430"></a>};
+<a name="line431"></a>
+<a name="line432"></a>
+<a name="line433"></a>/**
+<a name="line434"></a> * Attaches the input handler to a target element. The target element
+<a name="line435"></a> * should be a textarea, input box, or other focusable element with the
+<a name="line436"></a> * same interface.
+<a name="line437"></a> * @param {Element|goog.events.EventTarget} target An element to attach the
+<a name="line438"></a> *     input handler too.
+<a name="line439"></a> */
+<a name="line440"></a>goog.ui.AutoComplete.InputHandler.prototype.attachInput = function(target) {
+<a name="line441"></a>  if (goog.dom.isElement(target)) {
+<a name="line442"></a>    goog.dom.a11y.setState(/** @type {Element} */ (target), &#39;haspopup&#39;, true);
+<a name="line443"></a>  }
+<a name="line444"></a>
+<a name="line445"></a>  this.eh_.listen(target, goog.events.EventType.FOCUS, this.handleFocus);
+<a name="line446"></a>  this.eh_.listen(target, goog.events.EventType.BLUR, this.handleBlur);
+<a name="line447"></a>
+<a name="line448"></a>  if (!this.activeElement_) {
+<a name="line449"></a>    this.activateHandler_.listen(
+<a name="line450"></a>        target, goog.events.EventType.KEYDOWN,
+<a name="line451"></a>        this.onKeyDownOnInactiveElement_);
+<a name="line452"></a>
+<a name="line453"></a>    // Don&#39;t wait for a focus event if the element already has focus.
+<a name="line454"></a>    if (goog.dom.isElement(target)) {
+<a name="line455"></a>      var ownerDocument = goog.dom.getOwnerDocument(
+<a name="line456"></a>          /** @type {Element} */ (target));
+<a name="line457"></a>      if (goog.dom.getActiveElement(ownerDocument) == target) {
+<a name="line458"></a>        this.processFocus(/** @type {Element} */ (target));
+<a name="line459"></a>      }
+<a name="line460"></a>    }
+<a name="line461"></a>  }
+<a name="line462"></a>};
+<a name="line463"></a>
+<a name="line464"></a>
+<a name="line465"></a>/**
+<a name="line466"></a> * Detaches the input handler from the provided element.
+<a name="line467"></a> * @param {Element|goog.events.EventTarget} target An element to detach the
+<a name="line468"></a> *     input handler from.
+<a name="line469"></a> */
+<a name="line470"></a>goog.ui.AutoComplete.InputHandler.prototype.detachInput = function(target) {
+<a name="line471"></a>  if (target == this.activeElement_) {
+<a name="line472"></a>    this.handleBlur();
+<a name="line473"></a>  }
+<a name="line474"></a>  this.eh_.unlisten(target, goog.events.EventType.FOCUS, this.handleFocus);
+<a name="line475"></a>  this.eh_.unlisten(target, goog.events.EventType.BLUR, this.handleBlur);
+<a name="line476"></a>
+<a name="line477"></a>  if (!this.activeElement_) {
+<a name="line478"></a>    this.activateHandler_.unlisten(
+<a name="line479"></a>        target, goog.events.EventType.KEYDOWN,
+<a name="line480"></a>        this.onKeyDownOnInactiveElement_);
+<a name="line481"></a>  }
+<a name="line482"></a>};
+<a name="line483"></a>
+<a name="line484"></a>
+<a name="line485"></a>/**
+<a name="line486"></a> * Attaches the input handler to multiple elements.
+<a name="line487"></a> * @param {...Element} var_args Elements to attach the input handler too.
+<a name="line488"></a> */
+<a name="line489"></a>goog.ui.AutoComplete.InputHandler.prototype.attachInputs = function(var_args) {
+<a name="line490"></a>  for (var i = 0; i &lt; arguments.length; i++) {
+<a name="line491"></a>    this.attachInput(arguments[i]);
+<a name="line492"></a>  }
+<a name="line493"></a>};
+<a name="line494"></a>
+<a name="line495"></a>
+<a name="line496"></a>/**
+<a name="line497"></a> * Detaches the input handler from multuple elements.
+<a name="line498"></a> * @param {...Element} var_args Variable arguments for elements to unbind from.
+<a name="line499"></a> */
+<a name="line500"></a>goog.ui.AutoComplete.InputHandler.prototype.detachInputs = function(var_args) {
+<a name="line501"></a>  for (var i = 0; i &lt; arguments.length; i++) {
+<a name="line502"></a>    this.detachInput(arguments[i]);
+<a name="line503"></a>  }
+<a name="line504"></a>};
+<a name="line505"></a>
+<a name="line506"></a>
+<a name="line507"></a>/**
+<a name="line508"></a> * Selects the given row.  Implements the SelectionHandler interface.
+<a name="line509"></a> * @param {Object} row The row to select.
+<a name="line510"></a> * @param {boolean=} opt_multi Should this be treated as a single or multi-token
+<a name="line511"></a> *     auto-complete?  Overrides previous setting of opt_multi on constructor.
+<a name="line512"></a> * @return {boolean} Whether to suppress the update event.
+<a name="line513"></a> */
+<a name="line514"></a>goog.ui.AutoComplete.InputHandler.prototype.selectRow = function(row,
+<a name="line515"></a>                                                                 opt_multi) {
+<a name="line516"></a>  this.setTokenText(row.toString(), opt_multi);
+<a name="line517"></a>  return false;
+<a name="line518"></a>};
+<a name="line519"></a>
+<a name="line520"></a>
+<a name="line521"></a>/**
+<a name="line522"></a> * Sets the text of the current token without updating the autocomplete
+<a name="line523"></a> * choices.
+<a name="line524"></a> * @param {string} tokenText The text for the current token.
+<a name="line525"></a> * @param {boolean=} opt_multi Should this be treated as a single or multi-token
+<a name="line526"></a> *     auto-complete?  Overrides previous setting of opt_multi on constructor.
+<a name="line527"></a> * @protected
+<a name="line528"></a> */
+<a name="line529"></a>goog.ui.AutoComplete.InputHandler.prototype.setTokenText = function(tokenText,
+<a name="line530"></a>                                                                    opt_multi) {
+<a name="line531"></a>  if (goog.isDef(opt_multi) ? opt_multi : this.multi_) {
+<a name="line532"></a>    var index = this.getTokenIndex_(this.getValue(), this.getCursorPosition());
+<a name="line533"></a>
+<a name="line534"></a>    // Break up the current input string.
+<a name="line535"></a>    var entries = this.splitInput_(this.getValue());
+<a name="line536"></a>
+<a name="line537"></a>    // Get the new value, ignoring whitespace associated with the entry.
+<a name="line538"></a>    var replaceValue = tokenText;
+<a name="line539"></a>
+<a name="line540"></a>    // Only add punctuation if there isn&#39;t already a separator available.
+<a name="line541"></a>    if (!this.separatorCheck_.test(replaceValue)) {
+<a name="line542"></a>      replaceValue = goog.string.trimRight(replaceValue) +
+<a name="line543"></a>                     this.defaultSeparator_;
+<a name="line544"></a>    }
+<a name="line545"></a>
+<a name="line546"></a>    // Ensure there&#39;s whitespace wrapping the entries, if whitespaceWrapEntries_
+<a name="line547"></a>    // has been set to true.
+<a name="line548"></a>    if (this.whitespaceWrapEntries_) {
+<a name="line549"></a>      if (index != 0 &amp;&amp; !goog.string.isEmpty(entries[index - 1])) {
+<a name="line550"></a>        replaceValue = &#39; &#39; + replaceValue;
+<a name="line551"></a>      }
+<a name="line552"></a>      // Add a space only if it&#39;s the last token; otherwise, we assume the
+<a name="line553"></a>      // next token already has the proper spacing.
+<a name="line554"></a>      if (index == entries.length - 1) {
+<a name="line555"></a>        replaceValue = replaceValue + &#39; &#39;;
+<a name="line556"></a>      }
+<a name="line557"></a>    }
+<a name="line558"></a>
+<a name="line559"></a>    // If the token needs changing, then update the input box and move the
+<a name="line560"></a>    // cursor to the correct position.
+<a name="line561"></a>    if (replaceValue != entries[index]) {
+<a name="line562"></a>
+<a name="line563"></a>      // Replace the value in the array.
+<a name="line564"></a>      entries[index] = replaceValue;
+<a name="line565"></a>
+<a name="line566"></a>      var el = this.activeElement_;
+<a name="line567"></a>      // If there is an uncommitted IME in Firefox or IE 9, setting the value
+<a name="line568"></a>      // fails and results in actually clearing the value that&#39;s already in the
+<a name="line569"></a>      // input.
+<a name="line570"></a>      // The FF bug is http://bugzilla.mozilla.org/show_bug.cgi?id=549674
+<a name="line571"></a>      // Blurring before setting the value works around this problem. We&#39;d like
+<a name="line572"></a>      // to do this only if there is an uncommitted IME, but this isn&#39;t possible
+<a name="line573"></a>      // to detect. Since text editing is finicky we restrict this
+<a name="line574"></a>      // workaround to Firefox and IE 9 where it&#39;s necessary.
+<a name="line575"></a>      if (goog.userAgent.GECKO ||
+<a name="line576"></a>          (goog.userAgent.IE &amp;&amp; goog.userAgent.isVersion(&#39;9&#39;))) {
+<a name="line577"></a>        el.blur();
+<a name="line578"></a>      }
+<a name="line579"></a>      // Join the array and replace the contents of the input.
+<a name="line580"></a>      el.value = entries.join(&#39;&#39;);
+<a name="line581"></a>
+<a name="line582"></a>      // Calculate which position to put the cursor at.
+<a name="line583"></a>      var pos = 0;
+<a name="line584"></a>      for (var i = 0; i &lt;= index; i++) {
+<a name="line585"></a>        pos += entries[i].length;
+<a name="line586"></a>      }
+<a name="line587"></a>
+<a name="line588"></a>      // Set the cursor.
+<a name="line589"></a>      el.focus();
+<a name="line590"></a>      this.setCursorPosition(pos);
+<a name="line591"></a>    }
+<a name="line592"></a>  } else {
+<a name="line593"></a>    this.setValue(tokenText);
+<a name="line594"></a>  }
+<a name="line595"></a>
+<a name="line596"></a>  // Avoid triggering an autocomplete just because the value changed.
+<a name="line597"></a>  this.rowJustSelected_ = true;
+<a name="line598"></a>};
+<a name="line599"></a>
+<a name="line600"></a>
+<a name="line601"></a>/** @override */
+<a name="line602"></a>goog.ui.AutoComplete.InputHandler.prototype.disposeInternal = function() {
+<a name="line603"></a>  goog.ui.AutoComplete.InputHandler.superClass_.disposeInternal.call(this);
+<a name="line604"></a>  if (this.activeTimeoutId_ != null) {
+<a name="line605"></a>    // Need to check against null explicitly because 0 is a valid value.
+<a name="line606"></a>    window.clearTimeout(this.activeTimeoutId_);
+<a name="line607"></a>  }
+<a name="line608"></a>  this.eh_.dispose();
+<a name="line609"></a>  delete this.eh_;
+<a name="line610"></a>  this.activateHandler_.dispose();
+<a name="line611"></a>  this.keyHandler_.dispose();
+<a name="line612"></a>};
+<a name="line613"></a>
+<a name="line614"></a>
+<a name="line615"></a>/**
+<a name="line616"></a> * Sets the entry separator characters.
+<a name="line617"></a> *
+<a name="line618"></a> * @param {string} separators The separator characters to set.
+<a name="line619"></a> */
+<a name="line620"></a>goog.ui.AutoComplete.InputHandler.prototype.setSeparators =
+<a name="line621"></a>    function(separators) {
+<a name="line622"></a>  this.separators_ = separators;
+<a name="line623"></a>  this.defaultSeparator_ = this.separators_.substring(0, 1);
+<a name="line624"></a>
+<a name="line625"></a>  var wspaceExp = this.multi_ ? &#39;[\\s&#39; + this.separators_ + &#39;]+&#39; : &#39;[\\s]+&#39;;
+<a name="line626"></a>
+<a name="line627"></a>  this.trimmer_ = new RegExp(&#39;^&#39; + wspaceExp + &#39;|&#39; + wspaceExp + &#39;$&#39;, &#39;g&#39;);
+<a name="line628"></a>  this.separatorCheck_ = new RegExp(&#39;\\s*[&#39; + this.separators_ + &#39;]$&#39;);
+<a name="line629"></a>};
+<a name="line630"></a>
+<a name="line631"></a>
+<a name="line632"></a>/**
+<a name="line633"></a> * Sets whether to flip the orientation of up &amp; down for hiliting next
+<a name="line634"></a> * and previous autocomplete entries.
+<a name="line635"></a> * @param {boolean} upsideDown Whether the orientation is upside down.
+<a name="line636"></a> */
+<a name="line637"></a>goog.ui.AutoComplete.InputHandler.prototype.setUpsideDown =
+<a name="line638"></a>    function(upsideDown) {
+<a name="line639"></a>  this.upsideDown_ = upsideDown;
+<a name="line640"></a>};
+<a name="line641"></a>
+<a name="line642"></a>
+<a name="line643"></a>/**
+<a name="line644"></a> * Sets whether auto-completed tokens should be wrapped with whitespace.
+<a name="line645"></a> * @param {boolean} newValue boolean value indicating whether or not
+<a name="line646"></a> *     auto-completed tokens should be wrapped with whitespace.
+<a name="line647"></a> */
+<a name="line648"></a>goog.ui.AutoComplete.InputHandler.prototype.setWhitespaceWrapEntries =
+<a name="line649"></a>    function(newValue) {
+<a name="line650"></a>  this.whitespaceWrapEntries_ = newValue;
+<a name="line651"></a>};
+<a name="line652"></a>
+<a name="line653"></a>
+<a name="line654"></a>/**
+<a name="line655"></a> * Sets whether new tokens should be generated from literals.  That is, should
+<a name="line656"></a> * hello&#39;world be two tokens, assuming &#39; is a literal?
+<a name="line657"></a> * @param {boolean} newValue boolean value indicating whether or not
+<a name="line658"></a> * new tokens should be generated from literals.
+<a name="line659"></a> */
+<a name="line660"></a>goog.ui.AutoComplete.InputHandler.prototype.setGenerateNewTokenOnLiteral =
+<a name="line661"></a>    function(newValue) {
+<a name="line662"></a>  this.generateNewTokenOnLiteral_ = newValue;
+<a name="line663"></a>};
+<a name="line664"></a>
+<a name="line665"></a>
+<a name="line666"></a>/**
+<a name="line667"></a> * Sets the regular expression used to trim the tokens before passing them to
+<a name="line668"></a> * the matcher:  every substring that matches the given regular expression will
+<a name="line669"></a> * be removed.  This can also be set to null to disable trimming.
+<a name="line670"></a> * @param {RegExp} trimmer Regexp to use for trimming or null to disable it.
+<a name="line671"></a> */
+<a name="line672"></a>goog.ui.AutoComplete.InputHandler.prototype.setTrimmingRegExp =
+<a name="line673"></a>    function(trimmer) {
+<a name="line674"></a>  this.trimmer_ = trimmer;
+<a name="line675"></a>};
+<a name="line676"></a>
+<a name="line677"></a>
+<a name="line678"></a>/**
+<a name="line679"></a> * Sets whether we will prevent the default input behavior (moving focus to the
+<a name="line680"></a> * next focusable  element) on TAB.
+<a name="line681"></a> * @param {boolean} newValue Whether to preventDefault on TAB.
+<a name="line682"></a> */
+<a name="line683"></a>goog.ui.AutoComplete.InputHandler.prototype.setPreventDefaultOnTab =
+<a name="line684"></a>    function(newValue) {
+<a name="line685"></a>  this.preventDefaultOnTab_ = newValue;
+<a name="line686"></a>};
+<a name="line687"></a>
+<a name="line688"></a>
+<a name="line689"></a>/**
+<a name="line690"></a> * Sets whether separators perform autocomplete.
+<a name="line691"></a> * @param {boolean} newValue Whether to autocomplete on separators.
+<a name="line692"></a> */
+<a name="line693"></a>goog.ui.AutoComplete.InputHandler.prototype.setSeparatorCompletes =
+<a name="line694"></a>    function(newValue) {
+<a name="line695"></a>  this.separatorUpdates_ = newValue;
+<a name="line696"></a>  this.separatorSelects_ = newValue;
+<a name="line697"></a>};
+<a name="line698"></a>
+<a name="line699"></a>
+<a name="line700"></a>/**
+<a name="line701"></a> * Sets whether separators perform autocomplete.
+<a name="line702"></a> * @param {boolean} newValue Whether to autocomplete on separators.
+<a name="line703"></a> */
+<a name="line704"></a>goog.ui.AutoComplete.InputHandler.prototype.setSeparatorSelects =
+<a name="line705"></a>    function(newValue) {
+<a name="line706"></a>  this.separatorSelects_ = newValue;
+<a name="line707"></a>};
+<a name="line708"></a>
+<a name="line709"></a>
+<a name="line710"></a>/**
+<a name="line711"></a> * Gets the time to wait before updating the results. If the update during
+<a name="line712"></a> * typing flag is switched on, this delay counts from the last update,
+<a name="line713"></a> * otherwise from the last keypress.
+<a name="line714"></a> * @return {number} Throttle time in milliseconds.
+<a name="line715"></a> */
+<a name="line716"></a>goog.ui.AutoComplete.InputHandler.prototype.getThrottleTime = function() {
+<a name="line717"></a>  return this.timer_ ? this.timer_.getInterval() : -1;
+<a name="line718"></a>};
+<a name="line719"></a>
+<a name="line720"></a>
+<a name="line721"></a>/**
+<a name="line722"></a> * Sets whether a row has just been selected.
+<a name="line723"></a> * @param {boolean} justSelected Whether or not the row has just been selected.
+<a name="line724"></a> */
+<a name="line725"></a>goog.ui.AutoComplete.InputHandler.prototype.setRowJustSelected =
+<a name="line726"></a>    function(justSelected) {
+<a name="line727"></a>  this.rowJustSelected_ = justSelected;
+<a name="line728"></a>};
+<a name="line729"></a>
+<a name="line730"></a>
+<a name="line731"></a>/**
+<a name="line732"></a> * Sets the time to wait before updating the results.
+<a name="line733"></a> * @param {number} time New throttle time in milliseconds.
+<a name="line734"></a> */
+<a name="line735"></a>goog.ui.AutoComplete.InputHandler.prototype.setThrottleTime = function(time) {
+<a name="line736"></a>  if (time &lt; 0) {
+<a name="line737"></a>    this.timer_.dispose();
+<a name="line738"></a>    this.timer_ = null;
+<a name="line739"></a>    return;
+<a name="line740"></a>  }
+<a name="line741"></a>  if (this.timer_) {
+<a name="line742"></a>    this.timer_.setInterval(time);
+<a name="line743"></a>  } else {
+<a name="line744"></a>    this.timer_ = new goog.Timer(time);
+<a name="line745"></a>  }
+<a name="line746"></a>};
+<a name="line747"></a>
+<a name="line748"></a>
+<a name="line749"></a>/**
+<a name="line750"></a> * Gets whether the result list is updated during typing.
+<a name="line751"></a> * @return {boolean} Value of the flag.
+<a name="line752"></a> */
+<a name="line753"></a>goog.ui.AutoComplete.InputHandler.prototype.getUpdateDuringTyping = function() {
+<a name="line754"></a>  return this.updateDuringTyping_;
+<a name="line755"></a>};
+<a name="line756"></a>
+<a name="line757"></a>
+<a name="line758"></a>/**
+<a name="line759"></a> * Sets whether the result list should be updated during typing.
+<a name="line760"></a> * @param {boolean} value New value of the flag.
+<a name="line761"></a> */
+<a name="line762"></a>goog.ui.AutoComplete.InputHandler.prototype.setUpdateDuringTyping =
+<a name="line763"></a>    function(value) {
+<a name="line764"></a>  this.updateDuringTyping_ = value;
+<a name="line765"></a>};
+<a name="line766"></a>
+<a name="line767"></a>
+<a name="line768"></a>/**
+<a name="line769"></a> * Handles a key event.
+<a name="line770"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line771"></a> * @return {boolean} True if the key event was handled.
+<a name="line772"></a> * @protected
+<a name="line773"></a> */
+<a name="line774"></a>goog.ui.AutoComplete.InputHandler.prototype.handleKeyEvent = function(e) {
+<a name="line775"></a>  switch (e.keyCode) {
+<a name="line776"></a>
+<a name="line777"></a>    // If the menu is open and &#39;down&#39; caused a change then prevent the default
+<a name="line778"></a>    // action and prevent scrolling.  If the box isn&#39;t a multi autocomplete
+<a name="line779"></a>    // and the menu isn&#39;t open, we force it open now.
+<a name="line780"></a>    case goog.events.KeyCodes.DOWN:
+<a name="line781"></a>      if (this.ac_.isOpen()) {
+<a name="line782"></a>        this.moveDown_();
+<a name="line783"></a>        e.preventDefault();
+<a name="line784"></a>        return true;
+<a name="line785"></a>
+<a name="line786"></a>      } else if (!this.multi_) {
+<a name="line787"></a>        this.update(true);
+<a name="line788"></a>        e.preventDefault();
+<a name="line789"></a>        return true;
+<a name="line790"></a>      }
+<a name="line791"></a>      break;
+<a name="line792"></a>
+<a name="line793"></a>    // If the menu is open and &#39;up&#39; caused a change then prevent the default
+<a name="line794"></a>    // action and prevent scrolling.
+<a name="line795"></a>    case goog.events.KeyCodes.UP:
+<a name="line796"></a>      if (this.ac_.isOpen()) {
+<a name="line797"></a>        this.moveUp_();
+<a name="line798"></a>        e.preventDefault();
+<a name="line799"></a>        return true;
+<a name="line800"></a>      }
+<a name="line801"></a>      break;
+<a name="line802"></a>
+<a name="line803"></a>    // If tab key is pressed, select the current highlighted item.  The default
+<a name="line804"></a>    // action is also prevented if the input is a multi input, to prevent the
+<a name="line805"></a>    // user tabbing out of the field.
+<a name="line806"></a>    case goog.events.KeyCodes.TAB:
+<a name="line807"></a>      if (this.ac_.isOpen() &amp;&amp; !e.shiftKey) {
+<a name="line808"></a>        // Ensure the menu is up to date before completing.
+<a name="line809"></a>        this.update();
+<a name="line810"></a>        if (this.ac_.selectHilited() &amp;&amp; this.preventDefaultOnTab_) {
+<a name="line811"></a>          e.preventDefault();
+<a name="line812"></a>          return true;
+<a name="line813"></a>        }
+<a name="line814"></a>      } else {
+<a name="line815"></a>        this.ac_.dismiss();
+<a name="line816"></a>      }
+<a name="line817"></a>      break;
+<a name="line818"></a>
+<a name="line819"></a>    // On enter, just select the highlighted row.
+<a name="line820"></a>    case goog.events.KeyCodes.ENTER:
+<a name="line821"></a>      if (this.ac_.isOpen()) {
+<a name="line822"></a>        // Ensure the menu is up to date before completing.
+<a name="line823"></a>        this.update();
+<a name="line824"></a>        if (this.ac_.selectHilited()) {
+<a name="line825"></a>          e.preventDefault();
+<a name="line826"></a>          e.stopPropagation();
+<a name="line827"></a>          return true;
+<a name="line828"></a>        }
+<a name="line829"></a>      } else {
+<a name="line830"></a>        this.ac_.dismiss();
+<a name="line831"></a>      }
+<a name="line832"></a>      break;
+<a name="line833"></a>
+<a name="line834"></a>    // On escape tell the autocomplete to dismiss.
+<a name="line835"></a>    case goog.events.KeyCodes.ESC:
+<a name="line836"></a>      if (this.ac_.isOpen()) {
+<a name="line837"></a>        this.ac_.dismiss();
+<a name="line838"></a>        e.preventDefault();
+<a name="line839"></a>        e.stopPropagation();
+<a name="line840"></a>        return true;
+<a name="line841"></a>      }
+<a name="line842"></a>      break;
+<a name="line843"></a>
+<a name="line844"></a>    // The IME keycode indicates an IME sequence has started, we ignore all
+<a name="line845"></a>    // changes until we get an enter key-up.
+<a name="line846"></a>    case goog.events.KeyCodes.WIN_IME:
+<a name="line847"></a>      if (!this.waitingForIme_) {
+<a name="line848"></a>        this.startWaitingForIme_();
+<a name="line849"></a>        return true;
+<a name="line850"></a>      }
+<a name="line851"></a>      break;
+<a name="line852"></a>
+<a name="line853"></a>    default:
+<a name="line854"></a>      if (this.timer_ &amp;&amp; !this.updateDuringTyping_) {
+<a name="line855"></a>        // Waits throttle time before sending the request again.
+<a name="line856"></a>        this.timer_.stop();
+<a name="line857"></a>        this.timer_.start();
+<a name="line858"></a>      }
+<a name="line859"></a>  }
+<a name="line860"></a>
+<a name="line861"></a>  return this.handleSeparator_(e);
+<a name="line862"></a>};
+<a name="line863"></a>
+<a name="line864"></a>
+<a name="line865"></a>/**
+<a name="line866"></a> * Handles a key event for a separator key.
+<a name="line867"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line868"></a> * @return {boolean} True if the key event was handled.
+<a name="line869"></a> * @private
+<a name="line870"></a> */
+<a name="line871"></a>goog.ui.AutoComplete.InputHandler.prototype.handleSeparator_ = function(e) {
+<a name="line872"></a>  var isSeparatorKey = this.multi_ &amp;&amp; e.charCode &amp;&amp;
+<a name="line873"></a>      this.separators_.indexOf(String.fromCharCode(e.charCode)) != -1;
+<a name="line874"></a>  if (this.separatorUpdates_ &amp;&amp; isSeparatorKey) {
+<a name="line875"></a>    this.update();
+<a name="line876"></a>  }
+<a name="line877"></a>  if (this.separatorSelects_ &amp;&amp; isSeparatorKey) {
+<a name="line878"></a>    if (this.ac_.selectHilited()) {
+<a name="line879"></a>      e.preventDefault();
+<a name="line880"></a>      return true;
+<a name="line881"></a>    }
+<a name="line882"></a>  }
+<a name="line883"></a>  return false;
+<a name="line884"></a>};
+<a name="line885"></a>
+<a name="line886"></a>
+<a name="line887"></a>/**
+<a name="line888"></a> * @return {boolean} Whether this inputhandler need to listen on key-up.
+<a name="line889"></a> * @protected
+<a name="line890"></a> */
+<a name="line891"></a>goog.ui.AutoComplete.InputHandler.prototype.needKeyUpListener = function() {
+<a name="line892"></a>  return false;
+<a name="line893"></a>};
+<a name="line894"></a>
+<a name="line895"></a>
+<a name="line896"></a>/**
+<a name="line897"></a> * Handles the key up event. Registered only if needKeyUpListener returns true.
+<a name="line898"></a> * @param {goog.events.Event} e The keyup event.
+<a name="line899"></a> * @return {boolean} Whether an action was taken or not.
+<a name="line900"></a> * @protected
+<a name="line901"></a> */
+<a name="line902"></a>goog.ui.AutoComplete.InputHandler.prototype.handleKeyUp = function(e) {
+<a name="line903"></a>  return false;
+<a name="line904"></a>};
+<a name="line905"></a>
+<a name="line906"></a>
+<a name="line907"></a>/**
+<a name="line908"></a> * Adds the necessary key event handlers.
+<a name="line909"></a> * @private
+<a name="line910"></a> */
+<a name="line911"></a>goog.ui.AutoComplete.InputHandler.prototype.addKeyEvents_ = function() {
+<a name="line912"></a>  this.keyHandler_.attach(this.activeElement_);
+<a name="line913"></a>  this.eh_.listen(
+<a name="line914"></a>      this.keyHandler_, goog.events.KeyHandler.EventType.KEY, this.onKey_);
+<a name="line915"></a>  if (this.needKeyUpListener()) {
+<a name="line916"></a>    this.eh_.listen(this.activeElement_,
+<a name="line917"></a>        goog.events.EventType.KEYUP, this.handleKeyUp);
+<a name="line918"></a>  }
+<a name="line919"></a>
+<a name="line920"></a>  // IE also needs a keypress to check if the user typed a separator
+<a name="line921"></a>  if (goog.userAgent.IE) {
+<a name="line922"></a>    this.eh_.listen(this.activeElement_,
+<a name="line923"></a>        goog.events.EventType.KEYPRESS, this.onIeKeyPress_);
+<a name="line924"></a>  }
+<a name="line925"></a>};
+<a name="line926"></a>
+<a name="line927"></a>
+<a name="line928"></a>/**
+<a name="line929"></a> * Removes the necessary key event handlers.
+<a name="line930"></a> * @private
+<a name="line931"></a> */
+<a name="line932"></a>goog.ui.AutoComplete.InputHandler.prototype.removeKeyEvents_ = function() {
+<a name="line933"></a>  this.eh_.unlisten(
+<a name="line934"></a>      this.keyHandler_, goog.events.KeyHandler.EventType.KEY, this.onKey_);
+<a name="line935"></a>  this.keyHandler_.detach();
+<a name="line936"></a>  this.eh_.unlisten(this.activeElement_,
+<a name="line937"></a>      goog.events.EventType.KEYUP, this.handleKeyUp);
+<a name="line938"></a>
+<a name="line939"></a>  if (goog.userAgent.IE) {
+<a name="line940"></a>    this.eh_.unlisten(this.activeElement_,
+<a name="line941"></a>        goog.events.EventType.KEYPRESS, this.onIeKeyPress_);
+<a name="line942"></a>  }
+<a name="line943"></a>
+<a name="line944"></a>  if (this.waitingForIme_) {
+<a name="line945"></a>    this.stopWaitingForIme_();
+<a name="line946"></a>  }
+<a name="line947"></a>};
+<a name="line948"></a>
+<a name="line949"></a>
+<a name="line950"></a>/**
+<a name="line951"></a> * Handles an element getting focus.
+<a name="line952"></a> * @param {goog.events.Event} e Browser event object.
+<a name="line953"></a> * @protected
+<a name="line954"></a> */
+<a name="line955"></a>goog.ui.AutoComplete.InputHandler.prototype.handleFocus = function(e) {
+<a name="line956"></a>  this.processFocus(/** @type {Element} */ (e.target || null));
+<a name="line957"></a>};
+<a name="line958"></a>
+<a name="line959"></a>
+<a name="line960"></a>/**
+<a name="line961"></a> * Registers handlers for the active element when it receives focus.
+<a name="line962"></a> * @param {Element} target The element to focus.
+<a name="line963"></a> * @protected
+<a name="line964"></a> */
+<a name="line965"></a>goog.ui.AutoComplete.InputHandler.prototype.processFocus = function(target) {
+<a name="line966"></a>  this.activateHandler_.removeAll();
+<a name="line967"></a>
+<a name="line968"></a>  if (this.ac_) {
+<a name="line969"></a>    this.ac_.cancelDelayedDismiss();
+<a name="line970"></a>  }
+<a name="line971"></a>
+<a name="line972"></a>  // Double-check whether the active element has actually changed.
+<a name="line973"></a>  // This is a fix for Safari 3, which fires spurious focus events.
+<a name="line974"></a>  if (target != this.activeElement_) {
+<a name="line975"></a>    this.activeElement_ = target;
+<a name="line976"></a>    if (this.timer_) {
+<a name="line977"></a>      this.timer_.start();
+<a name="line978"></a>      this.eh_.listen(this.timer_, goog.Timer.TICK, this.onTick_);
+<a name="line979"></a>    }
+<a name="line980"></a>    this.lastValue_ = this.getValue();
+<a name="line981"></a>    this.addKeyEvents_();
+<a name="line982"></a>  }
+<a name="line983"></a>};
+<a name="line984"></a>
+<a name="line985"></a>
+<a name="line986"></a>/**
+<a name="line987"></a> * Handles an element blurring.
+<a name="line988"></a> * @param {goog.events.Event=} opt_e Browser event object.
+<a name="line989"></a> * @protected
+<a name="line990"></a> */
+<a name="line991"></a>goog.ui.AutoComplete.InputHandler.prototype.handleBlur = function(opt_e) {
+<a name="line992"></a>  // Phones running iOS prior to version 4.2.
+<a name="line993"></a>  if (goog.ui.AutoComplete.InputHandler.REQUIRES_ASYNC_BLUR_) {
+<a name="line994"></a>    // @bug 4484488 This is required so that the menu works correctly on
+<a name="line995"></a>    // iOS prior to version 4.2. Otherwise, the blur action closes the menu
+<a name="line996"></a>    // before the menu button click can be processed.
+<a name="line997"></a>    // In order to fix the bug, we set a timeout to process the blur event, so
+<a name="line998"></a>    // that any pending selection event can be processed first.
+<a name="line999"></a>    this.activeTimeoutId_ =
+<a name="line1000"></a>        window.setTimeout(goog.bind(this.processBlur_, this), 0);
+<a name="line1001"></a>    return;
+<a name="line1002"></a>  } else {
+<a name="line1003"></a>    this.processBlur_();
+<a name="line1004"></a>  }
+<a name="line1005"></a>};
+<a name="line1006"></a>
+<a name="line1007"></a>
+<a name="line1008"></a>/**
+<a name="line1009"></a> * Helper function that does the logic to handle an element blurring.
+<a name="line1010"></a> * @private
+<a name="line1011"></a> */
+<a name="line1012"></a>goog.ui.AutoComplete.InputHandler.prototype.processBlur_ = function() {
+<a name="line1013"></a>  // it&#39;s possible that a blur event could fire when there&#39;s no active element,
+<a name="line1014"></a>  // in the case where attachInput was called on an input that already had
+<a name="line1015"></a>  // the focus
+<a name="line1016"></a>  if (this.activeElement_) {
+<a name="line1017"></a>    this.removeKeyEvents_();
+<a name="line1018"></a>    this.activeElement_ = null;
+<a name="line1019"></a>
+<a name="line1020"></a>    if (this.timer_) {
+<a name="line1021"></a>      this.timer_.stop();
+<a name="line1022"></a>      this.eh_.unlisten(this.timer_, goog.Timer.TICK, this.onTick_);
+<a name="line1023"></a>    }
+<a name="line1024"></a>
+<a name="line1025"></a>    if (this.ac_) {
+<a name="line1026"></a>      // Pause dismissal slightly to take into account any other events that
+<a name="line1027"></a>      // might fire on the renderer (e.g. a click will lose the focus).
+<a name="line1028"></a>      this.ac_.dismissOnDelay();
+<a name="line1029"></a>    }
+<a name="line1030"></a>  }
+<a name="line1031"></a>};
+<a name="line1032"></a>
+<a name="line1033"></a>
+<a name="line1034"></a>/**
+<a name="line1035"></a> * Handles the timer&#39;s tick event.  Calculates the current token, and reports
+<a name="line1036"></a> * any update to the autocomplete.
+<a name="line1037"></a> * @param {goog.events.Event} e Browser event object.
+<a name="line1038"></a> * @private
+<a name="line1039"></a> */
+<a name="line1040"></a>goog.ui.AutoComplete.InputHandler.prototype.onTick_ = function(e) {
+<a name="line1041"></a>  this.update();
+<a name="line1042"></a>};
+<a name="line1043"></a>
+<a name="line1044"></a>
+<a name="line1045"></a>/**
+<a name="line1046"></a> * Handles typing in an inactive input element. Activate it.
+<a name="line1047"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line1048"></a> * @private
+<a name="line1049"></a> */
+<a name="line1050"></a>goog.ui.AutoComplete.InputHandler.prototype.onKeyDownOnInactiveElement_ =
+<a name="line1051"></a>    function(e) {
+<a name="line1052"></a>  this.handleFocus(e);
+<a name="line1053"></a>};
+<a name="line1054"></a>
+<a name="line1055"></a>
+<a name="line1056"></a>/**
+<a name="line1057"></a> * Handles typing in the active input element.  Checks if the key is a special
+<a name="line1058"></a> * key and does the relevent action as appropriate.
+<a name="line1059"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line1060"></a> * @private
+<a name="line1061"></a> */
+<a name="line1062"></a>goog.ui.AutoComplete.InputHandler.prototype.onKey_ = function(e) {
+<a name="line1063"></a>  this.lastKeyCode_ = e.keyCode;
+<a name="line1064"></a>  if (this.ac_) {
+<a name="line1065"></a>    this.handleKeyEvent(e);
+<a name="line1066"></a>  }
+<a name="line1067"></a>};
+<a name="line1068"></a>
+<a name="line1069"></a>
+<a name="line1070"></a>/**
+<a name="line1071"></a> * Handles a KEYPRESS event generated by typing in the active input element.
+<a name="line1072"></a> * Checks if IME input is ended.
+<a name="line1073"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line1074"></a> * @private
+<a name="line1075"></a> */
+<a name="line1076"></a>goog.ui.AutoComplete.InputHandler.prototype.onKeyPress_ = function(e) {
+<a name="line1077"></a>  if (this.waitingForIme_ &amp;&amp;
+<a name="line1078"></a>      this.lastKeyCode_ != goog.events.KeyCodes.WIN_IME) {
+<a name="line1079"></a>    this.stopWaitingForIme_();
+<a name="line1080"></a>  }
+<a name="line1081"></a>};
+<a name="line1082"></a>
+<a name="line1083"></a>
+<a name="line1084"></a>/**
+<a name="line1085"></a> * Handles the key-up event.  This is only ever used by Mac FF or when we are in
+<a name="line1086"></a> * an IME entry scenario.
+<a name="line1087"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line1088"></a> * @private
+<a name="line1089"></a> */
+<a name="line1090"></a>goog.ui.AutoComplete.InputHandler.prototype.onKeyUp_ = function(e) {
+<a name="line1091"></a>  if (this.waitingForIme_ &amp;&amp;
+<a name="line1092"></a>      (e.keyCode == goog.events.KeyCodes.ENTER ||
+<a name="line1093"></a>       (e.keyCode == goog.events.KeyCodes.M &amp;&amp; e.ctrlKey))) {
+<a name="line1094"></a>    this.stopWaitingForIme_();
+<a name="line1095"></a>  }
+<a name="line1096"></a>};
+<a name="line1097"></a>
+<a name="line1098"></a>
+<a name="line1099"></a>/**
+<a name="line1100"></a> * Starts waiting for IME.
+<a name="line1101"></a> * @private
+<a name="line1102"></a> */
+<a name="line1103"></a>goog.ui.AutoComplete.InputHandler.prototype.startWaitingForIme_ = function() {
+<a name="line1104"></a>  if (this.waitingForIme_) {
+<a name="line1105"></a>    return;
+<a name="line1106"></a>  }
+<a name="line1107"></a>  this.eh_.listen(
+<a name="line1108"></a>      this.activeElement_, goog.events.EventType.KEYUP, this.onKeyUp_);
+<a name="line1109"></a>  this.eh_.listen(
+<a name="line1110"></a>      this.activeElement_, goog.events.EventType.KEYPRESS, this.onKeyPress_);
+<a name="line1111"></a>  this.waitingForIme_ = true;
+<a name="line1112"></a>};
+<a name="line1113"></a>
+<a name="line1114"></a>
+<a name="line1115"></a>/**
+<a name="line1116"></a> * Stops waiting for IME.
+<a name="line1117"></a> * @private
+<a name="line1118"></a> */
+<a name="line1119"></a>goog.ui.AutoComplete.InputHandler.prototype.stopWaitingForIme_ = function() {
+<a name="line1120"></a>  if (!this.waitingForIme_) {
+<a name="line1121"></a>    return;
+<a name="line1122"></a>  }
+<a name="line1123"></a>  this.waitingForIme_ = false;
+<a name="line1124"></a>  this.eh_.unlisten(
+<a name="line1125"></a>      this.activeElement_, goog.events.EventType.KEYPRESS, this.onKeyPress_);
+<a name="line1126"></a>  this.eh_.unlisten(
+<a name="line1127"></a>      this.activeElement_, goog.events.EventType.KEYUP, this.onKeyUp_);
+<a name="line1128"></a>};
+<a name="line1129"></a>
+<a name="line1130"></a>
+<a name="line1131"></a>/**
+<a name="line1132"></a> * Handles the key-press event for IE, checking to see if the user typed a
+<a name="line1133"></a> * separator character.
+<a name="line1134"></a> * @param {goog.events.BrowserEvent} e Browser event object.
+<a name="line1135"></a> * @private
+<a name="line1136"></a> */
+<a name="line1137"></a>goog.ui.AutoComplete.InputHandler.prototype.onIeKeyPress_ = function(e) {
+<a name="line1138"></a>  this.handleSeparator_(e);
+<a name="line1139"></a>};
+<a name="line1140"></a>
+<a name="line1141"></a>
+<a name="line1142"></a>/**
+<a name="line1143"></a> * Checks if an update has occurred and notified the autocomplete of the new
+<a name="line1144"></a> * token.
+<a name="line1145"></a> * @param {boolean=} opt_force If true the menu will be forced to update.
+<a name="line1146"></a> */
+<a name="line1147"></a>goog.ui.AutoComplete.InputHandler.prototype.update = function(opt_force) {
+<a name="line1148"></a>  if (this.activeElement_ &amp;&amp;
+<a name="line1149"></a>      (opt_force || this.getValue() != this.lastValue_)) {
+<a name="line1150"></a>    if (opt_force || !this.rowJustSelected_) {
+<a name="line1151"></a>      var token = this.parseToken();
+<a name="line1152"></a>
+<a name="line1153"></a>      if (this.ac_) {
+<a name="line1154"></a>        this.ac_.setTarget(this.activeElement_);
+<a name="line1155"></a>        this.ac_.setToken(token, this.getValue());
+<a name="line1156"></a>      }
+<a name="line1157"></a>    }
+<a name="line1158"></a>    this.lastValue_ = this.getValue();
+<a name="line1159"></a>  }
+<a name="line1160"></a>  this.rowJustSelected_ = false;
+<a name="line1161"></a>};
+<a name="line1162"></a>
+<a name="line1163"></a>
+<a name="line1164"></a>/**
+<a name="line1165"></a> * Parses a text area or input box for the currently highlighted token.
+<a name="line1166"></a> * @return {string} Token to complete.
+<a name="line1167"></a> * @protected
+<a name="line1168"></a> */
+<a name="line1169"></a>goog.ui.AutoComplete.InputHandler.prototype.parseToken = function() {
+<a name="line1170"></a>  return this.parseToken_();
+<a name="line1171"></a>};
+<a name="line1172"></a>
+<a name="line1173"></a>
+<a name="line1174"></a>/**
+<a name="line1175"></a> * Moves hilite up.  May hilite next or previous depending on orientation.
+<a name="line1176"></a> * @return {boolean} True if successful.
+<a name="line1177"></a> * @private
+<a name="line1178"></a> */
+<a name="line1179"></a>goog.ui.AutoComplete.InputHandler.prototype.moveUp_ = function() {
+<a name="line1180"></a>  return this.upsideDown_ ? this.ac_.hiliteNext() : this.ac_.hilitePrev();
+<a name="line1181"></a>};
+<a name="line1182"></a>
+<a name="line1183"></a>
+<a name="line1184"></a>/**
+<a name="line1185"></a> * Moves hilite down.  May hilite next or previous depending on orientation.
+<a name="line1186"></a> * @return {boolean} True if successful.
+<a name="line1187"></a> * @private
+<a name="line1188"></a> */
+<a name="line1189"></a>goog.ui.AutoComplete.InputHandler.prototype.moveDown_ = function() {
+<a name="line1190"></a>  return this.upsideDown_ ? this.ac_.hilitePrev() : this.ac_.hiliteNext();
+<a name="line1191"></a>};
+<a name="line1192"></a>
+<a name="line1193"></a>
+<a name="line1194"></a>/**
+<a name="line1195"></a> * Parses a text area or input box for the currently highlighted token.
+<a name="line1196"></a> * @return {string} Token to complete.
+<a name="line1197"></a> * @private
+<a name="line1198"></a> */
+<a name="line1199"></a>goog.ui.AutoComplete.InputHandler.prototype.parseToken_ = function() {
+<a name="line1200"></a>  var caret = this.getCursorPosition();
+<a name="line1201"></a>  var text = this.getValue();
+<a name="line1202"></a>  return this.trim_(this.splitInput_(text)[this.getTokenIndex_(text, caret)]);
+<a name="line1203"></a>};
+<a name="line1204"></a>
+<a name="line1205"></a>
+<a name="line1206"></a>/**
+<a name="line1207"></a> * Trims a token of characters that we want to ignore
+<a name="line1208"></a> * @param {string} text string to trim.
+<a name="line1209"></a> * @return {string} Trimmed string.
+<a name="line1210"></a> * @private
+<a name="line1211"></a> */
+<a name="line1212"></a>goog.ui.AutoComplete.InputHandler.prototype.trim_ = function(text) {
+<a name="line1213"></a>  return this.trimmer_ ? String(text).replace(this.trimmer_, &#39;&#39;) : text;
+<a name="line1214"></a>};
+<a name="line1215"></a>
+<a name="line1216"></a>
+<a name="line1217"></a>/**
+<a name="line1218"></a> * Gets the index of the currently highlighted token
+<a name="line1219"></a> * @param {string} text string to parse.
+<a name="line1220"></a> * @param {number} caret Position of cursor in string.
+<a name="line1221"></a> * @return {number} Index of token.
+<a name="line1222"></a> * @private
+<a name="line1223"></a> */
+<a name="line1224"></a>goog.ui.AutoComplete.InputHandler.prototype.getTokenIndex_ = function(text,
+<a name="line1225"></a>                                                                      caret) {
+<a name="line1226"></a>  // Split up the input string into multiple entries
+<a name="line1227"></a>  var entries = this.splitInput_(text);
+<a name="line1228"></a>
+<a name="line1229"></a>  // Short-circuit to select the last entry
+<a name="line1230"></a>  if (caret == text.length) return entries.length - 1;
+<a name="line1231"></a>
+<a name="line1232"></a>  // Calculate which of the entries the cursor is currently in
+<a name="line1233"></a>  var current = 0;
+<a name="line1234"></a>  for (var i = 0, pos = 0; i &lt; entries.length &amp;&amp; pos &lt;= caret; i++) {
+<a name="line1235"></a>    pos += entries[i].length;
+<a name="line1236"></a>    current = i;
+<a name="line1237"></a>  }
+<a name="line1238"></a>
+<a name="line1239"></a>  // Get the token for the current item
+<a name="line1240"></a>  return current;
+<a name="line1241"></a>};
+<a name="line1242"></a>
+<a name="line1243"></a>
+<a name="line1244"></a>/**
+<a name="line1245"></a> * Splits an input string of text at the occurance of a character in
+<a name="line1246"></a> * {@link goog.ui.AutoComplete.InputHandler.prototype.separators_} and creates
+<a name="line1247"></a> * an array of tokens.  Each token may contain additional whitespace and
+<a name="line1248"></a> * formatting marks.  If necessary use
+<a name="line1249"></a> * {@link goog.ui.AutoComplete.InputHandler.prototype.trim_} to clean up the
+<a name="line1250"></a> * entries.
+<a name="line1251"></a> *
+<a name="line1252"></a> * @param {string} text Input text.
+<a name="line1253"></a> * @return {Array} Parsed array.
+<a name="line1254"></a> * @private
+<a name="line1255"></a> */
+<a name="line1256"></a>goog.ui.AutoComplete.InputHandler.prototype.splitInput_ = function(text) {
+<a name="line1257"></a>  if (!this.multi_) {
+<a name="line1258"></a>    return [text];
+<a name="line1259"></a>  }
+<a name="line1260"></a>
+<a name="line1261"></a>  var arr = String(text).split(&#39;&#39;);
+<a name="line1262"></a>  var parts = [];
+<a name="line1263"></a>  var cache = [];
+<a name="line1264"></a>
+<a name="line1265"></a>  for (var i = 0, inLiteral = false; i &lt; arr.length; i++) {
+<a name="line1266"></a>    if (this.literals_ &amp;&amp; this.literals_.indexOf(arr[i]) != -1) {
+<a name="line1267"></a>      if (this.generateNewTokenOnLiteral_ &amp;&amp; !inLiteral) {
+<a name="line1268"></a>        parts.push(cache.join(&#39;&#39;));
+<a name="line1269"></a>        cache.length = 0;
+<a name="line1270"></a>      }
+<a name="line1271"></a>      cache.push(arr[i]);
+<a name="line1272"></a>      inLiteral = !inLiteral;
+<a name="line1273"></a>
+<a name="line1274"></a>    } else if (!inLiteral &amp;&amp; this.separators_.indexOf(arr[i]) != -1) {
+<a name="line1275"></a>      cache.push(arr[i]);
+<a name="line1276"></a>      parts.push(cache.join(&#39;&#39;));
+<a name="line1277"></a>      cache.length = 0;
+<a name="line1278"></a>
+<a name="line1279"></a>    } else {
+<a name="line1280"></a>      cache.push(arr[i]);
+<a name="line1281"></a>    }
+<a name="line1282"></a>  }
+<a name="line1283"></a>  parts.push(cache.join(&#39;&#39;));
+<a name="line1284"></a>
+<a name="line1285"></a>  return parts;
+<a name="line1286"></a>};
+</pre>
+
+
+</body>
+</html>

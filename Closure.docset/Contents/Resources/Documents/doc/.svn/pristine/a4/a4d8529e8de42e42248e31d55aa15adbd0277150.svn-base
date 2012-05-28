@@ -1,0 +1,988 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>linkdialog.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_editor_linkdialog.js.html">linkdialog.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A dialog for editing/creating a link.
+<a name="line17"></a> *
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.ui.editor.LinkDialog&#39;);
+<a name="line21"></a>goog.provide(&#39;goog.ui.editor.LinkDialog.BeforeTestLinkEvent&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.ui.editor.LinkDialog.EventType&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.ui.editor.LinkDialog.OkEvent&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line26"></a>goog.require(&#39;goog.dom.DomHelper&#39;);
+<a name="line27"></a>goog.require(&#39;goog.dom.TagName&#39;);
+<a name="line28"></a>goog.require(&#39;goog.dom.classes&#39;);
+<a name="line29"></a>goog.require(&#39;goog.dom.selection&#39;);
+<a name="line30"></a>goog.require(&#39;goog.editor.BrowserFeature&#39;);
+<a name="line31"></a>goog.require(&#39;goog.editor.Link&#39;);
+<a name="line32"></a>goog.require(&#39;goog.editor.focus&#39;);
+<a name="line33"></a>goog.require(&#39;goog.events&#39;);
+<a name="line34"></a>goog.require(&#39;goog.events.EventHandler&#39;);
+<a name="line35"></a>goog.require(&#39;goog.events.EventType&#39;);
+<a name="line36"></a>goog.require(&#39;goog.events.InputHandler&#39;);
+<a name="line37"></a>goog.require(&#39;goog.events.InputHandler.EventType&#39;);
+<a name="line38"></a>goog.require(&#39;goog.string&#39;);
+<a name="line39"></a>goog.require(&#39;goog.style&#39;);
+<a name="line40"></a>goog.require(&#39;goog.ui.Button&#39;);
+<a name="line41"></a>goog.require(&#39;goog.ui.LinkButtonRenderer&#39;);
+<a name="line42"></a>goog.require(&#39;goog.ui.editor.AbstractDialog&#39;);
+<a name="line43"></a>goog.require(&#39;goog.ui.editor.AbstractDialog.Builder&#39;);
+<a name="line44"></a>goog.require(&#39;goog.ui.editor.AbstractDialog.EventType&#39;);
+<a name="line45"></a>goog.require(&#39;goog.ui.editor.TabPane&#39;);
+<a name="line46"></a>goog.require(&#39;goog.ui.editor.messages&#39;);
+<a name="line47"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line48"></a>goog.require(&#39;goog.window&#39;);
+<a name="line49"></a>
+<a name="line50"></a>
+<a name="line51"></a>
+<a name="line52"></a>/**
+<a name="line53"></a> * A type of goog.ui.editor.AbstractDialog for editing/creating a link.
+<a name="line54"></a> * @param {goog.dom.DomHelper} domHelper DomHelper to be used to create the
+<a name="line55"></a> *     dialog&#39;s dom structure.
+<a name="line56"></a> * @param {goog.editor.Link} link The target link.
+<a name="line57"></a> * @constructor
+<a name="line58"></a> * @extends {goog.ui.editor.AbstractDialog}
+<a name="line59"></a> */
+<a name="line60"></a>goog.ui.editor.LinkDialog = function(domHelper, link) {
+<a name="line61"></a>  goog.base(this, domHelper);
+<a name="line62"></a>  this.targetLink_ = link;
+<a name="line63"></a>
+<a name="line64"></a>  /**
+<a name="line65"></a>   * The event handler for this dialog.
+<a name="line66"></a>   * @type {goog.events.EventHandler}
+<a name="line67"></a>   * @private
+<a name="line68"></a>   */
+<a name="line69"></a>  this.eventHandler_ = new goog.events.EventHandler(this);
+<a name="line70"></a>};
+<a name="line71"></a>goog.inherits(goog.ui.editor.LinkDialog, goog.ui.editor.AbstractDialog);
+<a name="line72"></a>
+<a name="line73"></a>
+<a name="line74"></a>/**
+<a name="line75"></a> * Events specific to the link dialog.
+<a name="line76"></a> * @enum {string}
+<a name="line77"></a> */
+<a name="line78"></a>goog.ui.editor.LinkDialog.EventType = {
+<a name="line79"></a>  BEFORE_TEST_LINK: &#39;beforetestlink&#39;
+<a name="line80"></a>};
+<a name="line81"></a>
+<a name="line82"></a>
+<a name="line83"></a>
+<a name="line84"></a>/**
+<a name="line85"></a> * OK event object for the link dialog.
+<a name="line86"></a> * @param {string} linkText Text the user chose to display for the link.
+<a name="line87"></a> * @param {string} linkUrl Url the user chose for the link to point to.
+<a name="line88"></a> * @param {boolean} openInNewWindow Whether the link should open in a new window
+<a name="line89"></a> *     when clicked.
+<a name="line90"></a> * @constructor
+<a name="line91"></a> * @extends {goog.events.Event}
+<a name="line92"></a> */
+<a name="line93"></a>goog.ui.editor.LinkDialog.OkEvent = function(
+<a name="line94"></a>    linkText, linkUrl, openInNewWindow) {
+<a name="line95"></a>  goog.base(this, goog.ui.editor.AbstractDialog.EventType.OK);
+<a name="line96"></a>
+<a name="line97"></a>  /**
+<a name="line98"></a>   * The text of the link edited in the dialog.
+<a name="line99"></a>   * @type {string}
+<a name="line100"></a>   */
+<a name="line101"></a>  this.linkText = linkText;
+<a name="line102"></a>
+<a name="line103"></a>  /**
+<a name="line104"></a>   * The url of the link edited in the dialog.
+<a name="line105"></a>   * @type {string}
+<a name="line106"></a>   */
+<a name="line107"></a>  this.linkUrl = linkUrl;
+<a name="line108"></a>
+<a name="line109"></a>  /**
+<a name="line110"></a>   * Whether the link should open in a new window when clicked.
+<a name="line111"></a>   * @type {boolean}
+<a name="line112"></a>   */
+<a name="line113"></a>  this.openInNewWindow = openInNewWindow;
+<a name="line114"></a>};
+<a name="line115"></a>goog.inherits(goog.ui.editor.LinkDialog.OkEvent, goog.events.Event);
+<a name="line116"></a>
+<a name="line117"></a>
+<a name="line118"></a>
+<a name="line119"></a>/**
+<a name="line120"></a> * Event fired before testing a link by opening it in another window.
+<a name="line121"></a> * Calling preventDefault will stop the link from being opened.
+<a name="line122"></a> * @param {string} url Url of the link being tested.
+<a name="line123"></a> * @constructor
+<a name="line124"></a> * @extends {goog.events.Event}
+<a name="line125"></a> */
+<a name="line126"></a>goog.ui.editor.LinkDialog.BeforeTestLinkEvent = function(url) {
+<a name="line127"></a>  goog.base(this, goog.ui.editor.LinkDialog.EventType.BEFORE_TEST_LINK);
+<a name="line128"></a>
+<a name="line129"></a>  /**
+<a name="line130"></a>   * The url of the link being tested.
+<a name="line131"></a>   * @type {string}
+<a name="line132"></a>   */
+<a name="line133"></a>  this.url = url;
+<a name="line134"></a>};
+<a name="line135"></a>goog.inherits(goog.ui.editor.LinkDialog.BeforeTestLinkEvent, goog.events.Event);
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * Optional warning to show about email addresses.
+<a name="line140"></a> * @type {string|undefined}
+<a name="line141"></a> * @private
+<a name="line142"></a> */
+<a name="line143"></a>goog.ui.editor.LinkDialog.prototype.emailWarning_;
+<a name="line144"></a>
+<a name="line145"></a>
+<a name="line146"></a>/**
+<a name="line147"></a> * Whether to show a checkbox where the user can choose to have the link open in
+<a name="line148"></a> * a new window.
+<a name="line149"></a> * @type {boolean}
+<a name="line150"></a> * @private
+<a name="line151"></a> */
+<a name="line152"></a>goog.ui.editor.LinkDialog.prototype.showOpenLinkInNewWindow_ = false;
+<a name="line153"></a>
+<a name="line154"></a>
+<a name="line155"></a>/**
+<a name="line156"></a> * Whether the &quot;open link in new window&quot; checkbox should be checked when the
+<a name="line157"></a> * dialog is shown, and also whether it was checked last time the dialog was
+<a name="line158"></a> * closed.
+<a name="line159"></a> * @type {boolean}
+<a name="line160"></a> * @private
+<a name="line161"></a> */
+<a name="line162"></a>goog.ui.editor.LinkDialog.prototype.isOpenLinkInNewWindowChecked_ = false;
+<a name="line163"></a>
+<a name="line164"></a>
+<a name="line165"></a>/**
+<a name="line166"></a> * Sets the warning message to show to users about including email addresses on
+<a name="line167"></a> * public web pages.
+<a name="line168"></a> * @param {string} emailWarning Warning message to show users about including
+<a name="line169"></a> *     email addresses on the web.
+<a name="line170"></a> */
+<a name="line171"></a>goog.ui.editor.LinkDialog.prototype.setEmailWarning = function(
+<a name="line172"></a>    emailWarning) {
+<a name="line173"></a>  this.emailWarning_ = emailWarning;
+<a name="line174"></a>};
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * Tells the dialog to show a checkbox where the user can choose to have the
+<a name="line179"></a> * link open in a new window.
+<a name="line180"></a> * @param {boolean} startChecked Whether to check the checkbox the first
+<a name="line181"></a> *     time the dialog is shown. Subesquent times the checkbox will remember its
+<a name="line182"></a> *     previous state.
+<a name="line183"></a> */
+<a name="line184"></a>goog.ui.editor.LinkDialog.prototype.showOpenLinkInNewWindow = function(
+<a name="line185"></a>    startChecked) {
+<a name="line186"></a>  this.showOpenLinkInNewWindow_ = true;
+<a name="line187"></a>  this.isOpenLinkInNewWindowChecked_ = startChecked;
+<a name="line188"></a>};
+<a name="line189"></a>
+<a name="line190"></a>
+<a name="line191"></a>/** @override */
+<a name="line192"></a>goog.ui.editor.LinkDialog.prototype.show = function() {
+<a name="line193"></a>  goog.base(this, &#39;show&#39;);
+<a name="line194"></a>
+<a name="line195"></a>
+<a name="line196"></a>  this.selectAppropriateTab_(this.textToDisplayInput_.value,
+<a name="line197"></a>                             this.getTargetUrl_());
+<a name="line198"></a>  this.syncOkButton_();
+<a name="line199"></a>
+<a name="line200"></a>  if (this.showOpenLinkInNewWindow_) {
+<a name="line201"></a>    if (!this.targetLink_.isNew()) {
+<a name="line202"></a>      // If link is not new, checkbox should reflect current target.
+<a name="line203"></a>      this.isOpenLinkInNewWindowChecked_ =
+<a name="line204"></a>          this.targetLink_.getAnchor().target == &#39;_blank&#39;;
+<a name="line205"></a>    }
+<a name="line206"></a>    this.openInNewWindowCheckbox_.checked = this.isOpenLinkInNewWindowChecked_;
+<a name="line207"></a>  }
+<a name="line208"></a>};
+<a name="line209"></a>
+<a name="line210"></a>
+<a name="line211"></a>/** @override */
+<a name="line212"></a>goog.ui.editor.LinkDialog.prototype.hide = function() {
+<a name="line213"></a>  this.disableAutogenFlag_(false);
+<a name="line214"></a>  goog.base(this, &#39;hide&#39;);
+<a name="line215"></a>};
+<a name="line216"></a>
+<a name="line217"></a>
+<a name="line218"></a>/**
+<a name="line219"></a> * Tells the dialog whether to show the &#39;text to display&#39; div.
+<a name="line220"></a> * When the target element of the dialog is an image, there is no link text
+<a name="line221"></a> * to modify. This function can be used for this kind of situations.
+<a name="line222"></a> * @param {boolean} visible Whether to make &#39;text to display&#39; div visible.
+<a name="line223"></a> */
+<a name="line224"></a>goog.ui.editor.LinkDialog.prototype.setTextToDisplayVisible = function(
+<a name="line225"></a>    visible) {
+<a name="line226"></a>  if (this.textToDisplayDiv_) {
+<a name="line227"></a>    goog.style.setStyle(this.textToDisplayDiv_, &#39;display&#39;,
+<a name="line228"></a>                        visible ? &#39;block&#39; : &#39;none&#39;);
+<a name="line229"></a>  }
+<a name="line230"></a>};
+<a name="line231"></a>
+<a name="line232"></a>
+<a name="line233"></a>/**
+<a name="line234"></a> * Tells the plugin whether to stop leaking the page&#39;s url via the referrer
+<a name="line235"></a> * header when the &quot;test this link&quot; link is clicked.
+<a name="line236"></a> * @param {boolean} stop Whether to stop leaking the referrer.
+<a name="line237"></a> */
+<a name="line238"></a>goog.ui.editor.LinkDialog.prototype.setStopReferrerLeaks = function(stop) {
+<a name="line239"></a>  this.stopReferrerLeaks_ = stop;
+<a name="line240"></a>};
+<a name="line241"></a>
+<a name="line242"></a>
+<a name="line243"></a>/**
+<a name="line244"></a> * Tells the dialog whether the autogeneration of text to display is to be
+<a name="line245"></a> * enabled.
+<a name="line246"></a> * @param {boolean} enable Whether to enable the feature.
+<a name="line247"></a> */
+<a name="line248"></a>goog.ui.editor.LinkDialog.prototype.setAutogenFeatureEnabled = function(
+<a name="line249"></a>    enable) {
+<a name="line250"></a>  this.autogenFeatureEnabled_ = enable;
+<a name="line251"></a>};
+<a name="line252"></a>
+<a name="line253"></a>
+<a name="line254"></a>// *** Protected interface ************************************************** //
+<a name="line255"></a>
+<a name="line256"></a>
+<a name="line257"></a>/** @override */
+<a name="line258"></a>goog.ui.editor.LinkDialog.prototype.createDialogControl = function() {
+<a name="line259"></a>  this.textToDisplayDiv_ = /** @type {HTMLDivElement} */(
+<a name="line260"></a>      this.buildTextToDisplayDiv_());
+<a name="line261"></a>  var content = this.dom.createDom(goog.dom.TagName.DIV, null,
+<a name="line262"></a>      this.textToDisplayDiv_);
+<a name="line263"></a>
+<a name="line264"></a>  var builder = new goog.ui.editor.AbstractDialog.Builder(this);
+<a name="line265"></a>  builder.setTitle(goog.ui.editor.messages.MSG_EDIT_LINK)
+<a name="line266"></a>      .setContent(content);
+<a name="line267"></a>
+<a name="line268"></a>  this.tabPane_ = new goog.ui.editor.TabPane(this.dom,
+<a name="line269"></a>      goog.ui.editor.messages.MSG_LINK_TO);
+<a name="line270"></a>  this.tabPane_.addTab(goog.ui.editor.LinkDialog.Id_.ON_WEB_TAB,
+<a name="line271"></a>      goog.ui.editor.messages.MSG_ON_THE_WEB,
+<a name="line272"></a>      goog.ui.editor.messages.MSG_ON_THE_WEB_TIP,
+<a name="line273"></a>      this.buildTabOnTheWeb_());
+<a name="line274"></a>  this.tabPane_.addTab(goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB,
+<a name="line275"></a>      goog.ui.editor.messages.MSG_EMAIL_ADDRESS,
+<a name="line276"></a>      goog.ui.editor.messages.MSG_EMAIL_ADDRESS_TIP,
+<a name="line277"></a>      this.buildTabEmailAddress_());
+<a name="line278"></a>  this.tabPane_.render(content);
+<a name="line279"></a>
+<a name="line280"></a>  this.eventHandler_.listen(this.tabPane_, goog.ui.Component.EventType.SELECT,
+<a name="line281"></a>      this.onChangeTab_);
+<a name="line282"></a>
+<a name="line283"></a>  if (this.showOpenLinkInNewWindow_) {
+<a name="line284"></a>    content.appendChild(this.buildOpenInNewWindowDiv_());
+<a name="line285"></a>  }
+<a name="line286"></a>
+<a name="line287"></a>  return builder.build();
+<a name="line288"></a>};
+<a name="line289"></a>
+<a name="line290"></a>
+<a name="line291"></a>/**
+<a name="line292"></a> * Creates and returns the event object to be used when dispatching the OK
+<a name="line293"></a> * event to listeners based on which tab is currently selected and the contents
+<a name="line294"></a> * of the input fields of that tab.
+<a name="line295"></a> * @return {goog.ui.editor.LinkDialog.OkEvent} The event object to be used when
+<a name="line296"></a> *     dispatching the OK event to listeners.
+<a name="line297"></a> * @protected
+<a name="line298"></a> * @override
+<a name="line299"></a> */
+<a name="line300"></a>goog.ui.editor.LinkDialog.prototype.createOkEvent = function() {
+<a name="line301"></a>  if (this.tabPane_.getCurrentTabId() ==
+<a name="line302"></a>      goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB) {
+<a name="line303"></a>    return this.createOkEventFromEmailTab_();
+<a name="line304"></a>  } else {
+<a name="line305"></a>    return this.createOkEventFromWebTab_();
+<a name="line306"></a>  }
+<a name="line307"></a>};
+<a name="line308"></a>
+<a name="line309"></a>
+<a name="line310"></a>/** @override */
+<a name="line311"></a>goog.ui.editor.LinkDialog.prototype.disposeInternal = function() {
+<a name="line312"></a>  this.eventHandler_.dispose();
+<a name="line313"></a>  this.eventHandler_ = null;
+<a name="line314"></a>
+<a name="line315"></a>  this.urlInputHandler_.dispose();
+<a name="line316"></a>  this.urlInputHandler_ = null;
+<a name="line317"></a>  this.emailInputHandler_.dispose();
+<a name="line318"></a>  this.emailInputHandler_ = null;
+<a name="line319"></a>
+<a name="line320"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line321"></a>};
+<a name="line322"></a>
+<a name="line323"></a>
+<a name="line324"></a>// *** Private implementation *********************************************** //
+<a name="line325"></a>
+<a name="line326"></a>
+<a name="line327"></a>/**
+<a name="line328"></a> * The link being modified by this dialog.
+<a name="line329"></a> * @type {goog.editor.Link}
+<a name="line330"></a> * @private
+<a name="line331"></a> */
+<a name="line332"></a>goog.ui.editor.LinkDialog.prototype.targetLink_;
+<a name="line333"></a>
+<a name="line334"></a>
+<a name="line335"></a>/**
+<a name="line336"></a> * EventHandler object that keeps track of all handlers set by this dialog.
+<a name="line337"></a> * @type {goog.events.EventHandler}
+<a name="line338"></a> * @private
+<a name="line339"></a> */
+<a name="line340"></a>goog.ui.editor.LinkDialog.prototype.eventHandler_;
+<a name="line341"></a>
+<a name="line342"></a>
+<a name="line343"></a>/**
+<a name="line344"></a> * InputHandler object to listen for changes in the url input field.
+<a name="line345"></a> * @type {goog.events.InputHandler}
+<a name="line346"></a> * @private
+<a name="line347"></a> */
+<a name="line348"></a>goog.ui.editor.LinkDialog.prototype.urlInputHandler_;
+<a name="line349"></a>
+<a name="line350"></a>
+<a name="line351"></a>/**
+<a name="line352"></a> * InputHandler object to listen for changes in the email input field.
+<a name="line353"></a> * @type {goog.events.InputHandler}
+<a name="line354"></a> * @private
+<a name="line355"></a> */
+<a name="line356"></a>goog.ui.editor.LinkDialog.prototype.emailInputHandler_;
+<a name="line357"></a>
+<a name="line358"></a>
+<a name="line359"></a>/**
+<a name="line360"></a> * The tab bar where the url and email tabs are.
+<a name="line361"></a> * @type {goog.ui.editor.TabPane}
+<a name="line362"></a> * @private
+<a name="line363"></a> */
+<a name="line364"></a>goog.ui.editor.LinkDialog.prototype.tabPane_;
+<a name="line365"></a>
+<a name="line366"></a>
+<a name="line367"></a>/**
+<a name="line368"></a> * The div element holding the link&#39;s display text input.
+<a name="line369"></a> * @type {HTMLDivElement}
+<a name="line370"></a> * @private
+<a name="line371"></a> */
+<a name="line372"></a>goog.ui.editor.LinkDialog.prototype.textToDisplayDiv_;
+<a name="line373"></a>
+<a name="line374"></a>
+<a name="line375"></a>/**
+<a name="line376"></a> * The input element holding the link&#39;s display text.
+<a name="line377"></a> * @type {HTMLInputElement}
+<a name="line378"></a> * @private
+<a name="line379"></a> */
+<a name="line380"></a>goog.ui.editor.LinkDialog.prototype.textToDisplayInput_;
+<a name="line381"></a>
+<a name="line382"></a>
+<a name="line383"></a>/**
+<a name="line384"></a> * Whether or not the feature of automatically generating the display text is
+<a name="line385"></a> * enabled.
+<a name="line386"></a> * @type {boolean}
+<a name="line387"></a> * @private
+<a name="line388"></a> */
+<a name="line389"></a>goog.ui.editor.LinkDialog.prototype.autogenFeatureEnabled_ = true;
+<a name="line390"></a>
+<a name="line391"></a>
+<a name="line392"></a>/**
+<a name="line393"></a> * Whether or not we should automatically generate the display text.
+<a name="line394"></a> * @type {boolean}
+<a name="line395"></a> * @private
+<a name="line396"></a> */
+<a name="line397"></a>goog.ui.editor.LinkDialog.prototype.autogenerateTextToDisplay_;
+<a name="line398"></a>
+<a name="line399"></a>
+<a name="line400"></a>/**
+<a name="line401"></a> * Whether or not automatic generation of the display text is disabled.
+<a name="line402"></a> * @type {boolean}
+<a name="line403"></a> * @private
+<a name="line404"></a> */
+<a name="line405"></a>goog.ui.editor.LinkDialog.prototype.disableAutogen_;
+<a name="line406"></a>
+<a name="line407"></a>
+<a name="line408"></a>/**
+<a name="line409"></a> * The input element (checkbox) to indicate that the link should open in a new
+<a name="line410"></a> * window.
+<a name="line411"></a> * @type {HTMLInputElement}
+<a name="line412"></a> * @private
+<a name="line413"></a> */
+<a name="line414"></a>goog.ui.editor.LinkDialog.prototype.openInNewWindowCheckbox_;
+<a name="line415"></a>
+<a name="line416"></a>
+<a name="line417"></a>/**
+<a name="line418"></a> * Whether to stop leaking the page&#39;s url via the referrer header when the
+<a name="line419"></a> * &quot;test this link&quot; link is clicked.
+<a name="line420"></a> * @type {boolean}
+<a name="line421"></a> * @private
+<a name="line422"></a> */
+<a name="line423"></a>goog.ui.editor.LinkDialog.prototype.stopReferrerLeaks_ = false;
+<a name="line424"></a>
+<a name="line425"></a>
+<a name="line426"></a>/**
+<a name="line427"></a> * Builds and returns the text to display section of the edit link dialog.
+<a name="line428"></a> * @return {Element} A div element to be appended into the dialog div.
+<a name="line429"></a> * @private
+<a name="line430"></a> */
+<a name="line431"></a>goog.ui.editor.LinkDialog.prototype.buildTextToDisplayDiv_ = function() {
+<a name="line432"></a>  var table = this.dom.createTable(1, 2);
+<a name="line433"></a>  table.cellSpacing = &#39;0&#39;;
+<a name="line434"></a>  table.cellPadding = &#39;0&#39;;
+<a name="line435"></a>  table.style.fontSize = &#39;10pt&#39;;
+<a name="line436"></a>  // Build the text to display input.
+<a name="line437"></a>  var textToDisplayDiv = this.dom.createDom(goog.dom.TagName.DIV);
+<a name="line438"></a>  table.rows[0].cells[0].innerHTML = &#39;&lt;span style=&quot;position: relative;&#39; +
+<a name="line439"></a>      &#39; bottom: 2px; padding-right: 1px; white-space: nowrap;&quot;&gt;&#39; +
+<a name="line440"></a>      goog.ui.editor.messages.MSG_TEXT_TO_DISPLAY + &#39;&amp;nbsp;&lt;/span&gt;&#39;;
+<a name="line441"></a>  this.textToDisplayInput_ = /** @type {HTMLInputElement} */(
+<a name="line442"></a>      this.dom.createDom(goog.dom.TagName.INPUT,
+<a name="line443"></a>          {id: goog.ui.editor.LinkDialog.Id_.TEXT_TO_DISPLAY}));
+<a name="line444"></a>  var textInput = this.textToDisplayInput_;
+<a name="line445"></a>  // 98% prevents scroll bars in standards mode.
+<a name="line446"></a>  // TODO(robbyw): Is this necessary for quirks mode?
+<a name="line447"></a>  goog.style.setStyle(textInput, &#39;width&#39;, &#39;98%&#39;);
+<a name="line448"></a>  goog.style.setStyle(table.rows[0].cells[1], &#39;width&#39;, &#39;100%&#39;);
+<a name="line449"></a>  goog.dom.appendChild(table.rows[0].cells[1], textInput);
+<a name="line450"></a>
+<a name="line451"></a>  textInput.value = this.targetLink_.getCurrentText();
+<a name="line452"></a>  this.eventHandler_.listen(textInput,
+<a name="line453"></a>                            goog.events.EventType.KEYUP,
+<a name="line454"></a>                            goog.bind(this.onTextToDisplayEdit_, this));
+<a name="line455"></a>
+<a name="line456"></a>  goog.dom.appendChild(textToDisplayDiv, table);
+<a name="line457"></a>  return textToDisplayDiv;
+<a name="line458"></a>};
+<a name="line459"></a>
+<a name="line460"></a>
+<a name="line461"></a>/**
+<a name="line462"></a> * Builds and returns the &quot;checkbox to open the link in a new window&quot; section of
+<a name="line463"></a> * the edit link dialog.
+<a name="line464"></a> * @return {Element} A div element to be appended into the dialog div.
+<a name="line465"></a> * @private
+<a name="line466"></a> */
+<a name="line467"></a>goog.ui.editor.LinkDialog.prototype.buildOpenInNewWindowDiv_ = function() {
+<a name="line468"></a>  this.openInNewWindowCheckbox_ = /** @type {HTMLInputElement} */(
+<a name="line469"></a>      this.dom.createDom(goog.dom.TagName.INPUT, {&#39;type&#39;: &#39;checkbox&#39;}));
+<a name="line470"></a>  return this.dom.createDom(goog.dom.TagName.DIV, null,
+<a name="line471"></a>      this.dom.createDom(goog.dom.TagName.LABEL, null,
+<a name="line472"></a>                         this.openInNewWindowCheckbox_,
+<a name="line473"></a>                         goog.ui.editor.messages.MSG_OPEN_IN_NEW_WINDOW));
+<a name="line474"></a>};
+<a name="line475"></a>
+<a name="line476"></a>
+<a name="line477"></a>/**
+<a name="line478"></a>* Builds and returns the div containing the tab &quot;On the web&quot;.
+<a name="line479"></a>* @return {Element} The div element containing the tab.
+<a name="line480"></a>* @private
+<a name="line481"></a>*/
+<a name="line482"></a>goog.ui.editor.LinkDialog.prototype.buildTabOnTheWeb_ = function() {
+<a name="line483"></a>  var onTheWebDiv = this.dom.createElement(goog.dom.TagName.DIV);
+<a name="line484"></a>
+<a name="line485"></a>  var headingDiv = this.dom.createDom(goog.dom.TagName.DIV,
+<a name="line486"></a>      {innerHTML: &#39;&lt;b&gt;&#39; + goog.ui.editor.messages.MSG_WHAT_URL + &#39;&lt;/b&gt;&#39;});
+<a name="line487"></a>  var urlInput = this.dom.createDom(goog.dom.TagName.INPUT,
+<a name="line488"></a>      {id: goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT,
+<a name="line489"></a>       className: goog.ui.editor.LinkDialog.TARGET_INPUT_CLASSNAME_});
+<a name="line490"></a>  // IE throws on unknown values for type.
+<a name="line491"></a>  if (!goog.userAgent.IE) {
+<a name="line492"></a>    // On browsers that support Web Forms 2.0, allow autocompletion of URLs.
+<a name="line493"></a>    // (As of now, this is only supported by Opera 9)
+<a name="line494"></a>    urlInput.type = &#39;url&#39;;
+<a name="line495"></a>  }
+<a name="line496"></a>
+<a name="line497"></a>  if (goog.editor.BrowserFeature.NEEDS_99_WIDTH_IN_STANDARDS_MODE &amp;&amp;
+<a name="line498"></a>      goog.editor.node.isStandardsMode(urlInput)) {
+<a name="line499"></a>    urlInput.style.width = &#39;99%&#39;;
+<a name="line500"></a>  }
+<a name="line501"></a>
+<a name="line502"></a>  var inputDiv = this.dom.createDom(goog.dom.TagName.DIV, null, urlInput);
+<a name="line503"></a>
+<a name="line504"></a>  this.urlInputHandler_ = new goog.events.InputHandler(urlInput);
+<a name="line505"></a>  this.eventHandler_.listen(this.urlInputHandler_,
+<a name="line506"></a>      goog.events.InputHandler.EventType.INPUT,
+<a name="line507"></a>      this.onUrlOrEmailInputChange_);
+<a name="line508"></a>
+<a name="line509"></a>  var testLink = new goog.ui.Button(goog.ui.editor.messages.MSG_TEST_THIS_LINK,
+<a name="line510"></a>      goog.ui.LinkButtonRenderer.getInstance(),
+<a name="line511"></a>      this.dom);
+<a name="line512"></a>  testLink.render(inputDiv);
+<a name="line513"></a>  testLink.getElement().style.marginTop = &#39;1em&#39;;
+<a name="line514"></a>  this.eventHandler_.listen(testLink,
+<a name="line515"></a>      goog.ui.Component.EventType.ACTION,
+<a name="line516"></a>      this.onWebTestLink_);
+<a name="line517"></a>
+<a name="line518"></a>  // Build the &quot;On the web&quot; explanation text div.
+<a name="line519"></a>  var explanationDiv = this.dom.createDom(goog.dom.TagName.DIV,
+<a name="line520"></a>      {className: goog.ui.editor.LinkDialog.EXPLANATION_TEXT_CLASSNAME_,
+<a name="line521"></a>       innerHTML: goog.ui.editor.messages.MSG_TR_LINK_EXPLANATION});
+<a name="line522"></a>  onTheWebDiv.appendChild(headingDiv);
+<a name="line523"></a>  onTheWebDiv.appendChild(inputDiv);
+<a name="line524"></a>  onTheWebDiv.appendChild(explanationDiv);
+<a name="line525"></a>
+<a name="line526"></a>  return onTheWebDiv;
+<a name="line527"></a>};
+<a name="line528"></a>
+<a name="line529"></a>
+<a name="line530"></a>/**
+<a name="line531"></a> * Builds and returns the div containing the tab &quot;Email address&quot;.
+<a name="line532"></a> * @return {Element} the div element containing the tab.
+<a name="line533"></a> * @private
+<a name="line534"></a> */
+<a name="line535"></a>goog.ui.editor.LinkDialog.prototype.buildTabEmailAddress_ = function() {
+<a name="line536"></a>  var emailTab = this.dom.createDom(goog.dom.TagName.DIV);
+<a name="line537"></a>
+<a name="line538"></a>  var headingDiv = this.dom.createDom(goog.dom.TagName.DIV,
+<a name="line539"></a>      {innerHTML: &#39;&lt;b&gt;&#39; + goog.ui.editor.messages.MSG_WHAT_EMAIL + &#39;&lt;/b&gt;&#39;});
+<a name="line540"></a>  goog.dom.appendChild(emailTab, headingDiv);
+<a name="line541"></a>  var emailInput = this.dom.createDom(goog.dom.TagName.INPUT,
+<a name="line542"></a>      {id: goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_INPUT,
+<a name="line543"></a>       className: goog.ui.editor.LinkDialog.TARGET_INPUT_CLASSNAME_});
+<a name="line544"></a>
+<a name="line545"></a>  if (goog.editor.BrowserFeature.NEEDS_99_WIDTH_IN_STANDARDS_MODE &amp;&amp;
+<a name="line546"></a>      goog.editor.node.isStandardsMode(emailInput)) {
+<a name="line547"></a>    // Standards mode sizes this too large.
+<a name="line548"></a>    emailInput.style.width = &#39;99%&#39;;
+<a name="line549"></a>  }
+<a name="line550"></a>
+<a name="line551"></a>  goog.dom.appendChild(emailTab, emailInput);
+<a name="line552"></a>
+<a name="line553"></a>  this.emailInputHandler_ = new goog.events.InputHandler(emailInput);
+<a name="line554"></a>  this.eventHandler_.listen(this.emailInputHandler_,
+<a name="line555"></a>      goog.events.InputHandler.EventType.INPUT,
+<a name="line556"></a>      this.onUrlOrEmailInputChange_);
+<a name="line557"></a>
+<a name="line558"></a>  goog.dom.appendChild(emailTab,
+<a name="line559"></a>      this.dom.createDom(goog.dom.TagName.DIV,
+<a name="line560"></a>          {id: goog.ui.editor.LinkDialog.Id_.EMAIL_WARNING,
+<a name="line561"></a>           className: goog.ui.editor.LinkDialog.EMAIL_WARNING_CLASSNAME_,
+<a name="line562"></a>           style: &#39;visibility:hidden&#39;},
+<a name="line563"></a>          goog.ui.editor.messages.MSG_INVALID_EMAIL));
+<a name="line564"></a>
+<a name="line565"></a>  if (this.emailWarning_) {
+<a name="line566"></a>    var explanationDiv = this.dom.createDom(goog.dom.TagName.DIV,
+<a name="line567"></a>        {className: goog.ui.editor.LinkDialog.EXPLANATION_TEXT_CLASSNAME_,
+<a name="line568"></a>         innerHTML: this.emailWarning_});
+<a name="line569"></a>    goog.dom.appendChild(emailTab, explanationDiv);
+<a name="line570"></a>  }
+<a name="line571"></a>  return emailTab;
+<a name="line572"></a>};
+<a name="line573"></a>
+<a name="line574"></a>
+<a name="line575"></a>/**
+<a name="line576"></a> * Returns the url that the target points to.
+<a name="line577"></a> * @return {string} The url that the target points to.
+<a name="line578"></a> * @private
+<a name="line579"></a> */
+<a name="line580"></a>goog.ui.editor.LinkDialog.prototype.getTargetUrl_ = function() {
+<a name="line581"></a>  // Get the href-attribute through getAttribute() rather than the href property
+<a name="line582"></a>  // because Google-Toolbar on Firefox with &quot;Send with Gmail&quot; turned on
+<a name="line583"></a>  // modifies the href-property of &#39;mailto:&#39; links but leaves the attribute
+<a name="line584"></a>  // untouched.
+<a name="line585"></a>  return this.targetLink_.getAnchor().getAttribute(&#39;href&#39;) || &#39;&#39;;
+<a name="line586"></a>};
+<a name="line587"></a>
+<a name="line588"></a>
+<a name="line589"></a>/**
+<a name="line590"></a> * Selects the correct tab based on the URL, and fills in its inputs.
+<a name="line591"></a> * For new links, it suggests a url based on the link text.
+<a name="line592"></a> * @param {string} text The inner text of the link.
+<a name="line593"></a> * @param {string} url The href for the link.
+<a name="line594"></a> * @private
+<a name="line595"></a> */
+<a name="line596"></a>goog.ui.editor.LinkDialog.prototype.selectAppropriateTab_ = function(
+<a name="line597"></a>    text, url) {
+<a name="line598"></a>  if (this.isNewLink_()) {
+<a name="line599"></a>    // Newly created non-empty link: try to infer URL from the link text.
+<a name="line600"></a>    this.guessUrlAndSelectTab_(text);
+<a name="line601"></a>  } else if (goog.editor.Link.isMailto(url)) {
+<a name="line602"></a>    // The link is for an email.
+<a name="line603"></a>    this.tabPane_.setSelectedTabId(
+<a name="line604"></a>        goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB);
+<a name="line605"></a>    this.dom.getElement(goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_INPUT)
+<a name="line606"></a>        .value = url.substring(url.indexOf(&#39;:&#39;) + 1);
+<a name="line607"></a>    this.setAutogenFlagFromCurInput_();
+<a name="line608"></a>  } else {
+<a name="line609"></a>    // No specific tab was appropriate, default to on the web tab.
+<a name="line610"></a>    this.tabPane_.setSelectedTabId(goog.ui.editor.LinkDialog.Id_.ON_WEB_TAB);
+<a name="line611"></a>    this.dom.getElement(goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT)
+<a name="line612"></a>        .value = this.isNewLink_() ? &#39;http://&#39; : url;
+<a name="line613"></a>    this.setAutogenFlagFromCurInput_();
+<a name="line614"></a>  }
+<a name="line615"></a>};
+<a name="line616"></a>
+<a name="line617"></a>
+<a name="line618"></a>/**
+<a name="line619"></a> * Select a url/tab based on the link&#39;s text. This function is simply
+<a name="line620"></a> * the isNewLink_() == true case of selectAppropriateTab_().
+<a name="line621"></a> * @param {string} text The inner text of the link.
+<a name="line622"></a> * @private
+<a name="line623"></a> */
+<a name="line624"></a>goog.ui.editor.LinkDialog.prototype.guessUrlAndSelectTab_ = function(text) {
+<a name="line625"></a>  if (goog.editor.Link.isLikelyEmailAddress(text)) {
+<a name="line626"></a>    // The text is for an email address.
+<a name="line627"></a>    this.tabPane_.setSelectedTabId(
+<a name="line628"></a>        goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB);
+<a name="line629"></a>    this.dom.getElement(goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_INPUT)
+<a name="line630"></a>        .value = text;
+<a name="line631"></a>    this.setAutogenFlag_(true);
+<a name="line632"></a>    // TODO(user): Why disable right after enabling? What bug are we
+<a name="line633"></a>    // working around?
+<a name="line634"></a>    this.disableAutogenFlag_(true);
+<a name="line635"></a>  } else if (goog.editor.Link.isLikelyUrl(text)) {
+<a name="line636"></a>    // The text is for a web URL.
+<a name="line637"></a>    this.tabPane_.setSelectedTabId(goog.ui.editor.LinkDialog.Id_.ON_WEB_TAB);
+<a name="line638"></a>    this.dom.getElement(goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT)
+<a name="line639"></a>        .value = text;
+<a name="line640"></a>    this.setAutogenFlag_(true);
+<a name="line641"></a>    this.disableAutogenFlag_(true);
+<a name="line642"></a>  } else {
+<a name="line643"></a>    // No meaning could be deduced from text, choose a default tab.
+<a name="line644"></a>    if (!this.targetLink_.getCurrentText()) {
+<a name="line645"></a>      this.setAutogenFlag_(true);
+<a name="line646"></a>    }
+<a name="line647"></a>    this.tabPane_.setSelectedTabId(goog.ui.editor.LinkDialog.Id_.ON_WEB_TAB);
+<a name="line648"></a>  }
+<a name="line649"></a>};
+<a name="line650"></a>
+<a name="line651"></a>
+<a name="line652"></a>/**
+<a name="line653"></a> * Called on a change to the url or email input. If either one of those tabs
+<a name="line654"></a> * is active, sets the OK button to enabled/disabled accordingly.
+<a name="line655"></a> * @private
+<a name="line656"></a> */
+<a name="line657"></a>goog.ui.editor.LinkDialog.prototype.syncOkButton_ = function() {
+<a name="line658"></a>  var inputValue;
+<a name="line659"></a>  if (this.tabPane_.getCurrentTabId() ==
+<a name="line660"></a>      goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_TAB) {
+<a name="line661"></a>    inputValue = this.dom.getElement(
+<a name="line662"></a>        goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_INPUT).value;
+<a name="line663"></a>    this.toggleInvalidEmailWarning_(inputValue != &#39;&#39; &amp;&amp;
+<a name="line664"></a>        !goog.editor.Link.isLikelyEmailAddress(inputValue));
+<a name="line665"></a>  } else if (this.tabPane_.getCurrentTabId() ==
+<a name="line666"></a>      goog.ui.editor.LinkDialog.Id_.ON_WEB_TAB) {
+<a name="line667"></a>    inputValue = this.dom.getElement(
+<a name="line668"></a>        goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT).value;
+<a name="line669"></a>  } else {
+<a name="line670"></a>    return;
+<a name="line671"></a>  }
+<a name="line672"></a>  this.getOkButtonElement().disabled = goog.string.isEmpty(inputValue);
+<a name="line673"></a>};
+<a name="line674"></a>
+<a name="line675"></a>
+<a name="line676"></a>/**
+<a name="line677"></a> * Show/hide the Invalid Email Address warning.
+<a name="line678"></a> * @param {boolean} on Whether to show the warning.
+<a name="line679"></a> * @private
+<a name="line680"></a> */
+<a name="line681"></a>goog.ui.editor.LinkDialog.prototype.toggleInvalidEmailWarning_ = function(on) {
+<a name="line682"></a>  this.dom.getElement(goog.ui.editor.LinkDialog.Id_.EMAIL_WARNING)
+<a name="line683"></a>      .style.visibility = (on ? &#39;visible&#39; : &#39;hidden&#39;);
+<a name="line684"></a>};
+<a name="line685"></a>
+<a name="line686"></a>
+<a name="line687"></a>/**
+<a name="line688"></a> * Changes the autogenerateTextToDisplay flag so that text to
+<a name="line689"></a> * display stops autogenerating.
+<a name="line690"></a> * @private
+<a name="line691"></a> */
+<a name="line692"></a>goog.ui.editor.LinkDialog.prototype.onTextToDisplayEdit_ = function() {
+<a name="line693"></a>  var inputEmpty = this.textToDisplayInput_.value == &#39;&#39;;
+<a name="line694"></a>  if (inputEmpty) {
+<a name="line695"></a>    this.setAutogenFlag_(true);
+<a name="line696"></a>  } else {
+<a name="line697"></a>    this.setAutogenFlagFromCurInput_();
+<a name="line698"></a>  }
+<a name="line699"></a>};
+<a name="line700"></a>
+<a name="line701"></a>
+<a name="line702"></a>/**
+<a name="line703"></a> * The function called when hitting OK with the &quot;On the web&quot; tab current.
+<a name="line704"></a> * @return {goog.ui.editor.LinkDialog.OkEvent} The event object to be used when
+<a name="line705"></a> *     dispatching the OK event to listeners.
+<a name="line706"></a> * @private
+<a name="line707"></a> */
+<a name="line708"></a>goog.ui.editor.LinkDialog.prototype.createOkEventFromWebTab_ = function() {
+<a name="line709"></a>  var input = /** @type {HTMLInputElement} */(
+<a name="line710"></a>      this.dom.getElement(goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT));
+<a name="line711"></a>  var linkURL = input.value;
+<a name="line712"></a>  if (goog.editor.Link.isLikelyEmailAddress(linkURL)) {
+<a name="line713"></a>    // Make sure that if user types in an e-mail address, it becomes &quot;mailto:&quot;.
+<a name="line714"></a>    return this.createOkEventFromEmailTab_(
+<a name="line715"></a>        goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT);
+<a name="line716"></a>  } else {
+<a name="line717"></a>    if (linkURL.search(/:/) &lt; 0) {
+<a name="line718"></a>      linkURL = &#39;http://&#39; + goog.string.trimLeft(linkURL);
+<a name="line719"></a>    }
+<a name="line720"></a>    return this.createOkEventFromUrl_(linkURL);
+<a name="line721"></a>  }
+<a name="line722"></a>};
+<a name="line723"></a>
+<a name="line724"></a>
+<a name="line725"></a>/**
+<a name="line726"></a> * The function called when hitting OK with the &quot;email address&quot; tab current.
+<a name="line727"></a> * @param {string=} opt_inputId Id of an alternate input to check.
+<a name="line728"></a> * @return {goog.ui.editor.LinkDialog.OkEvent} The event object to be used when
+<a name="line729"></a> *     dispatching the OK event to listeners.
+<a name="line730"></a> * @private
+<a name="line731"></a> */
+<a name="line732"></a>goog.ui.editor.LinkDialog.prototype.createOkEventFromEmailTab_ = function(
+<a name="line733"></a>    opt_inputId) {
+<a name="line734"></a>  var linkURL = this.dom.getElement(
+<a name="line735"></a>      opt_inputId || goog.ui.editor.LinkDialog.Id_.EMAIL_ADDRESS_INPUT).value;
+<a name="line736"></a>  linkURL = &#39;mailto:&#39; + linkURL;
+<a name="line737"></a>  return this.createOkEventFromUrl_(linkURL);
+<a name="line738"></a>};
+<a name="line739"></a>
+<a name="line740"></a>
+<a name="line741"></a>/**
+<a name="line742"></a> * Function to test a link from the on the web tab.
+<a name="line743"></a> * @private
+<a name="line744"></a> */
+<a name="line745"></a>goog.ui.editor.LinkDialog.prototype.onWebTestLink_ = function() {
+<a name="line746"></a>  var input = /** @type {HTMLInputElement} */(
+<a name="line747"></a>      this.dom.getElement(goog.ui.editor.LinkDialog.Id_.ON_WEB_INPUT));
+<a name="line748"></a>  var url = input.value;
+<a name="line749"></a>  if (url.search(/:/) &lt; 0) {
+<a name="line750"></a>    url = &#39;http://&#39; + goog.string.trimLeft(url);
+<a name="line751"></a>  }
+<a name="line752"></a>  if (this.dispatchEvent(
+<a name="line753"></a>      new goog.ui.editor.LinkDialog.BeforeTestLinkEvent(url))) {
+<a name="line754"></a>    var win = this.dom.getWindow();
+<a name="line755"></a>    var size = goog.dom.getViewportSize(win);
+<a name="line756"></a>    var openOptions = {
+<a name="line757"></a>      target: &#39;_blank&#39;,
+<a name="line758"></a>      width: Math.max(size.width - 50, 50),
+<a name="line759"></a>      height: Math.max(size.height - 50, 50),
+<a name="line760"></a>      toolbar: true,
+<a name="line761"></a>      scrollbars: true,
+<a name="line762"></a>      location: true,
+<a name="line763"></a>      statusbar: false,
+<a name="line764"></a>      menubar: true,
+<a name="line765"></a>      &#39;resizable&#39;: true,
+<a name="line766"></a>      &#39;noreferrer&#39;: this.stopReferrerLeaks_
+<a name="line767"></a>    };
+<a name="line768"></a>    goog.window.open(url, openOptions, win);
+<a name="line769"></a>  }
+<a name="line770"></a>};
+<a name="line771"></a>
+<a name="line772"></a>
+<a name="line773"></a>/**
+<a name="line774"></a> * Called whenever the url or email input is edited. If the text to display
+<a name="line775"></a> * matches the text to display, turn on auto. Otherwise if auto is on, update
+<a name="line776"></a> * the text to display based on the url.
+<a name="line777"></a> * @private
+<a name="line778"></a> */
+<a name="line779"></a>goog.ui.editor.LinkDialog.prototype.onUrlOrEmailInputChange_ = function() {
+<a name="line780"></a>  if (this.autogenerateTextToDisplay_) {
+<a name="line781"></a>    this.setTextToDisplayFromAuto_();
+<a name="line782"></a>  } else if (this.textToDisplayInput_.value == &#39;&#39;) {
+<a name="line783"></a>    this.setAutogenFlagFromCurInput_();
+<a name="line784"></a>  }
+<a name="line785"></a>  this.syncOkButton_();
+<a name="line786"></a>};
+<a name="line787"></a>
+<a name="line788"></a>
+<a name="line789"></a>/**
+<a name="line790"></a> * Called when the currently selected tab changes.
+<a name="line791"></a> * @param {goog.events.Event} e The tab change event.
+<a name="line792"></a> * @private
+<a name="line793"></a> */
+<a name="line794"></a>goog.ui.editor.LinkDialog.prototype.onChangeTab_ = function(e) {
+<a name="line795"></a>  var tab = /** @type {goog.ui.Tab} */ (e.target);
+<a name="line796"></a>
+<a name="line797"></a>  // Focus on the input field in the selected tab.
+<a name="line798"></a>  var input = this.dom.getElement(tab.getId() +
+<a name="line799"></a>      goog.ui.editor.LinkDialog.Id_.TAB_INPUT_SUFFIX);
+<a name="line800"></a>  goog.editor.focus.focusInputField(input);
+<a name="line801"></a>
+<a name="line802"></a>  // For some reason, IE does not fire onpropertychange events when the width
+<a name="line803"></a>  // is specified as a percentage, which breaks the InputHandlers.
+<a name="line804"></a>  input.style.width = &#39;&#39;;
+<a name="line805"></a>  input.style.width = input.offsetWidth + &#39;px&#39;;
+<a name="line806"></a>
+<a name="line807"></a>  this.syncOkButton_();
+<a name="line808"></a>  this.setTextToDisplayFromAuto_();
+<a name="line809"></a>};
+<a name="line810"></a>
+<a name="line811"></a>
+<a name="line812"></a>/**
+<a name="line813"></a> * If autogen is turned on, set the value of text to display based on the
+<a name="line814"></a> * current selection or url.
+<a name="line815"></a> * @private
+<a name="line816"></a> */
+<a name="line817"></a>goog.ui.editor.LinkDialog.prototype.setTextToDisplayFromAuto_ = function() {
+<a name="line818"></a>  if (this.autogenFeatureEnabled_ &amp;&amp; this.autogenerateTextToDisplay_) {
+<a name="line819"></a>    var inputId = this.tabPane_.getCurrentTabId() +
+<a name="line820"></a>        goog.ui.editor.LinkDialog.Id_.TAB_INPUT_SUFFIX;
+<a name="line821"></a>    this.textToDisplayInput_.value =
+<a name="line822"></a>        /** @type {HTMLInputElement} */(this.dom.getElement(inputId)).value;
+<a name="line823"></a>  }
+<a name="line824"></a>};
+<a name="line825"></a>
+<a name="line826"></a>
+<a name="line827"></a>/**
+<a name="line828"></a> * Turn on the autogenerate text to display flag, and set some sort of indicator
+<a name="line829"></a> * that autogen is on.
+<a name="line830"></a> * @param {boolean} val Boolean value to set autogenerate to.
+<a name="line831"></a> * @private
+<a name="line832"></a> */
+<a name="line833"></a>goog.ui.editor.LinkDialog.prototype.setAutogenFlag_ = function(val) {
+<a name="line834"></a>  // TODO(user): This whole autogen thing is very confusing. It needs
+<a name="line835"></a>  // to be refactored and/or explained.
+<a name="line836"></a>  this.autogenerateTextToDisplay_ = val;
+<a name="line837"></a>};
+<a name="line838"></a>
+<a name="line839"></a>
+<a name="line840"></a>/**
+<a name="line841"></a> * Disables autogen so that onUrlOrEmailInputChange_ doesn&#39;t act in cases
+<a name="line842"></a> * that are undesirable.
+<a name="line843"></a> * @param {boolean} autogen Boolean value to set disableAutogen to.
+<a name="line844"></a> * @private
+<a name="line845"></a> */
+<a name="line846"></a>goog.ui.editor.LinkDialog.prototype.disableAutogenFlag_ = function(autogen) {
+<a name="line847"></a>  this.setAutogenFlag_(!autogen);
+<a name="line848"></a>  this.disableAutogen_ = autogen;
+<a name="line849"></a>};
+<a name="line850"></a>
+<a name="line851"></a>
+<a name="line852"></a>/**
+<a name="line853"></a> * Creates an OK event from the text to display input and the specified link.
+<a name="line854"></a> * If text to display input is empty, then generate the auto value for it.
+<a name="line855"></a> * @return {goog.ui.editor.LinkDialog.OkEvent} The event object to be used when
+<a name="line856"></a> *     dispatching the OK event to listeners.
+<a name="line857"></a> * @param {string} url Url the target element should point to.
+<a name="line858"></a> * @private
+<a name="line859"></a> */
+<a name="line860"></a>goog.ui.editor.LinkDialog.prototype.createOkEventFromUrl_ = function(url) {
+<a name="line861"></a>  // Fill in the text to display input in case it is empty.
+<a name="line862"></a>  this.setTextToDisplayFromAuto_();
+<a name="line863"></a>  if (this.showOpenLinkInNewWindow_) {
+<a name="line864"></a>    // Save checkbox state for next time.
+<a name="line865"></a>    this.isOpenLinkInNewWindowChecked_ = this.openInNewWindowCheckbox_.checked;
+<a name="line866"></a>  }
+<a name="line867"></a>  return new goog.ui.editor.LinkDialog.OkEvent(this.textToDisplayInput_.value,
+<a name="line868"></a>      url, this.showOpenLinkInNewWindow_ &amp;&amp; this.isOpenLinkInNewWindowChecked_);
+<a name="line869"></a>};
+<a name="line870"></a>
+<a name="line871"></a>
+<a name="line872"></a>/**
+<a name="line873"></a> * If an email or url is being edited, set autogenerate to on if the text to
+<a name="line874"></a> * display matches the url.
+<a name="line875"></a> * @private
+<a name="line876"></a> */
+<a name="line877"></a>goog.ui.editor.LinkDialog.prototype.setAutogenFlagFromCurInput_ = function() {
+<a name="line878"></a>  var autogen = false;
+<a name="line879"></a>  if (!this.disableAutogen_) {
+<a name="line880"></a>    var tabInput = this.dom.getElement(this.tabPane_.getCurrentTabId() +
+<a name="line881"></a>        goog.ui.editor.LinkDialog.Id_.TAB_INPUT_SUFFIX);
+<a name="line882"></a>    autogen = (tabInput.value == this.textToDisplayInput_.value);
+<a name="line883"></a>  }
+<a name="line884"></a>  this.setAutogenFlag_(autogen);
+<a name="line885"></a>};
+<a name="line886"></a>
+<a name="line887"></a>
+<a name="line888"></a>/**
+<a name="line889"></a> * @return {boolean} Whether the link is new.
+<a name="line890"></a> * @private
+<a name="line891"></a> */
+<a name="line892"></a>goog.ui.editor.LinkDialog.prototype.isNewLink_ = function() {
+<a name="line893"></a>  return this.targetLink_.isNew();
+<a name="line894"></a>};
+<a name="line895"></a>
+<a name="line896"></a>
+<a name="line897"></a>/**
+<a name="line898"></a> * IDs for relevant DOM elements.
+<a name="line899"></a> * @enum {string}
+<a name="line900"></a> * @private
+<a name="line901"></a> */
+<a name="line902"></a>goog.ui.editor.LinkDialog.Id_ = {
+<a name="line903"></a>  TEXT_TO_DISPLAY: &#39;linkdialog-text&#39;,
+<a name="line904"></a>  ON_WEB_TAB: &#39;linkdialog-onweb&#39;,
+<a name="line905"></a>  ON_WEB_INPUT: &#39;linkdialog-onweb-tab-input&#39;,
+<a name="line906"></a>  EMAIL_ADDRESS_TAB: &#39;linkdialog-email&#39;,
+<a name="line907"></a>  EMAIL_ADDRESS_INPUT: &#39;linkdialog-email-tab-input&#39;,
+<a name="line908"></a>  EMAIL_WARNING: &#39;linkdialog-email-warning&#39;,
+<a name="line909"></a>  TAB_INPUT_SUFFIX: &#39;-tab-input&#39;
+<a name="line910"></a>};
+<a name="line911"></a>
+<a name="line912"></a>
+<a name="line913"></a>/**
+<a name="line914"></a> * Class name for the url and email input elements.
+<a name="line915"></a> * @type {string}
+<a name="line916"></a> * @private
+<a name="line917"></a> */
+<a name="line918"></a>goog.ui.editor.LinkDialog.TARGET_INPUT_CLASSNAME_ =
+<a name="line919"></a>    goog.getCssName(&#39;tr-link-dialog-target-input&#39;);
+<a name="line920"></a>
+<a name="line921"></a>
+<a name="line922"></a>/**
+<a name="line923"></a> * Class name for the email address warning element.
+<a name="line924"></a> * @type {string}
+<a name="line925"></a> * @private
+<a name="line926"></a> */
+<a name="line927"></a>goog.ui.editor.LinkDialog.EMAIL_WARNING_CLASSNAME_ =
+<a name="line928"></a>    goog.getCssName(&#39;tr-link-dialog-email-warning&#39;);
+<a name="line929"></a>
+<a name="line930"></a>
+<a name="line931"></a>/**
+<a name="line932"></a> * Class name for the explanation text elements.
+<a name="line933"></a> * @type {string}
+<a name="line934"></a> * @private
+<a name="line935"></a> */
+<a name="line936"></a>goog.ui.editor.LinkDialog.EXPLANATION_TEXT_CLASSNAME_ =
+<a name="line937"></a>    goog.getCssName(&#39;tr-link-dialog-explanation-text&#39;);
+</pre>
+
+
+</body>
+</html>

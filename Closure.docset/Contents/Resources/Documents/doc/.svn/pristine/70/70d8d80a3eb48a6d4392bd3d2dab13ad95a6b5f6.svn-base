@@ -1,0 +1,987 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>combobox.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_ui_combobox.js.html">combobox.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A combo box control that allows user input with
+<a name="line17"></a> * auto-suggestion from a limited set of options.
+<a name="line18"></a> *
+<a name="line19"></a> * @see ../demos/combobox.html
+<a name="line20"></a> */
+<a name="line21"></a>
+<a name="line22"></a>goog.provide(&#39;goog.ui.ComboBox&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.ui.ComboBoxItem&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.Timer&#39;);
+<a name="line26"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line27"></a>goog.require(&#39;goog.dom.classes&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events&#39;);
+<a name="line29"></a>goog.require(&#39;goog.events.InputHandler&#39;);
+<a name="line30"></a>goog.require(&#39;goog.events.KeyCodes&#39;);
+<a name="line31"></a>goog.require(&#39;goog.events.KeyHandler&#39;);
+<a name="line32"></a>goog.require(&#39;goog.string&#39;);
+<a name="line33"></a>goog.require(&#39;goog.style&#39;);
+<a name="line34"></a>goog.require(&#39;goog.ui.Component&#39;);
+<a name="line35"></a>goog.require(&#39;goog.ui.ItemEvent&#39;);
+<a name="line36"></a>goog.require(&#39;goog.ui.LabelInput&#39;);
+<a name="line37"></a>goog.require(&#39;goog.ui.Menu&#39;);
+<a name="line38"></a>goog.require(&#39;goog.ui.MenuItem&#39;);
+<a name="line39"></a>goog.require(&#39;goog.ui.registry&#39;);
+<a name="line40"></a>goog.require(&#39;goog.userAgent&#39;);
+<a name="line41"></a>
+<a name="line42"></a>
+<a name="line43"></a>
+<a name="line44"></a>/**
+<a name="line45"></a> * A ComboBox control.
+<a name="line46"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
+<a name="line47"></a> * @param {goog.ui.Menu=} opt_menu Optional menu.
+<a name="line48"></a> * @extends {goog.ui.Component}
+<a name="line49"></a> * @constructor
+<a name="line50"></a> */
+<a name="line51"></a>goog.ui.ComboBox = function(opt_domHelper, opt_menu) {
+<a name="line52"></a>  goog.ui.Component.call(this, opt_domHelper);
+<a name="line53"></a>
+<a name="line54"></a>  this.labelInput_ = new goog.ui.LabelInput();
+<a name="line55"></a>  this.enabled_ = true;
+<a name="line56"></a>
+<a name="line57"></a>  // TODO(user): Allow lazy creation of menus/menu items
+<a name="line58"></a>  this.menu_ = opt_menu || new goog.ui.Menu(this.getDomHelper());
+<a name="line59"></a>  this.setupMenu_();
+<a name="line60"></a>};
+<a name="line61"></a>goog.inherits(goog.ui.ComboBox, goog.ui.Component);
+<a name="line62"></a>
+<a name="line63"></a>
+<a name="line64"></a>/**
+<a name="line65"></a> * Number of milliseconds to wait before dismissing combobox after blur.
+<a name="line66"></a> * @type {number}
+<a name="line67"></a> */
+<a name="line68"></a>goog.ui.ComboBox.BLUR_DISMISS_TIMER_MS = 250;
+<a name="line69"></a>
+<a name="line70"></a>
+<a name="line71"></a>/**
+<a name="line72"></a> * A logger to help debugging of combo box behavior.
+<a name="line73"></a> * @type {goog.debug.Logger}
+<a name="line74"></a> * @private
+<a name="line75"></a> */
+<a name="line76"></a>goog.ui.ComboBox.prototype.logger_ =
+<a name="line77"></a>    goog.debug.Logger.getLogger(&#39;goog.ui.ComboBox&#39;);
+<a name="line78"></a>
+<a name="line79"></a>
+<a name="line80"></a>/**
+<a name="line81"></a> * Whether the combo box is enabled.
+<a name="line82"></a> * @type {boolean}
+<a name="line83"></a> * @private
+<a name="line84"></a> */
+<a name="line85"></a>goog.ui.ComboBox.prototype.enabled_;
+<a name="line86"></a>
+<a name="line87"></a>
+<a name="line88"></a>/**
+<a name="line89"></a> * Keyboard event handler to manage key events dispatched by the input element.
+<a name="line90"></a> * @type {goog.events.KeyHandler}
+<a name="line91"></a> * @private
+<a name="line92"></a> */
+<a name="line93"></a>goog.ui.ComboBox.prototype.keyHandler_;
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * Input handler to take care of firing events when the user inputs text in
+<a name="line98"></a> * the input.
+<a name="line99"></a> * @type {goog.events.InputHandler?}
+<a name="line100"></a> * @private
+<a name="line101"></a> */
+<a name="line102"></a>goog.ui.ComboBox.prototype.inputHandler_ = null;
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * The last input token.
+<a name="line107"></a> * @type {?string}
+<a name="line108"></a> * @private
+<a name="line109"></a> */
+<a name="line110"></a>goog.ui.ComboBox.prototype.lastToken_ = null;
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/**
+<a name="line114"></a> * A LabelInput control that manages the focus/blur state of the input box.
+<a name="line115"></a> * @type {goog.ui.LabelInput?}
+<a name="line116"></a> * @private
+<a name="line117"></a> */
+<a name="line118"></a>goog.ui.ComboBox.prototype.labelInput_ = null;
+<a name="line119"></a>
+<a name="line120"></a>
+<a name="line121"></a>/**
+<a name="line122"></a> * Drop down menu for the combo box.  Will be created at construction time.
+<a name="line123"></a> * @type {goog.ui.Menu?}
+<a name="line124"></a> * @private
+<a name="line125"></a> */
+<a name="line126"></a>goog.ui.ComboBox.prototype.menu_ = null;
+<a name="line127"></a>
+<a name="line128"></a>
+<a name="line129"></a>/**
+<a name="line130"></a> * The cached visible count.
+<a name="line131"></a> * @type {number}
+<a name="line132"></a> * @private
+<a name="line133"></a> */
+<a name="line134"></a>goog.ui.ComboBox.prototype.visibleCount_ = -1;
+<a name="line135"></a>
+<a name="line136"></a>
+<a name="line137"></a>/**
+<a name="line138"></a> * The input element.
+<a name="line139"></a> * @type {Element}
+<a name="line140"></a> * @private
+<a name="line141"></a> */
+<a name="line142"></a>goog.ui.ComboBox.prototype.input_ = null;
+<a name="line143"></a>
+<a name="line144"></a>
+<a name="line145"></a>/**
+<a name="line146"></a> * The match function.  The first argument for the match function will be
+<a name="line147"></a> * a MenuItem&#39;s caption and the second will be the token to evaluate.
+<a name="line148"></a> * @type {Function}
+<a name="line149"></a> * @private
+<a name="line150"></a> */
+<a name="line151"></a>goog.ui.ComboBox.prototype.matchFunction_ = goog.string.startsWith;
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * Element used as the combo boxes button.
+<a name="line156"></a> * @type {Element}
+<a name="line157"></a> * @private
+<a name="line158"></a> */
+<a name="line159"></a>goog.ui.ComboBox.prototype.button_ = null;
+<a name="line160"></a>
+<a name="line161"></a>
+<a name="line162"></a>/**
+<a name="line163"></a> * Default text content for the input box when it is unchanged and unfocussed.
+<a name="line164"></a> * @type {string}
+<a name="line165"></a> * @private
+<a name="line166"></a> */
+<a name="line167"></a>goog.ui.ComboBox.prototype.defaultText_ = &#39;&#39;;
+<a name="line168"></a>
+<a name="line169"></a>
+<a name="line170"></a>/**
+<a name="line171"></a> * Name for the input box created
+<a name="line172"></a> * @type {string}
+<a name="line173"></a> * @private
+<a name="line174"></a> */
+<a name="line175"></a>goog.ui.ComboBox.prototype.fieldName_ = &#39;&#39;;
+<a name="line176"></a>
+<a name="line177"></a>
+<a name="line178"></a>/**
+<a name="line179"></a> * Timer identifier for delaying the dismissal of the combo menu.
+<a name="line180"></a> * @type {?number}
+<a name="line181"></a> * @private
+<a name="line182"></a> */
+<a name="line183"></a>goog.ui.ComboBox.prototype.dismissTimer_ = null;
+<a name="line184"></a>
+<a name="line185"></a>
+<a name="line186"></a>/**
+<a name="line187"></a> * True if the unicode inverted triangle should be displayed in the dropdown
+<a name="line188"></a> * button. Defaults to false.
+<a name="line189"></a> * @type {boolean} useDropdownArrow
+<a name="line190"></a> * @private
+<a name="line191"></a> */
+<a name="line192"></a>goog.ui.ComboBox.prototype.useDropdownArrow_ = false;
+<a name="line193"></a>
+<a name="line194"></a>
+<a name="line195"></a>/**
+<a name="line196"></a> * Create the DOM objects needed for the combo box.  A span and text input.
+<a name="line197"></a> * @override
+<a name="line198"></a> */
+<a name="line199"></a>goog.ui.ComboBox.prototype.createDom = function() {
+<a name="line200"></a>  this.input_ = this.getDomHelper().createDom(
+<a name="line201"></a>      &#39;input&#39;, {&#39;name&#39;: this.fieldName_, &#39;autocomplete&#39;: &#39;off&#39;});
+<a name="line202"></a>  this.button_ = this.getDomHelper().createDom(&#39;span&#39;,
+<a name="line203"></a>      goog.getCssName(&#39;goog-combobox-button&#39;));
+<a name="line204"></a>  this.setElementInternal(this.getDomHelper().createDom(&#39;span&#39;,
+<a name="line205"></a>      goog.getCssName(&#39;goog-combobox&#39;), this.input_, this.button_));
+<a name="line206"></a>  if (this.useDropdownArrow_) {
+<a name="line207"></a>    this.button_.innerHTML = &#39;&amp;#x25BC;&#39;;
+<a name="line208"></a>    goog.style.setUnselectable(this.button_, true /* unselectable */);
+<a name="line209"></a>  }
+<a name="line210"></a>  this.input_.setAttribute(&#39;label&#39;, this.defaultText_);
+<a name="line211"></a>  this.labelInput_.decorate(this.input_);
+<a name="line212"></a>  this.menu_.setFocusable(false);
+<a name="line213"></a>  if (!this.menu_.isInDocument()) {
+<a name="line214"></a>    this.addChild(this.menu_, true);
+<a name="line215"></a>  }
+<a name="line216"></a>};
+<a name="line217"></a>
+<a name="line218"></a>
+<a name="line219"></a>/**
+<a name="line220"></a> * Enables/Disables the combo box.
+<a name="line221"></a> * @param {boolean} enabled Whether to enable (true) or disable (false) the
+<a name="line222"></a> *     combo box.
+<a name="line223"></a> */
+<a name="line224"></a>goog.ui.ComboBox.prototype.setEnabled = function(enabled) {
+<a name="line225"></a>  this.enabled_ = enabled;
+<a name="line226"></a>  this.labelInput_.setEnabled(enabled);
+<a name="line227"></a>  goog.dom.classes.enable(this.getElement(),
+<a name="line228"></a>      goog.getCssName(&#39;goog-combobox-disabled&#39;), !enabled);
+<a name="line229"></a>};
+<a name="line230"></a>
+<a name="line231"></a>
+<a name="line232"></a>/** @override */
+<a name="line233"></a>goog.ui.ComboBox.prototype.enterDocument = function() {
+<a name="line234"></a>  goog.ui.ComboBox.superClass_.enterDocument.call(this);
+<a name="line235"></a>
+<a name="line236"></a>  var handler = this.getHandler();
+<a name="line237"></a>  handler.listen(this.getElement(),
+<a name="line238"></a>      goog.events.EventType.MOUSEDOWN, this.onComboMouseDown_);
+<a name="line239"></a>  handler.listen(this.getDomHelper().getDocument(),
+<a name="line240"></a>      goog.events.EventType.MOUSEDOWN, this.onDocClicked_);
+<a name="line241"></a>
+<a name="line242"></a>  handler.listen(this.input_,
+<a name="line243"></a>      goog.events.EventType.BLUR, this.onInputBlur_);
+<a name="line244"></a>
+<a name="line245"></a>  this.keyHandler_ = new goog.events.KeyHandler(this.input_);
+<a name="line246"></a>  handler.listen(this.keyHandler_,
+<a name="line247"></a>      goog.events.KeyHandler.EventType.KEY, this.handleKeyEvent);
+<a name="line248"></a>
+<a name="line249"></a>  this.inputHandler_ = new goog.events.InputHandler(this.input_);
+<a name="line250"></a>  handler.listen(this.inputHandler_,
+<a name="line251"></a>      goog.events.InputHandler.EventType.INPUT, this.onInputEvent_);
+<a name="line252"></a>
+<a name="line253"></a>  handler.listen(this.menu_,
+<a name="line254"></a>      goog.ui.Component.EventType.ACTION, this.onMenuSelected_);
+<a name="line255"></a>};
+<a name="line256"></a>
+<a name="line257"></a>
+<a name="line258"></a>/** @override */
+<a name="line259"></a>goog.ui.ComboBox.prototype.exitDocument = function() {
+<a name="line260"></a>  this.keyHandler_.dispose();
+<a name="line261"></a>  delete this.keyHandler_;
+<a name="line262"></a>  this.inputHandler_.dispose();
+<a name="line263"></a>  this.inputHandler_ = null;
+<a name="line264"></a>  goog.ui.ComboBox.superClass_.exitDocument.call(this);
+<a name="line265"></a>};
+<a name="line266"></a>
+<a name="line267"></a>
+<a name="line268"></a>/**
+<a name="line269"></a> * Combo box currently can&#39;t decorate elements.
+<a name="line270"></a> * @return {boolean} The value false.
+<a name="line271"></a> */
+<a name="line272"></a>goog.ui.ComboBox.prototype.canDecorate = function() {
+<a name="line273"></a>  return false;
+<a name="line274"></a>};
+<a name="line275"></a>
+<a name="line276"></a>
+<a name="line277"></a>/** @override */
+<a name="line278"></a>goog.ui.ComboBox.prototype.disposeInternal = function() {
+<a name="line279"></a>  goog.ui.ComboBox.superClass_.disposeInternal.call(this);
+<a name="line280"></a>
+<a name="line281"></a>  this.clearDismissTimer_();
+<a name="line282"></a>
+<a name="line283"></a>  this.labelInput_.dispose();
+<a name="line284"></a>  this.menu_.dispose();
+<a name="line285"></a>
+<a name="line286"></a>  this.labelInput_ = null;
+<a name="line287"></a>  this.menu_ = null;
+<a name="line288"></a>  this.input_ = null;
+<a name="line289"></a>  this.button_ = null;
+<a name="line290"></a>};
+<a name="line291"></a>
+<a name="line292"></a>
+<a name="line293"></a>/**
+<a name="line294"></a> * Dismisses the menu and resets the value of the edit field.
+<a name="line295"></a> */
+<a name="line296"></a>goog.ui.ComboBox.prototype.dismiss = function() {
+<a name="line297"></a>  this.clearDismissTimer_();
+<a name="line298"></a>  this.hideMenu_();
+<a name="line299"></a>  this.menu_.setHighlightedIndex(-1);
+<a name="line300"></a>};
+<a name="line301"></a>
+<a name="line302"></a>
+<a name="line303"></a>/**
+<a name="line304"></a> * Adds a new menu item at the end of the menu.
+<a name="line305"></a> * @param {goog.ui.MenuItem} item Menu item to add to the menu.
+<a name="line306"></a> */
+<a name="line307"></a>goog.ui.ComboBox.prototype.addItem = function(item) {
+<a name="line308"></a>  this.menu_.addChild(item, true);
+<a name="line309"></a>  this.visibleCount_ = -1;
+<a name="line310"></a>};
+<a name="line311"></a>
+<a name="line312"></a>
+<a name="line313"></a>/**
+<a name="line314"></a> * Adds a new menu item at a specific index in the menu.
+<a name="line315"></a> * @param {goog.ui.MenuItem} item Menu item to add to the menu.
+<a name="line316"></a> * @param {number} n Index at which to insert the menu item.
+<a name="line317"></a> */
+<a name="line318"></a>goog.ui.ComboBox.prototype.addItemAt = function(item, n) {
+<a name="line319"></a>  this.menu_.addChildAt(item, n, true);
+<a name="line320"></a>  this.visibleCount_ = -1;
+<a name="line321"></a>};
+<a name="line322"></a>
+<a name="line323"></a>
+<a name="line324"></a>/**
+<a name="line325"></a> * Removes an item from the menu and disposes it.
+<a name="line326"></a> * @param {goog.ui.MenuItem} item The menu item to remove.
+<a name="line327"></a> */
+<a name="line328"></a>goog.ui.ComboBox.prototype.removeItem = function(item) {
+<a name="line329"></a>  var child = this.menu_.removeChild(item, true);
+<a name="line330"></a>  if (child) {
+<a name="line331"></a>    child.dispose();
+<a name="line332"></a>    this.visibleCount_ = -1;
+<a name="line333"></a>  }
+<a name="line334"></a>};
+<a name="line335"></a>
+<a name="line336"></a>
+<a name="line337"></a>/**
+<a name="line338"></a> * Remove all of the items from the ComboBox menu
+<a name="line339"></a> */
+<a name="line340"></a>goog.ui.ComboBox.prototype.removeAllItems = function() {
+<a name="line341"></a>  for (var i = this.getItemCount() - 1; i &gt;= 0; --i) {
+<a name="line342"></a>    this.removeItem(this.getItemAt(i));
+<a name="line343"></a>  }
+<a name="line344"></a>};
+<a name="line345"></a>
+<a name="line346"></a>
+<a name="line347"></a>/**
+<a name="line348"></a> * Removes a menu item at a given index in the menu.
+<a name="line349"></a> * @param {number} n Index of item.
+<a name="line350"></a> */
+<a name="line351"></a>goog.ui.ComboBox.prototype.removeItemAt = function(n) {
+<a name="line352"></a>  var child = this.menu_.removeChildAt(n, true);
+<a name="line353"></a>  if (child) {
+<a name="line354"></a>    child.dispose();
+<a name="line355"></a>    this.visibleCount_ = -1;
+<a name="line356"></a>  }
+<a name="line357"></a>};
+<a name="line358"></a>
+<a name="line359"></a>
+<a name="line360"></a>/**
+<a name="line361"></a> * Returns a reference to the menu item at a given index.
+<a name="line362"></a> * @param {number} n Index of menu item.
+<a name="line363"></a> * @return {goog.ui.MenuItem?} Reference to the menu item.
+<a name="line364"></a> */
+<a name="line365"></a>goog.ui.ComboBox.prototype.getItemAt = function(n) {
+<a name="line366"></a>  return /** @type {goog.ui.MenuItem?} */(this.menu_.getChildAt(n));
+<a name="line367"></a>};
+<a name="line368"></a>
+<a name="line369"></a>
+<a name="line370"></a>/**
+<a name="line371"></a> * Returns the number of items in the list, including non-visible items,
+<a name="line372"></a> * such as separators.
+<a name="line373"></a> * @return {number} Number of items in the menu for this combobox.
+<a name="line374"></a> */
+<a name="line375"></a>goog.ui.ComboBox.prototype.getItemCount = function() {
+<a name="line376"></a>  return this.menu_.getChildCount();
+<a name="line377"></a>};
+<a name="line378"></a>
+<a name="line379"></a>
+<a name="line380"></a>/**
+<a name="line381"></a> * @return {goog.ui.Menu} The menu that pops up.
+<a name="line382"></a> */
+<a name="line383"></a>goog.ui.ComboBox.prototype.getMenu = function() {
+<a name="line384"></a>  return this.menu_;
+<a name="line385"></a>};
+<a name="line386"></a>
+<a name="line387"></a>
+<a name="line388"></a>/**
+<a name="line389"></a> * @return {number} The number of visible items in the menu.
+<a name="line390"></a> * @private
+<a name="line391"></a> */
+<a name="line392"></a>goog.ui.ComboBox.prototype.getNumberOfVisibleItems_ = function() {
+<a name="line393"></a>  if (this.visibleCount_ == -1) {
+<a name="line394"></a>    var count = 0;
+<a name="line395"></a>    for (var i = 0, n = this.menu_.getChildCount(); i &lt; n; i++) {
+<a name="line396"></a>      var item = this.menu_.getChildAt(i);
+<a name="line397"></a>      if (!(item instanceof goog.ui.MenuSeparator) &amp;&amp; item.isVisible()) {
+<a name="line398"></a>        count++;
+<a name="line399"></a>      }
+<a name="line400"></a>    }
+<a name="line401"></a>    this.visibleCount_ = count;
+<a name="line402"></a>  }
+<a name="line403"></a>
+<a name="line404"></a>  this.logger_.info(&#39;getNumberOfVisibleItems() - &#39; + this.visibleCount_);
+<a name="line405"></a>  return this.visibleCount_;
+<a name="line406"></a>};
+<a name="line407"></a>
+<a name="line408"></a>
+<a name="line409"></a>/**
+<a name="line410"></a> * Sets the match function to be used when filtering the combo box menu.
+<a name="line411"></a> * @param {Function} matchFunction The match function to be used when filtering
+<a name="line412"></a> *     the combo box menu.
+<a name="line413"></a> */
+<a name="line414"></a>goog.ui.ComboBox.prototype.setMatchFunction = function(matchFunction) {
+<a name="line415"></a>  this.matchFunction_ = matchFunction;
+<a name="line416"></a>};
+<a name="line417"></a>
+<a name="line418"></a>
+<a name="line419"></a>/**
+<a name="line420"></a> * @return {Function} The match function for the combox box.
+<a name="line421"></a> */
+<a name="line422"></a>goog.ui.ComboBox.prototype.getMatchFunction = function() {
+<a name="line423"></a>  return this.matchFunction_;
+<a name="line424"></a>};
+<a name="line425"></a>
+<a name="line426"></a>
+<a name="line427"></a>/**
+<a name="line428"></a> * Sets the default text for the combo box.
+<a name="line429"></a> * @param {string} text The default text for the combo box.
+<a name="line430"></a> */
+<a name="line431"></a>goog.ui.ComboBox.prototype.setDefaultText = function(text) {
+<a name="line432"></a>  this.defaultText_ = text;
+<a name="line433"></a>};
+<a name="line434"></a>
+<a name="line435"></a>
+<a name="line436"></a>/**
+<a name="line437"></a> * @return {string} text The default text for the combox box.
+<a name="line438"></a> */
+<a name="line439"></a>goog.ui.ComboBox.prototype.getDefaultText = function() {
+<a name="line440"></a>  return this.defaultText_;
+<a name="line441"></a>};
+<a name="line442"></a>
+<a name="line443"></a>
+<a name="line444"></a>/**
+<a name="line445"></a> * Sets the field name for the combo box.
+<a name="line446"></a> * @param {string} fieldName The field name for the combo box.
+<a name="line447"></a> */
+<a name="line448"></a>goog.ui.ComboBox.prototype.setFieldName = function(fieldName) {
+<a name="line449"></a>  this.fieldName_ = fieldName;
+<a name="line450"></a>};
+<a name="line451"></a>
+<a name="line452"></a>
+<a name="line453"></a>/**
+<a name="line454"></a> * @return {string} The field name for the combo box.
+<a name="line455"></a> */
+<a name="line456"></a>goog.ui.ComboBox.prototype.getFieldName = function() {
+<a name="line457"></a>  return this.fieldName_;
+<a name="line458"></a>};
+<a name="line459"></a>
+<a name="line460"></a>
+<a name="line461"></a>/**
+<a name="line462"></a> * Set to true if a unicode inverted triangle should be displayed in the
+<a name="line463"></a> * dropdown button.
+<a name="line464"></a> * This option defaults to false for backwards compatibility.
+<a name="line465"></a> * @param {boolean} useDropdownArrow True to use the dropdown arrow.
+<a name="line466"></a> */
+<a name="line467"></a>goog.ui.ComboBox.prototype.setUseDropdownArrow = function(useDropdownArrow) {
+<a name="line468"></a>  this.useDropdownArrow_ = !!useDropdownArrow;
+<a name="line469"></a>};
+<a name="line470"></a>
+<a name="line471"></a>
+<a name="line472"></a>/**
+<a name="line473"></a> * Sets the current value of the combo box.
+<a name="line474"></a> * @param {string} value The new value.
+<a name="line475"></a> */
+<a name="line476"></a>goog.ui.ComboBox.prototype.setValue = function(value) {
+<a name="line477"></a>  this.logger_.info(&#39;setValue() - &#39; + value);
+<a name="line478"></a>  if (this.labelInput_.getValue() != value) {
+<a name="line479"></a>    this.labelInput_.setValue(value);
+<a name="line480"></a>    this.handleInputChange_();
+<a name="line481"></a>  }
+<a name="line482"></a>};
+<a name="line483"></a>
+<a name="line484"></a>
+<a name="line485"></a>/**
+<a name="line486"></a> * @return {string} The current value of the combo box.
+<a name="line487"></a> */
+<a name="line488"></a>goog.ui.ComboBox.prototype.getValue = function() {
+<a name="line489"></a>  return this.labelInput_.getValue();
+<a name="line490"></a>};
+<a name="line491"></a>
+<a name="line492"></a>
+<a name="line493"></a>/**
+<a name="line494"></a> * @return {string} HTML escaped token.
+<a name="line495"></a> */
+<a name="line496"></a>goog.ui.ComboBox.prototype.getToken = function() {
+<a name="line497"></a>  // TODO(user): Remove HTML escaping and fix the existing calls.
+<a name="line498"></a>  return goog.string.htmlEscape(this.getTokenText_());
+<a name="line499"></a>};
+<a name="line500"></a>
+<a name="line501"></a>
+<a name="line502"></a>/**
+<a name="line503"></a> * @return {string} The token for the current cursor position in the
+<a name="line504"></a> *     input box, when multi-input is disabled it will be the full input value.
+<a name="line505"></a> * @private
+<a name="line506"></a> */
+<a name="line507"></a>goog.ui.ComboBox.prototype.getTokenText_ = function() {
+<a name="line508"></a>  // TODO(user): Implement multi-input such that getToken returns a substring
+<a name="line509"></a>  // of the whole input delimited by commas.
+<a name="line510"></a>  return goog.string.trim(this.labelInput_.getValue().toLowerCase());
+<a name="line511"></a>};
+<a name="line512"></a>
+<a name="line513"></a>
+<a name="line514"></a>/**
+<a name="line515"></a> * @private
+<a name="line516"></a> */
+<a name="line517"></a>goog.ui.ComboBox.prototype.setupMenu_ = function() {
+<a name="line518"></a>  var sm = this.menu_;
+<a name="line519"></a>  sm.setVisible(false);
+<a name="line520"></a>  sm.setAllowAutoFocus(false);
+<a name="line521"></a>  sm.setAllowHighlightDisabled(true);
+<a name="line522"></a>};
+<a name="line523"></a>
+<a name="line524"></a>
+<a name="line525"></a>/**
+<a name="line526"></a> * Shows the menu if it isn&#39;t already showing.  Also positions the menu
+<a name="line527"></a> * correctly, resets the menu item visibilities and highlights the relevent
+<a name="line528"></a> * item.
+<a name="line529"></a> * @param {boolean} showAll Whether to show all items, with the first matching
+<a name="line530"></a> *     item highlighted.
+<a name="line531"></a> * @private
+<a name="line532"></a> */
+<a name="line533"></a>goog.ui.ComboBox.prototype.maybeShowMenu_ = function(showAll) {
+<a name="line534"></a>  var isVisible = this.menu_.isVisible();
+<a name="line535"></a>  var numVisibleItems = this.getNumberOfVisibleItems_();
+<a name="line536"></a>
+<a name="line537"></a>  if (isVisible &amp;&amp; numVisibleItems == 0) {
+<a name="line538"></a>    this.logger_.fine(&#39;no matching items, hiding&#39;);
+<a name="line539"></a>    this.hideMenu_();
+<a name="line540"></a>
+<a name="line541"></a>  } else if (!isVisible &amp;&amp; numVisibleItems &gt; 0) {
+<a name="line542"></a>    if (showAll) {
+<a name="line543"></a>      this.logger_.fine(&#39;showing menu&#39;);
+<a name="line544"></a>      this.setItemVisibilityFromToken_(&#39;&#39;);
+<a name="line545"></a>      this.setItemHighlightFromToken_(this.getTokenText_());
+<a name="line546"></a>    }
+<a name="line547"></a>    // In Safari 2.0, when clicking on the combox box, the blur event is
+<a name="line548"></a>    // received after the click event that invokes this function. Since we want
+<a name="line549"></a>    // to cancel the dismissal after the blur event is processed, we have to
+<a name="line550"></a>    // wait for all event processing to happen.
+<a name="line551"></a>    goog.Timer.callOnce(this.clearDismissTimer_, 1, this);
+<a name="line552"></a>
+<a name="line553"></a>    this.showMenu_();
+<a name="line554"></a>    this.positionMenu();
+<a name="line555"></a>  }
+<a name="line556"></a>};
+<a name="line557"></a>
+<a name="line558"></a>
+<a name="line559"></a>/**
+<a name="line560"></a> * Positions the menu.
+<a name="line561"></a> * @protected
+<a name="line562"></a> */
+<a name="line563"></a>goog.ui.ComboBox.prototype.positionMenu = function() {
+<a name="line564"></a>  if (this.menu_) {
+<a name="line565"></a>    // TODO(user):  Make it right-aligned for RTL.
+<a name="line566"></a>    var pos = goog.style.getPageOffset(this.getElement());
+<a name="line567"></a>    this.menu_.setPosition(pos.x, pos.y + this.getElement().offsetHeight);
+<a name="line568"></a>  }
+<a name="line569"></a>};
+<a name="line570"></a>
+<a name="line571"></a>
+<a name="line572"></a>/**
+<a name="line573"></a> * Show the menu and add an active class to the combo box&#39;s element.
+<a name="line574"></a> * @private
+<a name="line575"></a> */
+<a name="line576"></a>goog.ui.ComboBox.prototype.showMenu_ = function() {
+<a name="line577"></a>  this.menu_.setVisible(true);
+<a name="line578"></a>  goog.dom.classes.add(this.getElement(),
+<a name="line579"></a>      goog.getCssName(&#39;goog-combobox-active&#39;));
+<a name="line580"></a>};
+<a name="line581"></a>
+<a name="line582"></a>
+<a name="line583"></a>/**
+<a name="line584"></a> * Hide the menu and remove the active class from the combo box&#39;s element.
+<a name="line585"></a> * @private
+<a name="line586"></a> */
+<a name="line587"></a>goog.ui.ComboBox.prototype.hideMenu_ = function() {
+<a name="line588"></a>  this.menu_.setVisible(false);
+<a name="line589"></a>  goog.dom.classes.remove(this.getElement(),
+<a name="line590"></a>      goog.getCssName(&#39;goog-combobox-active&#39;));
+<a name="line591"></a>};
+<a name="line592"></a>
+<a name="line593"></a>
+<a name="line594"></a>/**
+<a name="line595"></a> * Clears the dismiss timer if it&#39;s active.
+<a name="line596"></a> * @private
+<a name="line597"></a> */
+<a name="line598"></a>goog.ui.ComboBox.prototype.clearDismissTimer_ = function() {
+<a name="line599"></a>  if (this.dismissTimer_) {
+<a name="line600"></a>    goog.Timer.clear(this.dismissTimer_);
+<a name="line601"></a>    this.dismissTimer_ = null;
+<a name="line602"></a>  }
+<a name="line603"></a>};
+<a name="line604"></a>
+<a name="line605"></a>
+<a name="line606"></a>/**
+<a name="line607"></a> * Event handler for when the combo box area has been clicked.
+<a name="line608"></a> * @param {goog.events.BrowserEvent} e The browser event.
+<a name="line609"></a> * @private
+<a name="line610"></a> */
+<a name="line611"></a>goog.ui.ComboBox.prototype.onComboMouseDown_ = function(e) {
+<a name="line612"></a>  // We only want this event on the element itself or the input or the button.
+<a name="line613"></a>  if (this.enabled_ &amp;&amp;
+<a name="line614"></a>      (e.target == this.getElement() || e.target == this.input_ ||
+<a name="line615"></a>       goog.dom.contains(this.button_, /** @type {Node} */ (e.target)))) {
+<a name="line616"></a>    if (this.menu_.isVisible()) {
+<a name="line617"></a>      this.logger_.fine(&#39;Menu is visible, dismissing&#39;);
+<a name="line618"></a>      this.dismiss();
+<a name="line619"></a>    } else {
+<a name="line620"></a>      this.logger_.fine(&#39;Opening dropdown&#39;);
+<a name="line621"></a>      this.maybeShowMenu_(true);
+<a name="line622"></a>      if (goog.userAgent.OPERA) {
+<a name="line623"></a>        // select() doesn&#39;t focus &lt;input&gt; elements in Opera.
+<a name="line624"></a>        this.input_.focus();
+<a name="line625"></a>      }
+<a name="line626"></a>      this.input_.select();
+<a name="line627"></a>      this.menu_.setMouseButtonPressed(true);
+<a name="line628"></a>      // Stop the click event from stealing focus
+<a name="line629"></a>      e.preventDefault();
+<a name="line630"></a>    }
+<a name="line631"></a>  }
+<a name="line632"></a>  // Stop the event from propagating outside of the combo box
+<a name="line633"></a>  e.stopPropagation();
+<a name="line634"></a>};
+<a name="line635"></a>
+<a name="line636"></a>
+<a name="line637"></a>/**
+<a name="line638"></a> * Event handler for when the document is clicked.
+<a name="line639"></a> * @param {goog.events.BrowserEvent} e The browser event.
+<a name="line640"></a> * @private
+<a name="line641"></a> */
+<a name="line642"></a>goog.ui.ComboBox.prototype.onDocClicked_ = function(e) {
+<a name="line643"></a>  if (!goog.dom.contains(
+<a name="line644"></a>      this.menu_.getElement(), /** @type {Node} */ (e.target))) {
+<a name="line645"></a>    this.logger_.info(&#39;onDocClicked_() - dismissing immediately&#39;);
+<a name="line646"></a>    this.dismiss();
+<a name="line647"></a>  }
+<a name="line648"></a>};
+<a name="line649"></a>
+<a name="line650"></a>
+<a name="line651"></a>/**
+<a name="line652"></a> * Handle the menu&#39;s select event.
+<a name="line653"></a> * @param {goog.events.Event} e The event.
+<a name="line654"></a> * @private
+<a name="line655"></a> */
+<a name="line656"></a>goog.ui.ComboBox.prototype.onMenuSelected_ = function(e) {
+<a name="line657"></a>  this.logger_.info(&#39;onMenuSelected_()&#39;);
+<a name="line658"></a>  var item = /** @type {!goog.ui.MenuItem} */ (e.target);
+<a name="line659"></a>  // Stop propagation of the original event and redispatch to allow the menu
+<a name="line660"></a>  // select to be cancelled at this level. i.e. if a menu item should cause
+<a name="line661"></a>  // some behavior such as a user prompt instead of assigning the caption as
+<a name="line662"></a>  // the value.
+<a name="line663"></a>  if (this.dispatchEvent(new goog.ui.ItemEvent(
+<a name="line664"></a>      goog.ui.Component.EventType.ACTION, this, item))) {
+<a name="line665"></a>    var caption = item.getCaption();
+<a name="line666"></a>    this.logger_.fine(&#39;Menu selection: &#39; + caption + &#39;. Dismissing menu&#39;);
+<a name="line667"></a>    if (this.labelInput_.getValue() != caption) {
+<a name="line668"></a>      this.labelInput_.setValue(caption);
+<a name="line669"></a>      this.dispatchEvent(goog.ui.Component.EventType.CHANGE);
+<a name="line670"></a>    }
+<a name="line671"></a>    this.dismiss();
+<a name="line672"></a>  }
+<a name="line673"></a>  e.stopPropagation();
+<a name="line674"></a>};
+<a name="line675"></a>
+<a name="line676"></a>
+<a name="line677"></a>/**
+<a name="line678"></a> * Event handler for when the input box looses focus -- hide the menu
+<a name="line679"></a> * @param {goog.events.BrowserEvent} e The browser event.
+<a name="line680"></a> * @private
+<a name="line681"></a> */
+<a name="line682"></a>goog.ui.ComboBox.prototype.onInputBlur_ = function(e) {
+<a name="line683"></a>  this.logger_.info(&#39;onInputBlur_() - delayed dismiss&#39;);
+<a name="line684"></a>  this.clearDismissTimer_();
+<a name="line685"></a>  this.dismissTimer_ = goog.Timer.callOnce(
+<a name="line686"></a>      this.dismiss, goog.ui.ComboBox.BLUR_DISMISS_TIMER_MS, this);
+<a name="line687"></a>};
+<a name="line688"></a>
+<a name="line689"></a>
+<a name="line690"></a>/**
+<a name="line691"></a> * Handles keyboard events from the input box.  Returns true if the combo box
+<a name="line692"></a> * was able to handle the event, false otherwise.
+<a name="line693"></a> * @param {goog.events.KeyEvent} e Key event to handle.
+<a name="line694"></a> * @return {boolean} Whether the event was handled by the combo box.
+<a name="line695"></a> * @protected
+<a name="line696"></a> * @suppress {visibility} performActionInternal
+<a name="line697"></a> */
+<a name="line698"></a>goog.ui.ComboBox.prototype.handleKeyEvent = function(e) {
+<a name="line699"></a>  var isMenuVisible = this.menu_.isVisible();
+<a name="line700"></a>
+<a name="line701"></a>  // Give the menu a chance to handle the event.
+<a name="line702"></a>  if (isMenuVisible &amp;&amp; this.menu_.handleKeyEvent(e)) {
+<a name="line703"></a>    return true;
+<a name="line704"></a>  }
+<a name="line705"></a>
+<a name="line706"></a>  // The menu is either hidden or didn&#39;t handle the event.
+<a name="line707"></a>  var handled = false;
+<a name="line708"></a>  switch (e.keyCode) {
+<a name="line709"></a>    case goog.events.KeyCodes.ESC:
+<a name="line710"></a>      // If the menu is visible and the user hit Esc, dismiss the menu.
+<a name="line711"></a>      if (isMenuVisible) {
+<a name="line712"></a>        this.logger_.fine(&#39;Dismiss on Esc: &#39; + this.labelInput_.getValue());
+<a name="line713"></a>        this.dismiss();
+<a name="line714"></a>        handled = true;
+<a name="line715"></a>      }
+<a name="line716"></a>      break;
+<a name="line717"></a>    case goog.events.KeyCodes.TAB:
+<a name="line718"></a>      // If the menu is open and an option is highlighted, activate it.
+<a name="line719"></a>      if (isMenuVisible) {
+<a name="line720"></a>        var highlighted = this.menu_.getHighlighted();
+<a name="line721"></a>        if (highlighted) {
+<a name="line722"></a>          this.logger_.fine(&#39;Select on Tab: &#39; + this.labelInput_.getValue());
+<a name="line723"></a>          highlighted.performActionInternal(e);
+<a name="line724"></a>          handled = true;
+<a name="line725"></a>        }
+<a name="line726"></a>      }
+<a name="line727"></a>      break;
+<a name="line728"></a>    case goog.events.KeyCodes.UP:
+<a name="line729"></a>    case goog.events.KeyCodes.DOWN:
+<a name="line730"></a>      // If the menu is hidden and the user hit the up/down arrow, show it.
+<a name="line731"></a>      if (!isMenuVisible) {
+<a name="line732"></a>        this.logger_.fine(&#39;Up/Down - maybe show menu&#39;);
+<a name="line733"></a>        this.maybeShowMenu_(true);
+<a name="line734"></a>        handled = true;
+<a name="line735"></a>      }
+<a name="line736"></a>      break;
+<a name="line737"></a>  }
+<a name="line738"></a>
+<a name="line739"></a>  if (handled) {
+<a name="line740"></a>    e.preventDefault();
+<a name="line741"></a>  }
+<a name="line742"></a>
+<a name="line743"></a>  return handled;
+<a name="line744"></a>};
+<a name="line745"></a>
+<a name="line746"></a>
+<a name="line747"></a>/**
+<a name="line748"></a> * Handles the content of the input box changing.
+<a name="line749"></a> * @param {goog.events.Event} e The INPUT event to handle.
+<a name="line750"></a> * @private
+<a name="line751"></a> */
+<a name="line752"></a>goog.ui.ComboBox.prototype.onInputEvent_ = function(e) {
+<a name="line753"></a>  // If the key event is text-modifying, update the menu.
+<a name="line754"></a>  this.logger_.fine(&#39;Key is modifying: &#39; + this.labelInput_.getValue());
+<a name="line755"></a>  this.handleInputChange_();
+<a name="line756"></a>};
+<a name="line757"></a>
+<a name="line758"></a>
+<a name="line759"></a>/**
+<a name="line760"></a> * Handles the content of the input box changing, either because of user
+<a name="line761"></a> * interaction or programmatic changes.
+<a name="line762"></a> * @private
+<a name="line763"></a> */
+<a name="line764"></a>goog.ui.ComboBox.prototype.handleInputChange_ = function() {
+<a name="line765"></a>  var token = this.getTokenText_();
+<a name="line766"></a>  this.setItemVisibilityFromToken_(token);
+<a name="line767"></a>  if (goog.dom.getActiveElement(this.getDomHelper().getDocument()) ==
+<a name="line768"></a>      this.input_) {
+<a name="line769"></a>    // Do not alter menu visibility unless the user focus is currently on the
+<a name="line770"></a>    // combobox (otherwise programmatic changes may cause the menu to become
+<a name="line771"></a>    // visible).
+<a name="line772"></a>    this.maybeShowMenu_(false);
+<a name="line773"></a>  }
+<a name="line774"></a>  var highlighted = this.menu_.getHighlighted();
+<a name="line775"></a>  if (token == &#39;&#39; || !highlighted || !highlighted.isVisible()) {
+<a name="line776"></a>    this.setItemHighlightFromToken_(token);
+<a name="line777"></a>  }
+<a name="line778"></a>  this.lastToken_ = token;
+<a name="line779"></a>  this.dispatchEvent(goog.ui.Component.EventType.CHANGE);
+<a name="line780"></a>};
+<a name="line781"></a>
+<a name="line782"></a>
+<a name="line783"></a>/**
+<a name="line784"></a> * Loops through all menu items setting their visibility according to a token.
+<a name="line785"></a> * @param {string} token The token.
+<a name="line786"></a> * @private
+<a name="line787"></a> */
+<a name="line788"></a>goog.ui.ComboBox.prototype.setItemVisibilityFromToken_ = function(token) {
+<a name="line789"></a>  this.logger_.info(&#39;setItemVisibilityFromToken_() - &#39; + token);
+<a name="line790"></a>  var isVisibleItem = false;
+<a name="line791"></a>  var count = 0;
+<a name="line792"></a>  var recheckHidden = !this.matchFunction_(token, this.lastToken_);
+<a name="line793"></a>
+<a name="line794"></a>  for (var i = 0, n = this.menu_.getChildCount(); i &lt; n; i++) {
+<a name="line795"></a>    var item = this.menu_.getChildAt(i);
+<a name="line796"></a>    if (item instanceof goog.ui.MenuSeparator) {
+<a name="line797"></a>      // Ensure that separators are only shown if there is at least one visible
+<a name="line798"></a>      // item before them.
+<a name="line799"></a>      item.setVisible(isVisibleItem);
+<a name="line800"></a>      isVisibleItem = false;
+<a name="line801"></a>    } else if (item instanceof goog.ui.MenuItem) {
+<a name="line802"></a>      if (!item.isVisible() &amp;&amp; !recheckHidden) continue;
+<a name="line803"></a>
+<a name="line804"></a>      var caption = item.getCaption();
+<a name="line805"></a>      var visible = this.isItemSticky_(item) ||
+<a name="line806"></a>          caption &amp;&amp; this.matchFunction_(caption.toLowerCase(), token);
+<a name="line807"></a>      if (typeof item.setFormatFromToken == &#39;function&#39;) {
+<a name="line808"></a>        item.setFormatFromToken(token);
+<a name="line809"></a>      }
+<a name="line810"></a>      item.setVisible(!!visible);
+<a name="line811"></a>      isVisibleItem = visible || isVisibleItem;
+<a name="line812"></a>
+<a name="line813"></a>    } else {
+<a name="line814"></a>      // Assume all other items are correctly using their visibility.
+<a name="line815"></a>      isVisibleItem = item.isVisible() || isVisibleItem;
+<a name="line816"></a>    }
+<a name="line817"></a>
+<a name="line818"></a>    if (!(item instanceof goog.ui.MenuSeparator) &amp;&amp; item.isVisible()) {
+<a name="line819"></a>      count++;
+<a name="line820"></a>    }
+<a name="line821"></a>  }
+<a name="line822"></a>
+<a name="line823"></a>  this.visibleCount_ = count;
+<a name="line824"></a>};
+<a name="line825"></a>
+<a name="line826"></a>
+<a name="line827"></a>/**
+<a name="line828"></a> * Highlights the first token that matches the given token.
+<a name="line829"></a> * @param {string} token The token.
+<a name="line830"></a> * @private
+<a name="line831"></a> */
+<a name="line832"></a>goog.ui.ComboBox.prototype.setItemHighlightFromToken_ = function(token) {
+<a name="line833"></a>  this.logger_.info(&#39;setItemHighlightFromToken_() - &#39; + token);
+<a name="line834"></a>
+<a name="line835"></a>  if (token == &#39;&#39;) {
+<a name="line836"></a>    this.menu_.setHighlightedIndex(-1);
+<a name="line837"></a>    return;
+<a name="line838"></a>  }
+<a name="line839"></a>
+<a name="line840"></a>  for (var i = 0, n = this.menu_.getChildCount(); i &lt; n; i++) {
+<a name="line841"></a>    var item = this.menu_.getChildAt(i);
+<a name="line842"></a>    var caption = item.getCaption();
+<a name="line843"></a>    if (caption &amp;&amp; this.matchFunction_(caption.toLowerCase(), token)) {
+<a name="line844"></a>      this.menu_.setHighlightedIndex(i);
+<a name="line845"></a>      if (item.setFormatFromToken) {
+<a name="line846"></a>        item.setFormatFromToken(token);
+<a name="line847"></a>      }
+<a name="line848"></a>      return;
+<a name="line849"></a>    }
+<a name="line850"></a>  }
+<a name="line851"></a>  this.menu_.setHighlightedIndex(-1);
+<a name="line852"></a>};
+<a name="line853"></a>
+<a name="line854"></a>
+<a name="line855"></a>/**
+<a name="line856"></a> * Returns true if the item has an isSticky method and the method returns true.
+<a name="line857"></a> * @param {goog.ui.MenuItem} item The item.
+<a name="line858"></a> * @return {boolean} Whether the item has an isSticky method and the method
+<a name="line859"></a> *     returns true.
+<a name="line860"></a> * @private
+<a name="line861"></a> */
+<a name="line862"></a>goog.ui.ComboBox.prototype.isItemSticky_ = function(item) {
+<a name="line863"></a>  return typeof item.isSticky == &#39;function&#39; &amp;&amp; item.isSticky();
+<a name="line864"></a>};
+<a name="line865"></a>
+<a name="line866"></a>
+<a name="line867"></a>
+<a name="line868"></a>/**
+<a name="line869"></a> * Class for combo box items.
+<a name="line870"></a> * @param {goog.ui.ControlContent} content Text caption or DOM structure to
+<a name="line871"></a> *     display as the content of the item (use to add icons or styling to
+<a name="line872"></a> *     menus).
+<a name="line873"></a> * @param {Object=} opt_data Identifying data for the menu item.
+<a name="line874"></a> * @param {goog.dom.DomHelper=} opt_domHelper Optional dom helper used for dom
+<a name="line875"></a> *     interactions.
+<a name="line876"></a> * @constructor
+<a name="line877"></a> * @extends {goog.ui.MenuItem}
+<a name="line878"></a> */
+<a name="line879"></a>goog.ui.ComboBoxItem = function(content, opt_data, opt_domHelper) {
+<a name="line880"></a>  goog.ui.MenuItem.call(this, content, opt_data, opt_domHelper);
+<a name="line881"></a>};
+<a name="line882"></a>goog.inherits(goog.ui.ComboBoxItem, goog.ui.MenuItem);
+<a name="line883"></a>
+<a name="line884"></a>
+<a name="line885"></a>// Register a decorator factory function for goog.ui.ComboBoxItems.
+<a name="line886"></a>goog.ui.registry.setDecoratorByClassName(goog.getCssName(&#39;goog-combobox-item&#39;),
+<a name="line887"></a>    function() {
+<a name="line888"></a>      // ComboBoxItem defaults to using MenuItemRenderer.
+<a name="line889"></a>      return new goog.ui.ComboBoxItem(null);
+<a name="line890"></a>    });
+<a name="line891"></a>
+<a name="line892"></a>
+<a name="line893"></a>/**
+<a name="line894"></a> * Whether the menu item is sticky, non-sticky items will be hidden as the
+<a name="line895"></a> * user types.
+<a name="line896"></a> * @type {boolean}
+<a name="line897"></a> * @private
+<a name="line898"></a> */
+<a name="line899"></a>goog.ui.ComboBoxItem.prototype.isSticky_ = false;
+<a name="line900"></a>
+<a name="line901"></a>
+<a name="line902"></a>/**
+<a name="line903"></a> * Sets the menu item to be sticky or not sticky.
+<a name="line904"></a> * @param {boolean} sticky Whether the menu item should be sticky.
+<a name="line905"></a> */
+<a name="line906"></a>goog.ui.ComboBoxItem.prototype.setSticky = function(sticky) {
+<a name="line907"></a>  this.isSticky_ = sticky;
+<a name="line908"></a>};
+<a name="line909"></a>
+<a name="line910"></a>
+<a name="line911"></a>/**
+<a name="line912"></a> * @return {boolean} Whether the menu item is sticky.
+<a name="line913"></a> */
+<a name="line914"></a>goog.ui.ComboBoxItem.prototype.isSticky = function() {
+<a name="line915"></a>  return this.isSticky_;
+<a name="line916"></a>};
+<a name="line917"></a>
+<a name="line918"></a>
+<a name="line919"></a>/**
+<a name="line920"></a> * Sets the format for a menu item based on a token, bolding the token.
+<a name="line921"></a> * @param {string} token The token.
+<a name="line922"></a> */
+<a name="line923"></a>goog.ui.ComboBoxItem.prototype.setFormatFromToken = function(token) {
+<a name="line924"></a>  if (this.isEnabled()) {
+<a name="line925"></a>    var caption = this.getCaption();
+<a name="line926"></a>    var index = caption.toLowerCase().indexOf(token);
+<a name="line927"></a>    if (index &gt;= 0) {
+<a name="line928"></a>      var domHelper = this.getDomHelper();
+<a name="line929"></a>      this.setContent([
+<a name="line930"></a>        domHelper.createTextNode(caption.substr(0, index)),
+<a name="line931"></a>        domHelper.createDom(&#39;b&#39;, null, caption.substr(index, token.length)),
+<a name="line932"></a>        domHelper.createTextNode(caption.substr(index + token.length))
+<a name="line933"></a>      ]);
+<a name="line934"></a>    }
+<a name="line935"></a>  }
+<a name="line936"></a>};
+</pre>
+
+
+</body>
+</html>

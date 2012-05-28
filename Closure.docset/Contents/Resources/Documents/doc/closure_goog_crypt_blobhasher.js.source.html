@@ -1,0 +1,280 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>blobhasher.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_crypt_blobhasher.js.html">blobhasher.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Asynchronous hash computer for the Blob interface.
+<a name="line17"></a> *
+<a name="line18"></a> * The Blob interface, part of the HTML5 File API, is supported on Chrome 7+,
+<a name="line19"></a> * Firefox 4.0 and Opera 11. No Blob interface implementation is expected on
+<a name="line20"></a> * Internet Explorer 10. Chrome 11, Firefox 5.0 and the subsequent release of
+<a name="line21"></a> * Opera are supposed to use vendor prefixes due to evolving API, see
+<a name="line22"></a> * http://dev.w3.org/2006/webapi/FileAPI/ for details.
+<a name="line23"></a> *
+<a name="line24"></a> * This implementation currently uses upcoming Chrome and Firefox prefixes,
+<a name="line25"></a> * plus the original Blob.slice specification, as implemented on Chrome 10
+<a name="line26"></a> * and Firefox 4.0.
+<a name="line27"></a> *
+<a name="line28"></a> */
+<a name="line29"></a>
+<a name="line30"></a>goog.provide(&#39;goog.crypt.BlobHasher&#39;);
+<a name="line31"></a>goog.provide(&#39;goog.crypt.BlobHasher.EventType&#39;);
+<a name="line32"></a>
+<a name="line33"></a>goog.require(&#39;goog.asserts&#39;);
+<a name="line34"></a>goog.require(&#39;goog.crypt&#39;);
+<a name="line35"></a>goog.require(&#39;goog.crypt.Hash&#39;);
+<a name="line36"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line37"></a>goog.require(&#39;goog.events.EventTarget&#39;);
+<a name="line38"></a>goog.require(&#39;goog.fs&#39;);
+<a name="line39"></a>
+<a name="line40"></a>
+<a name="line41"></a>
+<a name="line42"></a>/**
+<a name="line43"></a> * Construct the hash computer.
+<a name="line44"></a> *
+<a name="line45"></a> * @param {goog.crypt.Hash} hashFn The hash function to use.
+<a name="line46"></a> * @param {number=} opt_blockSize Processing block size.
+<a name="line47"></a> * @constructor
+<a name="line48"></a> * @extends {goog.events.EventTarget}
+<a name="line49"></a> */
+<a name="line50"></a>goog.crypt.BlobHasher = function(hashFn, opt_blockSize) {
+<a name="line51"></a>  goog.base(this);
+<a name="line52"></a>
+<a name="line53"></a>  /**
+<a name="line54"></a>   * The actual hash function.
+<a name="line55"></a>   * @type {goog.crypt.Hash}
+<a name="line56"></a>   * @private
+<a name="line57"></a>   */
+<a name="line58"></a>  this.hashFn_ = hashFn;
+<a name="line59"></a>
+<a name="line60"></a>  /**
+<a name="line61"></a>   * The blob being processed.
+<a name="line62"></a>   * @type {Blob}
+<a name="line63"></a>   * @private
+<a name="line64"></a>   */
+<a name="line65"></a>  this.blob_ = null;
+<a name="line66"></a>
+<a name="line67"></a>  /**
+<a name="line68"></a>   * Computed hash value.
+<a name="line69"></a>   * @type {Array.&lt;number&gt;}
+<a name="line70"></a>   * @private
+<a name="line71"></a>   */
+<a name="line72"></a>  this.hashVal_ = null;
+<a name="line73"></a>
+<a name="line74"></a>  /**
+<a name="line75"></a>   * Number of bytes already processed.
+<a name="line76"></a>   * @type {number}
+<a name="line77"></a>   * @private
+<a name="line78"></a>   */
+<a name="line79"></a>  this.bytesProcessed_ = 0;
+<a name="line80"></a>
+<a name="line81"></a>  /**
+<a name="line82"></a>   * Processing block size.
+<a name="line83"></a>   * @type {number}
+<a name="line84"></a>   * @private
+<a name="line85"></a>   */
+<a name="line86"></a>  this.blockSize_ = opt_blockSize || 5000000;
+<a name="line87"></a>
+<a name="line88"></a>  /**
+<a name="line89"></a>   * File reader object.
+<a name="line90"></a>   * @type {FileReader}
+<a name="line91"></a>   * @private
+<a name="line92"></a>   */
+<a name="line93"></a>  this.fileReader_ = null;
+<a name="line94"></a>
+<a name="line95"></a>  /**
+<a name="line96"></a>   * The logger used by this object.
+<a name="line97"></a>   * @type {goog.debug.Logger}
+<a name="line98"></a>   * @private
+<a name="line99"></a>   */
+<a name="line100"></a>  this.logger_ = goog.debug.Logger.getLogger(&#39;goog.crypt.BlobHasher&#39;);
+<a name="line101"></a>};
+<a name="line102"></a>goog.inherits(goog.crypt.BlobHasher, goog.events.EventTarget);
+<a name="line103"></a>
+<a name="line104"></a>
+<a name="line105"></a>/**
+<a name="line106"></a> * Event names for hash computation events
+<a name="line107"></a> * @enum {string}
+<a name="line108"></a> */
+<a name="line109"></a>goog.crypt.BlobHasher.EventType = {
+<a name="line110"></a>  STARTED: &#39;started&#39;,
+<a name="line111"></a>  PROGRESS: &#39;progress&#39;,
+<a name="line112"></a>  COMPLETE: &#39;complete&#39;,
+<a name="line113"></a>  ABORT: &#39;abort&#39;,
+<a name="line114"></a>  ERROR: &#39;error&#39;
+<a name="line115"></a>};
+<a name="line116"></a>
+<a name="line117"></a>
+<a name="line118"></a>/**
+<a name="line119"></a> * Start the hash computation.
+<a name="line120"></a> * @param {Blob} blob The blob of data to compute the hash for.
+<a name="line121"></a> */
+<a name="line122"></a>goog.crypt.BlobHasher.prototype.hash = function(blob) {
+<a name="line123"></a>  this.abort();
+<a name="line124"></a>  this.hashFn_.reset();
+<a name="line125"></a>  this.blob_ = blob;
+<a name="line126"></a>  this.hashVal_ = null;
+<a name="line127"></a>  this.bytesProcessed_ = 0;
+<a name="line128"></a>  this.dispatchEvent(goog.crypt.BlobHasher.EventType.STARTED);
+<a name="line129"></a>
+<a name="line130"></a>  this.processNextBlock_();
+<a name="line131"></a>};
+<a name="line132"></a>
+<a name="line133"></a>
+<a name="line134"></a>/**
+<a name="line135"></a> * Abort hash computation.
+<a name="line136"></a> */
+<a name="line137"></a>goog.crypt.BlobHasher.prototype.abort = function() {
+<a name="line138"></a>  if (this.fileReader_ &amp;&amp;
+<a name="line139"></a>      this.fileReader_.readyState != this.fileReader_.DONE) {
+<a name="line140"></a>    this.fileReader_.abort();
+<a name="line141"></a>  }
+<a name="line142"></a>};
+<a name="line143"></a>
+<a name="line144"></a>
+<a name="line145"></a>/**
+<a name="line146"></a> * @return {number} Number of bytes processed so far.
+<a name="line147"></a> */
+<a name="line148"></a>goog.crypt.BlobHasher.prototype.getBytesProcessed = function() {
+<a name="line149"></a>  return this.bytesProcessed_;
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>/**
+<a name="line154"></a> * @return {Array.&lt;number&gt;} The computed hash value or null if not ready.
+<a name="line155"></a> */
+<a name="line156"></a>goog.crypt.BlobHasher.prototype.getHash = function() {
+<a name="line157"></a>  return this.hashVal_;
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/**
+<a name="line162"></a> * Helper function setting up the processing for the next block, or finalizing
+<a name="line163"></a> * the computation if all blocks were processed.
+<a name="line164"></a> * @private
+<a name="line165"></a> */
+<a name="line166"></a>goog.crypt.BlobHasher.prototype.processNextBlock_ = function() {
+<a name="line167"></a>  goog.asserts.assert(this.blob_, &#39;The blob has disappeared during processing&#39;);
+<a name="line168"></a>  if (this.bytesProcessed_ &lt; this.blob_.size) {
+<a name="line169"></a>    // We have to reset the FileReader every time, otherwise it fails on
+<a name="line170"></a>    // Chrome, including the latest Chrome 12 beta.
+<a name="line171"></a>    // http://code.google.com/p/chromium/issues/detail?id=82346
+<a name="line172"></a>    this.fileReader_ = new FileReader();
+<a name="line173"></a>    this.fileReader_.onload = goog.bind(this.onLoad_, this);
+<a name="line174"></a>    this.fileReader_.onabort = goog.bind(this.dispatchEvent, this,
+<a name="line175"></a>                                         goog.crypt.BlobHasher.EventType.ABORT);
+<a name="line176"></a>    this.fileReader_.onerror = goog.bind(this.dispatchEvent, this,
+<a name="line177"></a>                                         goog.crypt.BlobHasher.EventType.ERROR);
+<a name="line178"></a>
+<a name="line179"></a>    var size = Math.min(this.blob_.size - this.bytesProcessed_,
+<a name="line180"></a>                        this.blockSize_);
+<a name="line181"></a>    var chunk = goog.fs.sliceBlob(this.blob_, this.bytesProcessed_,
+<a name="line182"></a>                                  this.bytesProcessed_ + size);
+<a name="line183"></a>    if (!chunk || chunk.size != size) {
+<a name="line184"></a>      this.logger_.severe(&#39;Failed slicing the blob&#39;);
+<a name="line185"></a>      this.dispatchEvent(goog.crypt.BlobHasher.EventType.ERROR);
+<a name="line186"></a>      return;
+<a name="line187"></a>    }
+<a name="line188"></a>
+<a name="line189"></a>    if (this.fileReader_.readAsArrayBuffer) {
+<a name="line190"></a>      this.fileReader_.readAsArrayBuffer(chunk);
+<a name="line191"></a>    } else if (this.fileReader_.readAsBinaryString) {
+<a name="line192"></a>      this.fileReader_.readAsBinaryString(chunk);
+<a name="line193"></a>    } else {
+<a name="line194"></a>      this.logger_.severe(&#39;Failed calling the chunk reader&#39;);
+<a name="line195"></a>      this.dispatchEvent(goog.crypt.BlobHasher.EventType.ERROR);
+<a name="line196"></a>    }
+<a name="line197"></a>  } else {
+<a name="line198"></a>    this.hashVal_ = this.hashFn_.digest();
+<a name="line199"></a>    this.dispatchEvent(goog.crypt.BlobHasher.EventType.COMPLETE);
+<a name="line200"></a>  }
+<a name="line201"></a>};
+<a name="line202"></a>
+<a name="line203"></a>
+<a name="line204"></a>/**
+<a name="line205"></a> * Handle processing block loaded.
+<a name="line206"></a> * @private
+<a name="line207"></a> */
+<a name="line208"></a>goog.crypt.BlobHasher.prototype.onLoad_ = function() {
+<a name="line209"></a>  this.logger_.info(&#39;Successfully loaded a chunk&#39;);
+<a name="line210"></a>
+<a name="line211"></a>  var array = null;
+<a name="line212"></a>  if (this.fileReader_.result instanceof Array ||
+<a name="line213"></a>      goog.isString(this.fileReader_.result)) {
+<a name="line214"></a>    array = this.fileReader_.result;
+<a name="line215"></a>  } else if (goog.global[&#39;ArrayBuffer&#39;] &amp;&amp; goog.global[&#39;Uint8Array&#39;] &amp;&amp;
+<a name="line216"></a>             this.fileReader_.result instanceof ArrayBuffer) {
+<a name="line217"></a>    array = new Uint8Array(this.fileReader_.result);
+<a name="line218"></a>  }
+<a name="line219"></a>  if (!array) {
+<a name="line220"></a>    this.logger_.severe(&#39;Failed reading the chunk&#39;);
+<a name="line221"></a>    this.dispatchEvent(goog.crypt.BlobHasher.EventType.ERROR);
+<a name="line222"></a>    return;
+<a name="line223"></a>  }
+<a name="line224"></a>  this.hashFn_.update(array);
+<a name="line225"></a>  this.bytesProcessed_ += array.length;
+<a name="line226"></a>  this.dispatchEvent(goog.crypt.BlobHasher.EventType.PROGRESS);
+<a name="line227"></a>
+<a name="line228"></a>  this.processNextBlock_();
+<a name="line229"></a>};
+</pre>
+
+
+</body>
+</html>

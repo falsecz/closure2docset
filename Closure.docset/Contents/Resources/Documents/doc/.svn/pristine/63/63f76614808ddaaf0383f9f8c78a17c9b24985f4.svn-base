@@ -1,0 +1,444 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>seamlessfield_test.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_editor_seamlessfield_test.js.html">seamlessfield_test.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2009 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Trogedit unit tests for goog.editor.SeamlessField.
+<a name="line17"></a> *
+<a name="line18"></a> * @author nicksantos@google.com (Nick Santos)
+<a name="line19"></a> * @suppress {missingProperties} There are many mocks in this unit test,
+<a name="line20"></a> *     and the mocks don&#39;t fit well in the type system.
+<a name="line21"></a> */
+<a name="line22"></a>
+<a name="line23"></a>goog.provide(&#39;goog.editor.seamlessfield_test&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.dom&#39;);
+<a name="line26"></a>goog.require(&#39;goog.editor.BrowserFeature&#39;);
+<a name="line27"></a>goog.require(&#39;goog.editor.SeamlessField&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events&#39;);
+<a name="line29"></a>goog.require(&#39;goog.style&#39;);
+<a name="line30"></a>goog.require(&#39;goog.testing.MockClock&#39;);
+<a name="line31"></a>goog.require(&#39;goog.testing.MockRange&#39;);
+<a name="line32"></a>goog.require(&#39;goog.testing.jsunit&#39;);
+<a name="line33"></a>
+<a name="line34"></a>goog.setTestOnly(&#39;seamlessfield_test&#39;);
+<a name="line35"></a>
+<a name="line36"></a>var fieldElem;
+<a name="line37"></a>var fieldElemClone;
+<a name="line38"></a>
+<a name="line39"></a>function setUp() {
+<a name="line40"></a>  fieldElem = goog.dom.getElement(&#39;field&#39;);
+<a name="line41"></a>  fieldElemClone = fieldElem.cloneNode(true);
+<a name="line42"></a>}
+<a name="line43"></a>
+<a name="line44"></a>function tearDown() {
+<a name="line45"></a>  fieldElem.parentNode.replaceChild(fieldElemClone, fieldElem);
+<a name="line46"></a>}
+<a name="line47"></a>
+<a name="line48"></a>// the following tests check for blended iframe positioning. They really
+<a name="line49"></a>// only make sense on browsers without contentEditable.
+<a name="line50"></a>function testBlankField() {
+<a name="line51"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line52"></a>    assertAttachSeamlessIframeSizesCorrectly(
+<a name="line53"></a>        initSeamlessField(&#39;&amp;nbsp;&#39;, {}), createSeamlessIframe());
+<a name="line54"></a>  }
+<a name="line55"></a>}
+<a name="line56"></a>
+<a name="line57"></a>function testFieldWithContent() {
+<a name="line58"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line59"></a>    assertAttachSeamlessIframeSizesCorrectly(
+<a name="line60"></a>        initSeamlessField(&#39;Hi!&#39;, {}), createSeamlessIframe());
+<a name="line61"></a>  }
+<a name="line62"></a>}
+<a name="line63"></a>
+<a name="line64"></a>function testFieldWithPadding() {
+<a name="line65"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line66"></a>    assertAttachSeamlessIframeSizesCorrectly(
+<a name="line67"></a>        initSeamlessField(&#39;Hi!&#39;, {&#39;padding&#39;: &#39;2px 5px&#39;}),
+<a name="line68"></a>        createSeamlessIframe());
+<a name="line69"></a>  }
+<a name="line70"></a>}
+<a name="line71"></a>
+<a name="line72"></a>function testFieldWithMargin() {
+<a name="line73"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line74"></a>    assertAttachSeamlessIframeSizesCorrectly(
+<a name="line75"></a>        initSeamlessField(&#39;Hi!&#39;, {&#39;margin&#39;: &#39;2px 5px&#39;}),
+<a name="line76"></a>        createSeamlessIframe());
+<a name="line77"></a>  }
+<a name="line78"></a>}
+<a name="line79"></a>
+<a name="line80"></a>function testFieldWithBorder() {
+<a name="line81"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line82"></a>    assertAttachSeamlessIframeSizesCorrectly(
+<a name="line83"></a>        initSeamlessField(&#39;Hi!&#39;, {&#39;border&#39;: &#39;2px 5px&#39;}),
+<a name="line84"></a>        createSeamlessIframe());
+<a name="line85"></a>  }
+<a name="line86"></a>}
+<a name="line87"></a>
+<a name="line88"></a>function testFieldWithOverflow() {
+<a name="line89"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line90"></a>    assertAttachSeamlessIframeSizesCorrectly(
+<a name="line91"></a>        initSeamlessField([&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;].join(&#39;&lt;p/&gt;&#39;),
+<a name="line92"></a>        {&#39;overflow&#39;: &#39;auto&#39;, &#39;position&#39;: &#39;relative&#39;, &#39;height&#39;: &#39;20px&#39;}),
+<a name="line93"></a>        createSeamlessIframe());
+<a name="line94"></a>    assertEquals(20, fieldElem.offsetHeight);
+<a name="line95"></a>  }
+<a name="line96"></a>}
+<a name="line97"></a>
+<a name="line98"></a>function testFieldWithOverflowAndPadding() {
+<a name="line99"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line100"></a>    var blendedField = initSeamlessField(
+<a name="line101"></a>        [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;].join(&#39;&lt;p/&gt;&#39;),
+<a name="line102"></a>        {
+<a name="line103"></a>          &#39;overflow&#39;: &#39;auto&#39;,
+<a name="line104"></a>          &#39;position&#39;: &#39;relative&#39;,
+<a name="line105"></a>          &#39;height&#39;: &#39;20px&#39;,
+<a name="line106"></a>          &#39;padding&#39;: &#39;2px 3px&#39;
+<a name="line107"></a>        });
+<a name="line108"></a>    var blendedIframe = createSeamlessIframe();
+<a name="line109"></a>    assertAttachSeamlessIframeSizesCorrectly(blendedField, blendedIframe);
+<a name="line110"></a>    assertEquals(24, fieldElem.offsetHeight);
+<a name="line111"></a>  }
+<a name="line112"></a>}
+<a name="line113"></a>
+<a name="line114"></a>function testIframeHeightGrowsOnWrap() {
+<a name="line115"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line116"></a>    var clock = new goog.testing.MockClock(true);
+<a name="line117"></a>    var blendedField;
+<a name="line118"></a>    try {
+<a name="line119"></a>      blendedField = initSeamlessField(&#39;&#39;,
+<a name="line120"></a>          {&#39;border&#39;: &#39;1px solid black&#39;, &#39;height&#39;: &#39;20px&#39;});
+<a name="line121"></a>      blendedField.makeEditable();
+<a name="line122"></a>      blendedField.setHtml(false, &#39;Content that should wrap after resize.&#39;);
+<a name="line123"></a>
+<a name="line124"></a>      // Ensure that the field was fully loaded and sized before measuring.
+<a name="line125"></a>      clock.tick(1);
+<a name="line126"></a>
+<a name="line127"></a>      // Capture starting heights.
+<a name="line128"></a>      var unwrappedIframeHeight = blendedField.getEditableIframe().offsetHeight;
+<a name="line129"></a>
+<a name="line130"></a>      // Resize the field such that the text should wrap.
+<a name="line131"></a>      fieldElem.style.width = &#39;200px&#39;;
+<a name="line132"></a>      blendedField.doFieldSizingGecko();
+<a name="line133"></a>
+<a name="line134"></a>      // Iframe should grow as a result.
+<a name="line135"></a>      var wrappedIframeHeight = blendedField.getEditableIframe().offsetHeight;
+<a name="line136"></a>      assertTrue(&#39;Wrapped text should cause iframe to grow - initial height: &#39; +
+<a name="line137"></a>          unwrappedIframeHeight + &#39;, wrapped height: &#39; + wrappedIframeHeight,
+<a name="line138"></a>          wrappedIframeHeight &gt; unwrappedIframeHeight);
+<a name="line139"></a>    } finally {
+<a name="line140"></a>      blendedField.dispose();
+<a name="line141"></a>      clock.dispose();
+<a name="line142"></a>    }
+<a name="line143"></a>  }
+<a name="line144"></a>}
+<a name="line145"></a>
+<a name="line146"></a>function testDispatchBlur() {
+<a name="line147"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE &amp;&amp;
+<a name="line148"></a>      !goog.editor.BrowserFeature.CLEARS_SELECTION_WHEN_FOCUS_LEAVES) {
+<a name="line149"></a>    var blendedField = initSeamlessField(&#39;Hi!&#39;, {&#39;border&#39;: &#39;2px 5px&#39;});
+<a name="line150"></a>    var iframe = createSeamlessIframe();
+<a name="line151"></a>    blendedField.attachIframe(iframe);
+<a name="line152"></a>
+<a name="line153"></a>    var blurCalled = false;
+<a name="line154"></a>    goog.events.listenOnce(blendedField, goog.editor.Field.EventType.BLUR,
+<a name="line155"></a>        function() {
+<a name="line156"></a>          blurCalled = true;
+<a name="line157"></a>        });
+<a name="line158"></a>
+<a name="line159"></a>    var clearSelection = goog.dom.Range.clearSelection;
+<a name="line160"></a>    var cleared = false;
+<a name="line161"></a>    var clearedWindow;
+<a name="line162"></a>    blendedField.editableDomHelper = new goog.dom.DomHelper();
+<a name="line163"></a>    blendedField.editableDomHelper.getWindow =
+<a name="line164"></a>        goog.functions.constant(iframe.contentWindow);
+<a name="line165"></a>    var mockRange = new goog.testing.MockRange();
+<a name="line166"></a>    blendedField.getRange = function() {
+<a name="line167"></a>      return mockRange;
+<a name="line168"></a>    };
+<a name="line169"></a>    goog.dom.Range.clearSelection = function(opt_window) {
+<a name="line170"></a>      clearSelection(opt_window);
+<a name="line171"></a>      cleared = true;
+<a name="line172"></a>      clearedWindow = opt_window;
+<a name="line173"></a>    }
+<a name="line174"></a>    var clock = new goog.testing.MockClock(true);
+<a name="line175"></a>
+<a name="line176"></a>    mockRange.collapse(true);
+<a name="line177"></a>    mockRange.select();
+<a name="line178"></a>    mockRange.$replay();
+<a name="line179"></a>    blendedField.dispatchBlur();
+<a name="line180"></a>    clock.tick(1);
+<a name="line181"></a>
+<a name="line182"></a>    assertTrue(&#39;Blur must be dispatched.&#39;, blurCalled);
+<a name="line183"></a>    assertTrue(&#39;Selection must be cleared.&#39;, cleared);
+<a name="line184"></a>    assertEquals(&#39;Selection must be cleared in iframe&#39;,
+<a name="line185"></a>        iframe.contentWindow, clearedWindow);
+<a name="line186"></a>    mockRange.$verify();
+<a name="line187"></a>    clock.dispose();
+<a name="line188"></a>  }
+<a name="line189"></a>}
+<a name="line190"></a>
+<a name="line191"></a>function testSetMinHeight() {
+<a name="line192"></a>  if (!goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line193"></a>    var clock = new goog.testing.MockClock(true);
+<a name="line194"></a>    try {
+<a name="line195"></a>      var field = initSeamlessField(
+<a name="line196"></a>          [&#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#39;, &#39;6&#39;, &#39;7&#39;].join(&#39;&lt;p/&gt;&#39;),
+<a name="line197"></a>          {&#39;position&#39;: &#39;relative&#39;, &#39;height&#39;: &#39;60px&#39;});
+<a name="line198"></a>
+<a name="line199"></a>      // Initially create and size iframe.
+<a name="line200"></a>      var iframe = createSeamlessIframe();
+<a name="line201"></a>      field.attachIframe(iframe);
+<a name="line202"></a>      field.iframeFieldLoadHandler(iframe, &#39;&#39;, {});
+<a name="line203"></a>      // Need to process timeouts set by load handlers.
+<a name="line204"></a>      clock.tick(1000);
+<a name="line205"></a>
+<a name="line206"></a>      var normalHeight = goog.style.getSize(iframe).height;
+<a name="line207"></a>
+<a name="line208"></a>      var delayedChangeCalled = false;
+<a name="line209"></a>      goog.events.listen(field, goog.editor.Field.EventType.DELAYEDCHANGE,
+<a name="line210"></a>          function() {
+<a name="line211"></a>            delayedChangeCalled = true;
+<a name="line212"></a>          });
+<a name="line213"></a>
+<a name="line214"></a>      // Test that min height is obeyed.
+<a name="line215"></a>      field.setMinHeight(30);
+<a name="line216"></a>      clock.tick(1000);
+<a name="line217"></a>      assertEquals(&#39;Iframe height must match min height.&#39;,
+<a name="line218"></a>          30, goog.style.getSize(iframe).height);
+<a name="line219"></a>      assertFalse(&#39;Setting min height must not cause delayed change event.&#39;,
+<a name="line220"></a>          delayedChangeCalled);
+<a name="line221"></a>
+<a name="line222"></a>      // Test that min height doesn&#39;t shrink field.
+<a name="line223"></a>      field.setMinHeight(0);
+<a name="line224"></a>      clock.tick(1000);
+<a name="line225"></a>      assertEquals(normalHeight, goog.style.getSize(iframe).height);
+<a name="line226"></a>      assertFalse(&#39;Setting min height must not cause delayed change event.&#39;,
+<a name="line227"></a>          delayedChangeCalled);
+<a name="line228"></a>    } finally {
+<a name="line229"></a>      goog.events.removeAll();
+<a name="line230"></a>      field.dispose();
+<a name="line231"></a>      clock.dispose();
+<a name="line232"></a>    }
+<a name="line233"></a>  }
+<a name="line234"></a>}
+<a name="line235"></a>
+<a name="line236"></a>
+<a name="line237"></a>/**
+<a name="line238"></a> * @bug 1649967 This code used to throw a Javascript error.
+<a name="line239"></a> */
+<a name="line240"></a>function testSetMinHeightWithNoIframe() {
+<a name="line241"></a>  if (goog.editor.BrowserFeature.HAS_CONTENT_EDITABLE) {
+<a name="line242"></a>    try {
+<a name="line243"></a>      var field = initSeamlessField(&#39;&amp;nbsp;&#39;, {});
+<a name="line244"></a>      field.makeEditable();
+<a name="line245"></a>      field.setMinHeight(30);
+<a name="line246"></a>    } finally {
+<a name="line247"></a>      field.dispose();
+<a name="line248"></a>      goog.events.removeAll();
+<a name="line249"></a>    }
+<a name="line250"></a>  }
+<a name="line251"></a>}
+<a name="line252"></a>
+<a name="line253"></a>function testStartChangeEvents() {
+<a name="line254"></a>  if (goog.editor.BrowserFeature.USE_MUTATION_EVENTS) {
+<a name="line255"></a>    var clock = new goog.testing.MockClock(true);
+<a name="line256"></a>
+<a name="line257"></a>    try {
+<a name="line258"></a>      var field = initSeamlessField(&#39;&amp;nbsp;&#39;, {});
+<a name="line259"></a>      field.makeEditable();
+<a name="line260"></a>
+<a name="line261"></a>      var changeCalled = false;
+<a name="line262"></a>      goog.events.listenOnce(field, goog.editor.Field.EventType.CHANGE,
+<a name="line263"></a>          function() {
+<a name="line264"></a>            changeCalled = true;
+<a name="line265"></a>          });
+<a name="line266"></a>
+<a name="line267"></a>      var delayedChangeCalled = false;
+<a name="line268"></a>      goog.events.listenOnce(field, goog.editor.Field.EventType.CHANGE,
+<a name="line269"></a>          function() {
+<a name="line270"></a>            delayedChangeCalled = true;
+<a name="line271"></a>          });
+<a name="line272"></a>
+<a name="line273"></a>      field.stopChangeEvents(true, true);
+<a name="line274"></a>      if (field.changeTimerGecko_) {
+<a name="line275"></a>        field.changeTimerGecko_.start();
+<a name="line276"></a>      }
+<a name="line277"></a>
+<a name="line278"></a>      field.startChangeEvents();
+<a name="line279"></a>      clock.tick(1000);
+<a name="line280"></a>
+<a name="line281"></a>      assertFalse(changeCalled);
+<a name="line282"></a>      assertFalse(delayedChangeCalled);
+<a name="line283"></a>    } finally {
+<a name="line284"></a>      clock.dispose();
+<a name="line285"></a>      field.dispose();
+<a name="line286"></a>    }
+<a name="line287"></a>  }
+<a name="line288"></a>}
+<a name="line289"></a>
+<a name="line290"></a>function testManipulateDom() {
+<a name="line291"></a>  // Test in blended field since that is what fires change events.
+<a name="line292"></a>  var editableField = initSeamlessField(&#39;&amp;nbsp;&#39;, {});
+<a name="line293"></a>  var clock = new goog.testing.MockClock(true);
+<a name="line294"></a>
+<a name="line295"></a>  var delayedChangeCalled = 0;
+<a name="line296"></a>  goog.events.listen(editableField, goog.editor.Field.EventType.DELAYEDCHANGE,
+<a name="line297"></a>      function() {
+<a name="line298"></a>        delayedChangeCalled++;
+<a name="line299"></a>      });
+<a name="line300"></a>
+<a name="line301"></a>  assertFalse(editableField.isLoaded());
+<a name="line302"></a>  editableField.manipulateDom(goog.nullFunction);
+<a name="line303"></a>  clock.tick(1000);
+<a name="line304"></a>  assertEquals(&#39;Must not fire delayed change events if field is not loaded.&#39;,
+<a name="line305"></a>      0, delayedChangeCalled);
+<a name="line306"></a>
+<a name="line307"></a>  editableField.makeEditable();
+<a name="line308"></a>  var usesIframe = editableField.usesIframe();
+<a name="line309"></a>
+<a name="line310"></a>  try {
+<a name="line311"></a>    editableField.manipulateDom(goog.nullFunction);
+<a name="line312"></a>    clock.tick(1000); // Wait for delayed change to fire.
+<a name="line313"></a>    assertEquals(&#39;By default must fire a single delayed change event.&#39;,
+<a name="line314"></a>        1, delayedChangeCalled);
+<a name="line315"></a>
+<a name="line316"></a>    editableField.manipulateDom(goog.nullFunction, true);
+<a name="line317"></a>    clock.tick(1000); // Wait for delayed change to fire.
+<a name="line318"></a>    assertEquals(&#39;Must prevent all delayed change events.&#39;,
+<a name="line319"></a>        1, delayedChangeCalled);
+<a name="line320"></a>
+<a name="line321"></a>    editableField.manipulateDom(function() {
+<a name="line322"></a>      this.handleChange();
+<a name="line323"></a>      this.handleChange();
+<a name="line324"></a>      if (this.changeTimerGecko_) {
+<a name="line325"></a>        this.changeTimerGecko_.fire();
+<a name="line326"></a>      }
+<a name="line327"></a>
+<a name="line328"></a>      this.dispatchDelayedChange_();
+<a name="line329"></a>      this.delayedChangeTimer_.fire();
+<a name="line330"></a>    }, false, editableField);
+<a name="line331"></a>    clock.tick(1000); // Wait for delayed change to fire.
+<a name="line332"></a>    assertEquals(&#39;Must ignore dispatch delayed change called within func.&#39;,
+<a name="line333"></a>        2, delayedChangeCalled);
+<a name="line334"></a>  } finally {
+<a name="line335"></a>    // Ensure we always uninstall the mock clock and dispose of everything.
+<a name="line336"></a>    editableField.dispose();
+<a name="line337"></a>    clock.dispose();
+<a name="line338"></a>  }
+<a name="line339"></a>}
+<a name="line340"></a>
+<a name="line341"></a>function testAttachIframe() {
+<a name="line342"></a>  var blendedField = initSeamlessField(&#39;Hi!&#39;, {});
+<a name="line343"></a>  var iframe = createSeamlessIframe();
+<a name="line344"></a>  try {
+<a name="line345"></a>    blendedField.attachIframe(iframe);
+<a name="line346"></a>  } catch (err) {
+<a name="line347"></a>    fail(&#39;Error occurred while attaching iframe.&#39;);
+<a name="line348"></a>  }
+<a name="line349"></a>}
+<a name="line350"></a>
+<a name="line351"></a>
+<a name="line352"></a>function createSeamlessIframe() {
+<a name="line353"></a>  // NOTE(nicksantos): This is a reimplementation of
+<a name="line354"></a>  // TR_EditableUtil.getIframeAttributes, but untangled for tests, and
+<a name="line355"></a>  // specifically with what we need for blended mode.
+<a name="line356"></a>  return goog.dom.createDom(&#39;IFRAME&#39;,
+<a name="line357"></a>      { &#39;frameBorder&#39;: &#39;0&#39;, &#39;style&#39;: &#39;padding:0;&#39; });
+<a name="line358"></a>}
+<a name="line359"></a>
+<a name="line360"></a>
+<a name="line361"></a>/**
+<a name="line362"></a> * Initialize a new editable field for the field id &#39;field&#39;, with the given
+<a name="line363"></a> * innerHTML and styles.
+<a name="line364"></a> *
+<a name="line365"></a> * @param {string} innerHTML html for the field contents.
+<a name="line366"></a> * @param {Object} styles Key-value pairs for styles on the field.
+<a name="line367"></a> * @return {goog.editor.SeamlessField} The field.
+<a name="line368"></a> */
+<a name="line369"></a>function initSeamlessField(innerHTML, styles) {
+<a name="line370"></a>  var field = new goog.editor.SeamlessField(&#39;field&#39;);
+<a name="line371"></a>  fieldElem.innerHTML = innerHTML;
+<a name="line372"></a>  goog.style.setStyle(fieldElem, styles);
+<a name="line373"></a>  return field;
+<a name="line374"></a>}
+<a name="line375"></a>
+<a name="line376"></a>
+<a name="line377"></a>/**
+<a name="line378"></a> * Make sure that the original field element for the given goog.editor.Field has
+<a name="line379"></a> * the same size before and after attaching the given iframe. If this is not
+<a name="line380"></a> * true, then the field will fidget while we&#39;re initializing the field,
+<a name="line381"></a> * and that&#39;s not what we want.
+<a name="line382"></a> *
+<a name="line383"></a> * @param {goog.editor.Field} fieldObj The field.
+<a name="line384"></a> * @param {HTMLIFrameElement} iframe The iframe.
+<a name="line385"></a> */
+<a name="line386"></a>function assertAttachSeamlessIframeSizesCorrectly(fieldObj, iframe) {
+<a name="line387"></a>  var size = goog.style.getSize(fieldObj.getOriginalElement());
+<a name="line388"></a>  fieldObj.attachIframe(iframe);
+<a name="line389"></a>  var newSize = goog.style.getSize(fieldObj.getOriginalElement());
+<a name="line390"></a>
+<a name="line391"></a>  assertEquals(size.width, newSize.width);
+<a name="line392"></a>  assertEquals(size.height, newSize.height);
+<a name="line393"></a>}
+</pre>
+
+
+</body>
+</html>

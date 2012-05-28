@@ -1,0 +1,179 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>prefixedmechanism_test.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_storage_mechanism_prefixedmechanism_test.js.html">prefixedmechanism_test.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Unit tests for storage mechanism sharing and separation.
+<a name="line17"></a> *
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.storage.mechanism.prefixedmechanism_test&#39;);
+<a name="line21"></a>
+<a name="line22"></a>goog.require(&#39;goog.iter.Iterator&#39;);
+<a name="line23"></a>goog.require(&#39;goog.storage.mechanism.IterableMechanism&#39;);
+<a name="line24"></a>goog.require(&#39;goog.testing.asserts&#39;);
+<a name="line25"></a>goog.setTestOnly(&#39;prefixedmechanism_test&#39;);
+<a name="line26"></a>
+<a name="line27"></a>
+<a name="line28"></a>goog.storage.mechanism.prefixedmechanism_test.runSharingTests = function(
+<a name="line29"></a>    mechanismA, mechanismB) {
+<a name="line30"></a>  // Clean up A, should clean up B.
+<a name="line31"></a>  mechanismA.clear();
+<a name="line32"></a>  assertEquals(0, mechanismB.getCount());
+<a name="line33"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line34"></a>               assertThrows(mechanismB.__iterator__().next));
+<a name="line35"></a>
+<a name="line36"></a>  // Modifying A should modify B.
+<a name="line37"></a>  mechanismA.set(&#39;first&#39;, &#39;one&#39;);
+<a name="line38"></a>  assertEquals(&#39;one&#39;, mechanismB.get(&#39;first&#39;));
+<a name="line39"></a>  assertEquals(1, mechanismB.getCount());
+<a name="line40"></a>  var iterator = mechanismB.__iterator__();
+<a name="line41"></a>  assertEquals(&#39;one&#39;, iterator.next());
+<a name="line42"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line43"></a>               assertThrows(iterator.next));
+<a name="line44"></a>
+<a name="line45"></a>  // Modifying B should modify A.
+<a name="line46"></a>  mechanismB.set(&#39;first&#39;, &#39;two&#39;);
+<a name="line47"></a>  assertEquals(&#39;two&#39;, mechanismA.get(&#39;first&#39;));
+<a name="line48"></a>  assertEquals(1, mechanismA.getCount());
+<a name="line49"></a>  var iterator = mechanismA.__iterator__();
+<a name="line50"></a>  assertEquals(&#39;two&#39;, iterator.next());
+<a name="line51"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line52"></a>               assertThrows(iterator.next));
+<a name="line53"></a>
+<a name="line54"></a>  // More elements.
+<a name="line55"></a>  mechanismB.set(&#39;second&#39;, &#39;one&#39;);
+<a name="line56"></a>  assertEquals(2, mechanismA.getCount());
+<a name="line57"></a>  assertSameElements([&#39;one&#39;, &#39;two&#39;], goog.iter.toArray(mechanismA));
+<a name="line58"></a>
+<a name="line59"></a>  // Removing from A should remove from B.
+<a name="line60"></a>  mechanismA.remove(&#39;first&#39;);
+<a name="line61"></a>  assertNull(mechanismB.get(&#39;first&#39;));
+<a name="line62"></a>  assertEquals(&#39;one&#39;, mechanismB.get(&#39;second&#39;));
+<a name="line63"></a>  assertEquals(1, mechanismB.getCount());
+<a name="line64"></a>  var iterator = mechanismB.__iterator__();
+<a name="line65"></a>  assertEquals(&#39;one&#39;, iterator.next());
+<a name="line66"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line67"></a>               assertThrows(iterator.next));
+<a name="line68"></a>
+<a name="line69"></a>  // Clean up B, should clean up A.
+<a name="line70"></a>  mechanismB.clear();
+<a name="line71"></a>  assertEquals(0, mechanismA.getCount());
+<a name="line72"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line73"></a>               assertThrows(mechanismA.__iterator__().next));
+<a name="line74"></a>};
+<a name="line75"></a>
+<a name="line76"></a>
+<a name="line77"></a>goog.storage.mechanism.prefixedmechanism_test.runSeparationTests = function(
+<a name="line78"></a>    mechanismA, mechanismB) {
+<a name="line79"></a>  // Clean up.
+<a name="line80"></a>  mechanismA.clear();
+<a name="line81"></a>  mechanismB.clear();
+<a name="line82"></a>
+<a name="line83"></a>  // Modifying A should not influence B.
+<a name="line84"></a>  mechanismA.set(&#39;first&#39;, &#39;one&#39;);
+<a name="line85"></a>  assertNull(mechanismB.get(&#39;first&#39;));
+<a name="line86"></a>  assertEquals(0, mechanismB.getCount());
+<a name="line87"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line88"></a>               assertThrows(mechanismB.__iterator__().next));
+<a name="line89"></a>
+<a name="line90"></a>  // Modifying B should not influence A.
+<a name="line91"></a>  mechanismB.set(&#39;first&#39;, &#39;two&#39;);
+<a name="line92"></a>  assertEquals(&#39;one&#39;, mechanismA.get(&#39;first&#39;));
+<a name="line93"></a>  assertEquals(1, mechanismA.getCount());
+<a name="line94"></a>  var iterator = mechanismA.__iterator__();
+<a name="line95"></a>  assertEquals(&#39;one&#39;, iterator.next());
+<a name="line96"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line97"></a>               assertThrows(iterator.next));
+<a name="line98"></a>
+<a name="line99"></a>  // Some more values.
+<a name="line100"></a>  mechanismB.set(&#39;second&#39;, &#39;three&#39;);
+<a name="line101"></a>  assertNull(mechanismA.get(&#39;second&#39;));
+<a name="line102"></a>  assertEquals(1, mechanismA.getCount());
+<a name="line103"></a>  var iterator = mechanismA.__iterator__();
+<a name="line104"></a>  assertEquals(&#39;one&#39;, iterator.next());
+<a name="line105"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line106"></a>               assertThrows(iterator.next));
+<a name="line107"></a>
+<a name="line108"></a>  // Removing from B should not influence A.
+<a name="line109"></a>  mechanismB.remove(&#39;first&#39;);
+<a name="line110"></a>  assertEquals(&#39;one&#39;, mechanismA.get(&#39;first&#39;));
+<a name="line111"></a>  assertEquals(1, mechanismA.getCount());
+<a name="line112"></a>  var iterator = mechanismA.__iterator__();
+<a name="line113"></a>  assertEquals(&#39;one&#39;, iterator.next());
+<a name="line114"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line115"></a>               assertThrows(iterator.next));
+<a name="line116"></a>
+<a name="line117"></a>  // Clearing A should not influence B.
+<a name="line118"></a>  mechanismA.clear();
+<a name="line119"></a>  assertEquals(&#39;three&#39;, mechanismB.get(&#39;second&#39;));
+<a name="line120"></a>  assertEquals(1, mechanismB.getCount());
+<a name="line121"></a>  var iterator = mechanismB.__iterator__();
+<a name="line122"></a>  assertEquals(&#39;three&#39;, iterator.next());
+<a name="line123"></a>  assertEquals(goog.iter.StopIteration,
+<a name="line124"></a>               assertThrows(iterator.next));
+<a name="line125"></a>
+<a name="line126"></a>  // Clean up.
+<a name="line127"></a>  mechanismB.clear();
+<a name="line128"></a>};
+</pre>
+
+
+</body>
+</html>

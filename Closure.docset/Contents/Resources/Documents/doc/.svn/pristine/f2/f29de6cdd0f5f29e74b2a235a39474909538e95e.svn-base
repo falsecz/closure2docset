@@ -1,0 +1,134 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>hash_test.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_crypt_hash_test.js.html">hash_test.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Unit tests for the abstract cryptographic hash interface.
+<a name="line17"></a> *
+<a name="line18"></a> */
+<a name="line19"></a>
+<a name="line20"></a>goog.provide(&#39;goog.crypt.hash_test&#39;);
+<a name="line21"></a>
+<a name="line22"></a>goog.require(&#39;goog.testing.asserts&#39;);
+<a name="line23"></a>goog.setTestOnly(&#39;hash_test&#39;);
+<a name="line24"></a>
+<a name="line25"></a>
+<a name="line26"></a>goog.crypt.hash_test.runBasicTests = function(hash) {
+<a name="line27"></a>  // Compute some hash.
+<a name="line28"></a>  hash.update([97, 158]);
+<a name="line29"></a>  var golden = hash.digest();
+<a name="line30"></a>
+<a name="line31"></a>  // Recompute the hash.
+<a name="line32"></a>  hash.reset();
+<a name="line33"></a>  hash.update([97, 158]);
+<a name="line34"></a>  assertArrayEquals(&#39;The reset did not produce the initial state&#39;,
+<a name="line35"></a>      golden, hash.digest());
+<a name="line36"></a>
+<a name="line37"></a>  // Check for a trivial collision.
+<a name="line38"></a>  hash.reset();
+<a name="line39"></a>  hash.update([158, 97]);
+<a name="line40"></a>  assertTrue(&#39;Swapping bytes resulted in a hash collision&#39;,
+<a name="line41"></a>      !!goog.testing.asserts.findDifferences(golden, hash.digest()));
+<a name="line42"></a>
+<a name="line43"></a>  // Compute in parts.
+<a name="line44"></a>  hash.reset();
+<a name="line45"></a>  hash.update([97]);
+<a name="line46"></a>  hash.update([158]);
+<a name="line47"></a>  assertArrayEquals(&#39;Partial updates resulted in a different hash&#39;,
+<a name="line48"></a>      golden, hash.digest());
+<a name="line49"></a>
+<a name="line50"></a>  // Test update with specified length.
+<a name="line51"></a>  hash.reset();
+<a name="line52"></a>  hash.update([97, 158], 0);
+<a name="line53"></a>  hash.update([97, 158, 32], 2);
+<a name="line54"></a>  assertArrayEquals(&#39;Updating with an explicit buffer length did not work&#39;,
+<a name="line55"></a>      golden, hash.digest());
+<a name="line56"></a>
+<a name="line57"></a>  // Test array and string inputs.
+<a name="line58"></a>  hash.reset();
+<a name="line59"></a>  hash.update([97, 66]);
+<a name="line60"></a>  golden = hash.digest();
+<a name="line61"></a>  hash.reset();
+<a name="line62"></a>  hash.update(&#39;aB&#39;);
+<a name="line63"></a>  assertArrayEquals(&#39;String and array inputs should give the same result&#39;,
+<a name="line64"></a>      golden, hash.digest());
+<a name="line65"></a>
+<a name="line66"></a>  // Empty hash.
+<a name="line67"></a>  hash.reset();
+<a name="line68"></a>  var empty = hash.digest();
+<a name="line69"></a>  assertTrue(&#39;Empty hash collided with a non-trivial one&#39;,
+<a name="line70"></a>      !!goog.testing.asserts.findDifferences(golden, empty));
+<a name="line71"></a>
+<a name="line72"></a>  // Zero-length array update.
+<a name="line73"></a>  hash.reset();
+<a name="line74"></a>  hash.update([]);
+<a name="line75"></a>  assertArrayEquals(&#39;Updating with an empty array did not give an empty hash&#39;,
+<a name="line76"></a>      empty, hash.digest());
+<a name="line77"></a>
+<a name="line78"></a>  // Zero-length string update.
+<a name="line79"></a>  hash.reset();
+<a name="line80"></a>  hash.update(&#39;&#39;);
+<a name="line81"></a>  assertArrayEquals(&#39;Updating with an empty string did not give an empty hash&#39;,
+<a name="line82"></a>      empty, hash.digest());
+<a name="line83"></a>};
+</pre>
+
+
+</body>
+</html>

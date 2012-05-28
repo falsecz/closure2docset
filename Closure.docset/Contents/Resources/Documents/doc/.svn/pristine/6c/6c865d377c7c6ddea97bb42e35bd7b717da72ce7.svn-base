@@ -1,0 +1,328 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>bufferedchannel.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_messaging_bufferedchannel.js.html">bufferedchannel.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2010 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A wrapper for asynchronous message-passing channels that buffer
+<a name="line17"></a> * their output until both ends of the channel are connected.
+<a name="line18"></a> *
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.messaging.BufferedChannel&#39;);
+<a name="line22"></a>
+<a name="line23"></a>goog.require(&#39;goog.Timer&#39;);
+<a name="line24"></a>goog.require(&#39;goog.Uri&#39;);
+<a name="line25"></a>goog.require(&#39;goog.debug.Error&#39;);
+<a name="line26"></a>goog.require(&#39;goog.debug.Logger&#39;);
+<a name="line27"></a>goog.require(&#39;goog.events&#39;);
+<a name="line28"></a>goog.require(&#39;goog.messaging.MessageChannel&#39;);
+<a name="line29"></a>goog.require(&#39;goog.messaging.MultiChannel&#39;);
+<a name="line30"></a>
+<a name="line31"></a>
+<a name="line32"></a>
+<a name="line33"></a>/**
+<a name="line34"></a> * Creates a new BufferedChannel, which operates like its underlying channel
+<a name="line35"></a> * except that it buffers calls to send until it receives a message from its
+<a name="line36"></a> * peer claiming that the peer is ready to receive.  The peer is also expected
+<a name="line37"></a> * to be a BufferedChannel, though this is not enforced.
+<a name="line38"></a> *
+<a name="line39"></a> * @param {!goog.messaging.MessageChannel} messageChannel The MessageChannel
+<a name="line40"></a> *     we&#39;re wrapping.
+<a name="line41"></a> * @param {number=} opt_interval Polling interval for sending ready
+<a name="line42"></a> *     notifications to peer, in ms.  Default is 50.
+<a name="line43"></a> * @constructor
+<a name="line44"></a> * @extends {goog.Disposable}
+<a name="line45"></a> * @implements {goog.messaging.MessageChannel};
+<a name="line46"></a> */
+<a name="line47"></a>goog.messaging.BufferedChannel = function(messageChannel, opt_interval) {
+<a name="line48"></a>  goog.Disposable.call(this);
+<a name="line49"></a>
+<a name="line50"></a>  /**
+<a name="line51"></a>   * Buffer of messages to be sent when the channel&#39;s peer is ready.
+<a name="line52"></a>   *
+<a name="line53"></a>   * @type {Array.&lt;Object&gt;}
+<a name="line54"></a>   * @private
+<a name="line55"></a>   */
+<a name="line56"></a>  this.buffer_ = [];
+<a name="line57"></a>
+<a name="line58"></a>  /**
+<a name="line59"></a>   * Channel dispatcher wrapping the underlying delegate channel.
+<a name="line60"></a>   *
+<a name="line61"></a>   * @type {!goog.messaging.MultiChannel}
+<a name="line62"></a>   * @private
+<a name="line63"></a>   */
+<a name="line64"></a>  this.multiChannel_ = new goog.messaging.MultiChannel(messageChannel);
+<a name="line65"></a>
+<a name="line66"></a>  /**
+<a name="line67"></a>   * Virtual channel for carrying the user&#39;s messages.
+<a name="line68"></a>   *
+<a name="line69"></a>   * @type {!goog.messaging.MessageChannel}
+<a name="line70"></a>   * @private
+<a name="line71"></a>   */
+<a name="line72"></a>  this.userChannel_ = this.multiChannel_.createVirtualChannel(
+<a name="line73"></a>      goog.messaging.BufferedChannel.USER_CHANNEL_NAME_);
+<a name="line74"></a>
+<a name="line75"></a>  /**
+<a name="line76"></a>   * Virtual channel for carrying control messages for BufferedChannel.
+<a name="line77"></a>   *
+<a name="line78"></a>   * @type {!goog.messaging.MessageChannel}
+<a name="line79"></a>   * @private
+<a name="line80"></a>   */
+<a name="line81"></a>  this.controlChannel_ = this.multiChannel_.createVirtualChannel(
+<a name="line82"></a>      goog.messaging.BufferedChannel.CONTROL_CHANNEL_NAME_);
+<a name="line83"></a>
+<a name="line84"></a>  /**
+<a name="line85"></a>   * Timer for the peer ready ping loop.
+<a name="line86"></a>   *
+<a name="line87"></a>   * @type {goog.Timer}
+<a name="line88"></a>   * @private
+<a name="line89"></a>   */
+<a name="line90"></a>  this.timer_ = new goog.Timer(
+<a name="line91"></a>      opt_interval || goog.messaging.BufferedChannel.DEFAULT_INTERVAL_MILLIS_);
+<a name="line92"></a>
+<a name="line93"></a>  this.timer_.start();
+<a name="line94"></a>  goog.events.listen(this.timer_, goog.Timer.TICK, this.onTick_, false, this);
+<a name="line95"></a>
+<a name="line96"></a>  this.controlChannel_.registerService(
+<a name="line97"></a>      goog.messaging.BufferedChannel.PEER_READY_SERVICE_NAME_,
+<a name="line98"></a>      goog.bind(this.setPeerReady_, this));
+<a name="line99"></a>};
+<a name="line100"></a>goog.inherits(goog.messaging.BufferedChannel, goog.Disposable);
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>/**
+<a name="line104"></a> * Default polling interval (in ms) for setPeerReady_ notifications.
+<a name="line105"></a> *
+<a name="line106"></a> * @type {number}
+<a name="line107"></a> * @const
+<a name="line108"></a> * @private
+<a name="line109"></a> */
+<a name="line110"></a>goog.messaging.BufferedChannel.DEFAULT_INTERVAL_MILLIS_ = 50;
+<a name="line111"></a>
+<a name="line112"></a>
+<a name="line113"></a>/**
+<a name="line114"></a> * The name of the private service which handles peer ready pings.  The
+<a name="line115"></a> * service registered with this name is bound to this.setPeerReady_, an internal
+<a name="line116"></a> * part of BufferedChannel&#39;s implementation that clients should not send to
+<a name="line117"></a> * directly.
+<a name="line118"></a> *
+<a name="line119"></a> * @type {string}
+<a name="line120"></a> * @const
+<a name="line121"></a> * @private
+<a name="line122"></a> */
+<a name="line123"></a>goog.messaging.BufferedChannel.PEER_READY_SERVICE_NAME_ = &#39;setPeerReady_&#39;;
+<a name="line124"></a>
+<a name="line125"></a>
+<a name="line126"></a>/**
+<a name="line127"></a> * The name of the virtual channel along which user messages are sent.
+<a name="line128"></a> *
+<a name="line129"></a> * @type {string}
+<a name="line130"></a> * @const
+<a name="line131"></a> * @private
+<a name="line132"></a> */
+<a name="line133"></a>goog.messaging.BufferedChannel.USER_CHANNEL_NAME_ = &#39;user&#39;;
+<a name="line134"></a>
+<a name="line135"></a>
+<a name="line136"></a>/**
+<a name="line137"></a> * The name of the virtual channel along which internal control messages are
+<a name="line138"></a> * sent.
+<a name="line139"></a> *
+<a name="line140"></a> * @type {string}
+<a name="line141"></a> * @const
+<a name="line142"></a> * @private
+<a name="line143"></a> */
+<a name="line144"></a>goog.messaging.BufferedChannel.CONTROL_CHANNEL_NAME_ = &#39;control&#39;;
+<a name="line145"></a>
+<a name="line146"></a>
+<a name="line147"></a>/** @override */
+<a name="line148"></a>goog.messaging.BufferedChannel.prototype.connect = function(opt_connectCb) {
+<a name="line149"></a>  if (opt_connectCb) {
+<a name="line150"></a>    opt_connectCb();
+<a name="line151"></a>  }
+<a name="line152"></a>};
+<a name="line153"></a>
+<a name="line154"></a>
+<a name="line155"></a>/** @override */
+<a name="line156"></a>goog.messaging.BufferedChannel.prototype.isConnected = function() {
+<a name="line157"></a>  return true;
+<a name="line158"></a>};
+<a name="line159"></a>
+<a name="line160"></a>
+<a name="line161"></a>/**
+<a name="line162"></a> * @return {boolean} Whether the channel&#39;s peer is ready.
+<a name="line163"></a> */
+<a name="line164"></a>goog.messaging.BufferedChannel.prototype.isPeerReady = function() {
+<a name="line165"></a>  return this.peerReady_;
+<a name="line166"></a>};
+<a name="line167"></a>
+<a name="line168"></a>
+<a name="line169"></a>/**
+<a name="line170"></a> * Logger.
+<a name="line171"></a> *
+<a name="line172"></a> * @type {goog.debug.Logger}
+<a name="line173"></a> * @const
+<a name="line174"></a> * @private
+<a name="line175"></a> */
+<a name="line176"></a>goog.messaging.BufferedChannel.prototype.logger_ = goog.debug.Logger.getLogger(
+<a name="line177"></a>    &#39;goog.messaging.bufferedchannel&#39;);
+<a name="line178"></a>
+<a name="line179"></a>
+<a name="line180"></a>/**
+<a name="line181"></a> * Handles one tick of our peer ready notification loop.  This entails sending a
+<a name="line182"></a> * ready ping to the peer and shutting down the loop if we&#39;ve received a ping
+<a name="line183"></a> * ourselves.
+<a name="line184"></a> *
+<a name="line185"></a> * @param {goog.events.Event} unusedEvent Event we&#39;re handling.
+<a name="line186"></a> * @private
+<a name="line187"></a> */
+<a name="line188"></a>goog.messaging.BufferedChannel.prototype.onTick_ = function(unusedEvent) {
+<a name="line189"></a>  // Must always send before stopping the notification loop.  Otherwise, we will
+<a name="line190"></a>  // commonly fail to transmit to our peer that we&#39;re ready because we received
+<a name="line191"></a>  // their ready ping between two of ours.
+<a name="line192"></a>  try {
+<a name="line193"></a>    this.controlChannel_.send(
+<a name="line194"></a>        goog.messaging.BufferedChannel.PEER_READY_SERVICE_NAME_,
+<a name="line195"></a>        /* payload */ &#39;&#39;);
+<a name="line196"></a>  } catch (e) {
+<a name="line197"></a>    this.timer_.stop();  // So we don&#39;t keep calling send and re-throwing.
+<a name="line198"></a>    throw e;
+<a name="line199"></a>  }
+<a name="line200"></a>  if (this.isPeerReady()) {
+<a name="line201"></a>    this.timer_.stop();
+<a name="line202"></a>  }
+<a name="line203"></a>};
+<a name="line204"></a>
+<a name="line205"></a>
+<a name="line206"></a>/**
+<a name="line207"></a>  * Whether or not the peer channel is ready to receive messages.
+<a name="line208"></a>  *
+<a name="line209"></a>  * @type {boolean}
+<a name="line210"></a>  * @private
+<a name="line211"></a>  */
+<a name="line212"></a>goog.messaging.BufferedChannel.prototype.peerReady_;
+<a name="line213"></a>
+<a name="line214"></a>
+<a name="line215"></a>/** @override */
+<a name="line216"></a>goog.messaging.BufferedChannel.prototype.registerService = function(
+<a name="line217"></a>    serviceName, callback, opt_objectPayload) {
+<a name="line218"></a>  this.userChannel_.registerService(serviceName, callback, opt_objectPayload);
+<a name="line219"></a>};
+<a name="line220"></a>
+<a name="line221"></a>
+<a name="line222"></a>/** @override */
+<a name="line223"></a>goog.messaging.BufferedChannel.prototype.registerDefaultService = function(
+<a name="line224"></a>    callback) {
+<a name="line225"></a>  this.userChannel_.registerDefaultService(callback);
+<a name="line226"></a>};
+<a name="line227"></a>
+<a name="line228"></a>
+<a name="line229"></a>/**
+<a name="line230"></a> * Send a message over the channel.  If the peer is not ready, the message will
+<a name="line231"></a> * be buffered and sent once we&#39;ve received a ready message from our peer.
+<a name="line232"></a> *
+<a name="line233"></a> * @param {string} serviceName The name of the service this message should be
+<a name="line234"></a> *     delivered to.
+<a name="line235"></a> * @param {string|!Object} payload The value of the message. If this is an
+<a name="line236"></a> *     Object, it is serialized to JSON before sending.  It&#39;s the responsibility
+<a name="line237"></a> *     of implementors of this class to perform the serialization.
+<a name="line238"></a> * @see goog.net.xpc.BufferedChannel.send
+<a name="line239"></a> */
+<a name="line240"></a>goog.messaging.BufferedChannel.prototype.send = function(serviceName, payload) {
+<a name="line241"></a>  if (this.isPeerReady()) {
+<a name="line242"></a>    this.userChannel_.send(serviceName, payload);
+<a name="line243"></a>  } else {
+<a name="line244"></a>    goog.messaging.BufferedChannel.prototype.logger_.fine(
+<a name="line245"></a>        &#39;buffering message &#39; + serviceName);
+<a name="line246"></a>    this.buffer_.push({serviceName: serviceName, payload: payload});
+<a name="line247"></a>  }
+<a name="line248"></a>};
+<a name="line249"></a>
+<a name="line250"></a>
+<a name="line251"></a>/**
+<a name="line252"></a> * Marks the channel&#39;s peer as ready, then sends buffered messages and nulls the
+<a name="line253"></a> * buffer.  Subsequent calls to setPeerReady_ have no effect.
+<a name="line254"></a> *
+<a name="line255"></a> * @private
+<a name="line256"></a> */
+<a name="line257"></a>goog.messaging.BufferedChannel.prototype.setPeerReady_ = function() {
+<a name="line258"></a>  if (this.peerReady_) {
+<a name="line259"></a>    return;
+<a name="line260"></a>  }
+<a name="line261"></a>  this.peerReady_ = true;
+<a name="line262"></a>  for (var i = 0; i &lt; this.buffer_.length; i++) {
+<a name="line263"></a>    var message = this.buffer_[i];
+<a name="line264"></a>    goog.messaging.BufferedChannel.prototype.logger_.fine(
+<a name="line265"></a>        &#39;sending buffered message &#39; + message.serviceName);
+<a name="line266"></a>    this.userChannel_.send(message.serviceName, message.payload);
+<a name="line267"></a>  }
+<a name="line268"></a>  this.buffer_ = null;
+<a name="line269"></a>};
+<a name="line270"></a>
+<a name="line271"></a>
+<a name="line272"></a>/** @override */
+<a name="line273"></a>goog.messaging.BufferedChannel.prototype.disposeInternal = function() {
+<a name="line274"></a>  goog.dispose(this.multiChannel_);
+<a name="line275"></a>  goog.dispose(this.timer_);
+<a name="line276"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line277"></a>};
+</pre>
+
+
+</body>
+</html>

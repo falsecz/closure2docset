@@ -1,0 +1,673 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>entry.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_fs_entry.js.html">entry.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2011 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Mock filesystem objects. These are all in the same file to
+<a name="line17"></a> * avoid circular dependency issues.
+<a name="line18"></a> *
+<a name="line19"></a> */
+<a name="line20"></a>
+<a name="line21"></a>goog.provide(&#39;goog.testing.fs.DirectoryEntry&#39;);
+<a name="line22"></a>goog.provide(&#39;goog.testing.fs.Entry&#39;);
+<a name="line23"></a>goog.provide(&#39;goog.testing.fs.FileEntry&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.Timer&#39;);
+<a name="line26"></a>goog.require(&#39;goog.array&#39;);
+<a name="line27"></a>goog.require(&#39;goog.async.Deferred&#39;);
+<a name="line28"></a>goog.require(&#39;goog.fs.DirectoryEntry&#39;);
+<a name="line29"></a>goog.require(&#39;goog.fs.DirectoryEntry.Behavior&#39;);
+<a name="line30"></a>goog.require(&#39;goog.fs.Error&#39;);
+<a name="line31"></a>goog.require(&#39;goog.functions&#39;);
+<a name="line32"></a>goog.require(&#39;goog.object&#39;);
+<a name="line33"></a>goog.require(&#39;goog.string&#39;);
+<a name="line34"></a>goog.require(&#39;goog.testing.fs.File&#39;);
+<a name="line35"></a>goog.require(&#39;goog.testing.fs.FileWriter&#39;);
+<a name="line36"></a>
+<a name="line37"></a>
+<a name="line38"></a>
+<a name="line39"></a>/**
+<a name="line40"></a> * A mock filesystem entry object.
+<a name="line41"></a> *
+<a name="line42"></a> * @param {!goog.testing.fs.FileSystem} fs The filesystem containing this entry.
+<a name="line43"></a> * @param {!goog.testing.fs.DirectoryEntry} parent The directory entry directly
+<a name="line44"></a> *     containing this entry.
+<a name="line45"></a> * @param {string} name The name of this entry.
+<a name="line46"></a> * @constructor
+<a name="line47"></a> */
+<a name="line48"></a>goog.testing.fs.Entry = function(fs, parent, name) {
+<a name="line49"></a>  /**
+<a name="line50"></a>   * This entry&#39;s filesystem.
+<a name="line51"></a>   * @type {!goog.testing.fs.FileSystem}
+<a name="line52"></a>   * @private
+<a name="line53"></a>   */
+<a name="line54"></a>  this.fs_ = fs;
+<a name="line55"></a>
+<a name="line56"></a>  /**
+<a name="line57"></a>   * The name of this entry.
+<a name="line58"></a>   * @type {string}
+<a name="line59"></a>   * @private
+<a name="line60"></a>   */
+<a name="line61"></a>  this.name_ = name;
+<a name="line62"></a>
+<a name="line63"></a>  /**
+<a name="line64"></a>   * The parent of this entry.
+<a name="line65"></a>   * @type {!goog.testing.fs.DirectoryEntry}
+<a name="line66"></a>   */
+<a name="line67"></a>  this.parent = parent;
+<a name="line68"></a>};
+<a name="line69"></a>
+<a name="line70"></a>
+<a name="line71"></a>/**
+<a name="line72"></a> * Whether or not this entry has been deleted.
+<a name="line73"></a> * @type {boolean}
+<a name="line74"></a> */
+<a name="line75"></a>goog.testing.fs.Entry.prototype.deleted = false;
+<a name="line76"></a>
+<a name="line77"></a>
+<a name="line78"></a>/**
+<a name="line79"></a> * @see {goog.fs.Entry#isFile}
+<a name="line80"></a> * @return {boolean}
+<a name="line81"></a> */
+<a name="line82"></a>goog.testing.fs.Entry.prototype.isFile = goog.abstractMethod;
+<a name="line83"></a>
+<a name="line84"></a>
+<a name="line85"></a>/**
+<a name="line86"></a> * @see {goog.fs.Entry#isDirectory}
+<a name="line87"></a> * @return {boolean}
+<a name="line88"></a> */
+<a name="line89"></a>goog.testing.fs.Entry.prototype.isDirectory = goog.abstractMethod;
+<a name="line90"></a>
+<a name="line91"></a>
+<a name="line92"></a>/**
+<a name="line93"></a> * @see {goog.fs.Entry#getName}
+<a name="line94"></a> * @return {string}
+<a name="line95"></a> */
+<a name="line96"></a>goog.testing.fs.Entry.prototype.getName = function() {
+<a name="line97"></a>  return this.name_;
+<a name="line98"></a>};
+<a name="line99"></a>
+<a name="line100"></a>
+<a name="line101"></a>/**
+<a name="line102"></a> * @see {goog.fs.Entry#getFullPath}
+<a name="line103"></a> * @return {string}
+<a name="line104"></a> */
+<a name="line105"></a>goog.testing.fs.Entry.prototype.getFullPath = function() {
+<a name="line106"></a>  if (this.getName() == &#39;&#39; || this.parent.getName() == &#39;&#39;) {
+<a name="line107"></a>    // The root directory has an empty name
+<a name="line108"></a>    return &#39;/&#39; + this.name_;
+<a name="line109"></a>  } else {
+<a name="line110"></a>    return this.parent.getFullPath() + &#39;/&#39; + this.name_;
+<a name="line111"></a>  }
+<a name="line112"></a>};
+<a name="line113"></a>
+<a name="line114"></a>
+<a name="line115"></a>/**
+<a name="line116"></a> * @see {goog.fs.Entry#getFileSystem}
+<a name="line117"></a> * @return {!goog.testing.fs.FileSystem}
+<a name="line118"></a> */
+<a name="line119"></a>goog.testing.fs.Entry.prototype.getFileSystem = function() {
+<a name="line120"></a>  return this.fs_;
+<a name="line121"></a>};
+<a name="line122"></a>
+<a name="line123"></a>
+<a name="line124"></a>/**
+<a name="line125"></a> * @see {goog.fs.Entry#getLastModified}
+<a name="line126"></a> * @return {!goog.async.Deferred}
+<a name="line127"></a> */
+<a name="line128"></a>goog.testing.fs.Entry.prototype.getLastModified = goog.abstractMethod;
+<a name="line129"></a>
+<a name="line130"></a>
+<a name="line131"></a>/**
+<a name="line132"></a> * @see {goog.fs.Entry#moveTo}
+<a name="line133"></a> * @param {!goog.testing.fs.DirectoryEntry} parent
+<a name="line134"></a> * @param {string=} opt_newName
+<a name="line135"></a> * @return {!goog.async.Deferred}
+<a name="line136"></a> */
+<a name="line137"></a>goog.testing.fs.Entry.prototype.moveTo = function(parent, opt_newName) {
+<a name="line138"></a>  var msg = &#39;moving &#39; + this.getFullPath() + &#39; into &#39; + parent.getFullPath() +
+<a name="line139"></a>      (opt_newName ? &#39;, renaming to &#39; + opt_newName : &#39;&#39;);
+<a name="line140"></a>  var newFile;
+<a name="line141"></a>  return this.checkNotDeleted(msg).
+<a name="line142"></a>      addCallback(function() { return this.copyTo(parent, opt_newName); }).
+<a name="line143"></a>      addCallback(function(file) {
+<a name="line144"></a>        newFile = file;
+<a name="line145"></a>        return this.remove();
+<a name="line146"></a>      }).addCallback(function() { return newFile; });
+<a name="line147"></a>};
+<a name="line148"></a>
+<a name="line149"></a>
+<a name="line150"></a>/**
+<a name="line151"></a> * @see {goog.fs.Entry#copyTo}
+<a name="line152"></a> * @param {!goog.testing.fs.DirectoryEntry} parent
+<a name="line153"></a> * @param {string=} opt_newName
+<a name="line154"></a> * @return {!goog.async.Deferred}
+<a name="line155"></a> */
+<a name="line156"></a>goog.testing.fs.Entry.prototype.copyTo = function(parent, opt_newName) {
+<a name="line157"></a>  var msg = &#39;copying &#39; + this.getFullPath() + &#39; into &#39; + parent.getFullPath() +
+<a name="line158"></a>      (opt_newName ? &#39;, renaming to &#39; + opt_newName : &#39;&#39;);
+<a name="line159"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line160"></a>    var name = opt_newName || this.getName();
+<a name="line161"></a>    var entry = this.clone();
+<a name="line162"></a>    parent.children[name] = entry;
+<a name="line163"></a>    parent.lastModifiedTimestamp_ = goog.now();
+<a name="line164"></a>    entry.name_ = name;
+<a name="line165"></a>    entry.parent = parent;
+<a name="line166"></a>    return entry;
+<a name="line167"></a>  });
+<a name="line168"></a>};
+<a name="line169"></a>
+<a name="line170"></a>
+<a name="line171"></a>/**
+<a name="line172"></a> * @return {!goog.testing.fs.Entry} A shallow copy of this entry object.
+<a name="line173"></a> */
+<a name="line174"></a>goog.testing.fs.Entry.prototype.clone = goog.abstractMethod;
+<a name="line175"></a>
+<a name="line176"></a>
+<a name="line177"></a>/**
+<a name="line178"></a> * @see {goog.fs.Entry#toUrl}
+<a name="line179"></a> * @return {string}
+<a name="line180"></a> */
+<a name="line181"></a>goog.testing.fs.Entry.prototype.toUrl = function(opt_mimetype) {
+<a name="line182"></a>  return &#39;fakefilesystem:&#39; + this.getFullPath();
+<a name="line183"></a>};
+<a name="line184"></a>
+<a name="line185"></a>
+<a name="line186"></a>/**
+<a name="line187"></a> * @see {goog.fs.Entry#remove}
+<a name="line188"></a> * @return {!goog.async.Deferred}
+<a name="line189"></a> */
+<a name="line190"></a>goog.testing.fs.Entry.prototype.remove = function() {
+<a name="line191"></a>  var msg = &#39;removing &#39; + this.getFullPath();
+<a name="line192"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line193"></a>    delete this.parent.children[this.getName()];
+<a name="line194"></a>    this.parent.lastModifiedTimestamp_ = goog.now();
+<a name="line195"></a>    this.deleted = true;
+<a name="line196"></a>    return;
+<a name="line197"></a>  });
+<a name="line198"></a>};
+<a name="line199"></a>
+<a name="line200"></a>
+<a name="line201"></a>/**
+<a name="line202"></a> * @see {goog.fs.Entry#getParent}
+<a name="line203"></a> * @return {!goog.async.Deferred}
+<a name="line204"></a> */
+<a name="line205"></a>goog.testing.fs.Entry.prototype.getParent = function() {
+<a name="line206"></a>  var msg = &#39;getting parent of &#39; + this.getFullPath();
+<a name="line207"></a>  return this.checkNotDeleted(msg).
+<a name="line208"></a>      addCallback(function() { return this.parent; });
+<a name="line209"></a>};
+<a name="line210"></a>
+<a name="line211"></a>
+<a name="line212"></a>/**
+<a name="line213"></a> * Return a deferred that will call its errback if this entry has been deleted.
+<a name="line214"></a> * In addition, the deferred will only run after a timeout of 0, and all its
+<a name="line215"></a> * callbacks will run with the entry as &quot;this&quot;.
+<a name="line216"></a> *
+<a name="line217"></a> * @param {string} action The name of the action being performed. For error
+<a name="line218"></a> *     reporting.
+<a name="line219"></a> * @return {!goog.async.Deferred} The deferred that will be called after a
+<a name="line220"></a> *     timeout of 0.
+<a name="line221"></a> * @protected
+<a name="line222"></a> */
+<a name="line223"></a>goog.testing.fs.Entry.prototype.checkNotDeleted = function(action) {
+<a name="line224"></a>  var d = new goog.async.Deferred(undefined, this);
+<a name="line225"></a>  goog.Timer.callOnce(function() {
+<a name="line226"></a>    if (this.deleted) {
+<a name="line227"></a>      d.errback(new goog.fs.Error(goog.fs.Error.ErrorCode.NOT_FOUND, action));
+<a name="line228"></a>    } else {
+<a name="line229"></a>      d.callback();
+<a name="line230"></a>    }
+<a name="line231"></a>  }, 0, this);
+<a name="line232"></a>  return d;
+<a name="line233"></a>};
+<a name="line234"></a>
+<a name="line235"></a>
+<a name="line236"></a>
+<a name="line237"></a>/**
+<a name="line238"></a> * A mock directory entry object.
+<a name="line239"></a> *
+<a name="line240"></a> * @param {!goog.testing.fs.FileSystem} fs The filesystem containing this entry.
+<a name="line241"></a> * @param {goog.testing.fs.DirectoryEntry} parent The directory entry directly
+<a name="line242"></a> *     containing this entry. If this is null, that means this is the root
+<a name="line243"></a> *     directory and so is its own parent.
+<a name="line244"></a> * @param {string} name The name of this entry.
+<a name="line245"></a> * @param {!Object.&lt;!goog.testing.fs.Entry&gt;} children The map of child names to
+<a name="line246"></a> *     entry objects.
+<a name="line247"></a> * @constructor
+<a name="line248"></a> * @extends {goog.testing.fs.Entry}
+<a name="line249"></a> */
+<a name="line250"></a>goog.testing.fs.DirectoryEntry = function(fs, parent, name, children) {
+<a name="line251"></a>  goog.base(this, fs, parent || this, name);
+<a name="line252"></a>
+<a name="line253"></a>  /**
+<a name="line254"></a>   * The map of child names to entry objects.
+<a name="line255"></a>   * @type {!Object.&lt;!goog.testing.fs.Entry&gt;}
+<a name="line256"></a>   */
+<a name="line257"></a>  this.children = children;
+<a name="line258"></a>
+<a name="line259"></a>  /**
+<a name="line260"></a>   * The modification time of the directory. Measured using goog.now, which may
+<a name="line261"></a>   * be overridden with mock time providers.
+<a name="line262"></a>   * @type {number}
+<a name="line263"></a>   * @private
+<a name="line264"></a>   */
+<a name="line265"></a>  this.lastModifiedTimestamp_ = goog.now();
+<a name="line266"></a>};
+<a name="line267"></a>goog.inherits(goog.testing.fs.DirectoryEntry, goog.testing.fs.Entry);
+<a name="line268"></a>
+<a name="line269"></a>
+<a name="line270"></a>/** @override */
+<a name="line271"></a>goog.testing.fs.DirectoryEntry.prototype.isFile = function() {
+<a name="line272"></a>  return false;
+<a name="line273"></a>};
+<a name="line274"></a>
+<a name="line275"></a>
+<a name="line276"></a>/** @override */
+<a name="line277"></a>goog.testing.fs.DirectoryEntry.prototype.isDirectory = function() {
+<a name="line278"></a>  return true;
+<a name="line279"></a>};
+<a name="line280"></a>
+<a name="line281"></a>
+<a name="line282"></a>/** @override */
+<a name="line283"></a>goog.testing.fs.DirectoryEntry.prototype.getLastModified = function() {
+<a name="line284"></a>  var msg = &#39;reading last modified date for &#39; + this.getFullPath();
+<a name="line285"></a>  return this.checkNotDeleted(msg).
+<a name="line286"></a>      addCallback(function() {return new Date(this.lastModifiedTimestamp_)});
+<a name="line287"></a>};
+<a name="line288"></a>
+<a name="line289"></a>
+<a name="line290"></a>/** @override */
+<a name="line291"></a>goog.testing.fs.DirectoryEntry.prototype.clone = function() {
+<a name="line292"></a>  return new goog.testing.fs.DirectoryEntry(
+<a name="line293"></a>      this.getFileSystem(), this.parent, this.getName(), this.children);
+<a name="line294"></a>};
+<a name="line295"></a>
+<a name="line296"></a>
+<a name="line297"></a>/** @override */
+<a name="line298"></a>goog.testing.fs.DirectoryEntry.prototype.remove = function() {
+<a name="line299"></a>  if (!goog.object.isEmpty(this.children)) {
+<a name="line300"></a>    var d = new goog.async.Deferred();
+<a name="line301"></a>    goog.Timer.callOnce(function() {
+<a name="line302"></a>      d.errback(new goog.fs.Error(
+<a name="line303"></a>          goog.fs.Error.ErrorCode.INVALID_MODIFICATION,
+<a name="line304"></a>          &#39;removing &#39; + this.getFullPath()));
+<a name="line305"></a>    }, 0, this);
+<a name="line306"></a>    return d;
+<a name="line307"></a>  } else {
+<a name="line308"></a>    return goog.base(this, &#39;remove&#39;);
+<a name="line309"></a>  }
+<a name="line310"></a>};
+<a name="line311"></a>
+<a name="line312"></a>
+<a name="line313"></a>/**
+<a name="line314"></a> * @see {goog.fs.DirectoryEntry#getFile}
+<a name="line315"></a> * @param {string} path
+<a name="line316"></a> * @param {goog.fs.DirectoryEntry.Behavior=} opt_behavior
+<a name="line317"></a> * @return {!goog.async.Deferred}
+<a name="line318"></a> */
+<a name="line319"></a>goog.testing.fs.DirectoryEntry.prototype.getFile = function(
+<a name="line320"></a>    path, opt_behavior) {
+<a name="line321"></a>  var msg = &#39;loading file &#39; + path + &#39; from &#39; + this.getFullPath();
+<a name="line322"></a>  opt_behavior = opt_behavior || goog.fs.DirectoryEntry.Behavior.DEFAULT;
+<a name="line323"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line324"></a>    try {
+<a name="line325"></a>      return goog.async.Deferred.succeed(this.getFileSync(path, opt_behavior));
+<a name="line326"></a>    } catch (e) {
+<a name="line327"></a>      return goog.async.Deferred.fail(e);
+<a name="line328"></a>    }
+<a name="line329"></a>  });
+<a name="line330"></a>};
+<a name="line331"></a>
+<a name="line332"></a>
+<a name="line333"></a>/**
+<a name="line334"></a> * @see {goog.fs.DirectoryEntry#getDirectory}
+<a name="line335"></a> * @param {string} path
+<a name="line336"></a> * @param {goog.fs.DirectoryEntry.Behavior=} opt_behavior
+<a name="line337"></a> * @return {!goog.async.Deferred}
+<a name="line338"></a> */
+<a name="line339"></a>goog.testing.fs.DirectoryEntry.prototype.getDirectory = function(
+<a name="line340"></a>    path, opt_behavior) {
+<a name="line341"></a>  var msg = &#39;loading directory &#39; + path + &#39; from &#39; + this.getFullPath();
+<a name="line342"></a>  opt_behavior = opt_behavior || goog.fs.DirectoryEntry.Behavior.DEFAULT;
+<a name="line343"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line344"></a>    try {
+<a name="line345"></a>      return goog.async.Deferred.succeed(
+<a name="line346"></a>          this.getDirectorySync(path, opt_behavior));
+<a name="line347"></a>    } catch (e) {
+<a name="line348"></a>      return goog.async.Deferred.fail(e);
+<a name="line349"></a>    }
+<a name="line350"></a>  });
+<a name="line351"></a>};
+<a name="line352"></a>
+<a name="line353"></a>
+<a name="line354"></a>/**
+<a name="line355"></a> * Get a file entry synchronously, without waiting for a Deferred to resolve.
+<a name="line356"></a> *
+<a name="line357"></a> * @param {string} path The path to the file, relative to this directory.
+<a name="line358"></a> * @param {goog.fs.DirectoryEntry.Behavior=} opt_behavior The behavior for
+<a name="line359"></a> *     loading the file.
+<a name="line360"></a> * @return {!goog.testing.fs.FileEntry} The loaded file.
+<a name="line361"></a> */
+<a name="line362"></a>goog.testing.fs.DirectoryEntry.prototype.getFileSync = function(
+<a name="line363"></a>    path, opt_behavior) {
+<a name="line364"></a>  opt_behavior = opt_behavior || goog.fs.DirectoryEntry.Behavior.DEFAULT;
+<a name="line365"></a>  return (/** @type {!goog.testing.fs.FileEntry} */ (this.getEntry_(
+<a name="line366"></a>      path, opt_behavior, true /* isFile */,
+<a name="line367"></a>      goog.bind(function(parent, name) {
+<a name="line368"></a>        return new goog.testing.fs.FileEntry(
+<a name="line369"></a>            this.getFileSystem(), parent, name, &#39;&#39;);
+<a name="line370"></a>      }, this))));
+<a name="line371"></a>};
+<a name="line372"></a>
+<a name="line373"></a>
+<a name="line374"></a>/**
+<a name="line375"></a> * Creates a file synchronously. This is a shorthand for getFileSync, useful for
+<a name="line376"></a> * setting up tests.
+<a name="line377"></a> *
+<a name="line378"></a> * @param {string} path The path to the file, relative to this directory.
+<a name="line379"></a> * @return {!goog.testing.fs.FileEntry} The created file.
+<a name="line380"></a> */
+<a name="line381"></a>goog.testing.fs.DirectoryEntry.prototype.createFileSync = function(path) {
+<a name="line382"></a>  return this.getFileSync(path, goog.fs.DirectoryEntry.Behavior.CREATE);
+<a name="line383"></a>};
+<a name="line384"></a>
+<a name="line385"></a>
+<a name="line386"></a>/**
+<a name="line387"></a> * Get a directory synchronously, without waiting for a Deferred to resolve.
+<a name="line388"></a> *
+<a name="line389"></a> * @param {string} path The path to the directory, relative to this one.
+<a name="line390"></a> * @param {goog.fs.DirectoryEntry.Behavior=} opt_behavior The behavior for
+<a name="line391"></a> *     loading the directory.
+<a name="line392"></a> * @return {!goog.testing.fs.DirectoryEntry} The loaded directory.
+<a name="line393"></a> */
+<a name="line394"></a>goog.testing.fs.DirectoryEntry.prototype.getDirectorySync = function(
+<a name="line395"></a>    path, opt_behavior) {
+<a name="line396"></a>  opt_behavior = opt_behavior || goog.fs.DirectoryEntry.Behavior.DEFAULT;
+<a name="line397"></a>  return (/** @type {!goog.testing.fs.DirectoryEntry} */ (this.getEntry_(
+<a name="line398"></a>      path, opt_behavior, false /* isFile */,
+<a name="line399"></a>      goog.bind(function(parent, name) {
+<a name="line400"></a>        return new goog.testing.fs.DirectoryEntry(
+<a name="line401"></a>            this.getFileSystem(), parent, name, {});
+<a name="line402"></a>      }, this))));
+<a name="line403"></a>};
+<a name="line404"></a>
+<a name="line405"></a>
+<a name="line406"></a>/**
+<a name="line407"></a> * Creates a directory synchronously. This is a shorthand for getFileSync,
+<a name="line408"></a> * useful for setting up tests.
+<a name="line409"></a> *
+<a name="line410"></a> * @param {string} path The path to the directory, relative to this directory.
+<a name="line411"></a> * @return {!goog.testing.fs.DirectoryEntry} The created directory.
+<a name="line412"></a> */
+<a name="line413"></a>goog.testing.fs.DirectoryEntry.prototype.createDirectorySync = function(path) {
+<a name="line414"></a>  return this.getDirectorySync(path, goog.fs.DirectoryEntry.Behavior.CREATE);
+<a name="line415"></a>};
+<a name="line416"></a>
+<a name="line417"></a>
+<a name="line418"></a>/**
+<a name="line419"></a> * Get a file or directory entry from a path. This handles parsing the path for
+<a name="line420"></a> * subdirectories and throwing appropriate errors should something go wrong.
+<a name="line421"></a> *
+<a name="line422"></a> * @param {string} path The path to the entry, relative to this directory.
+<a name="line423"></a> * @param {goog.fs.DirectoryEntry.Behavior} behavior The behavior for loading
+<a name="line424"></a> *     the entry.
+<a name="line425"></a> * @param {boolean} isFile Whether a file or directory is being loaded.
+<a name="line426"></a> * @param {function(!goog.testing.fs.DirectoryEntry, string) :
+<a name="line427"></a> *             !goog.testing.fs.Entry} createFn
+<a name="line428"></a> *     The function for creating the entry if it doesn&#39;t yet exist. This is
+<a name="line429"></a> *     passed the parent entry and the name of the new entry.
+<a name="line430"></a> * @return {!goog.testing.fs.Entry} The loaded entry.
+<a name="line431"></a> * @private
+<a name="line432"></a> */
+<a name="line433"></a>goog.testing.fs.DirectoryEntry.prototype.getEntry_ = function(
+<a name="line434"></a>    path, behavior, isFile, createFn) {
+<a name="line435"></a>  // Filter out leading, trailing, and duplicate slashes.
+<a name="line436"></a>  var components = goog.array.filter(path.split(&#39;/&#39;), goog.functions.identity);
+<a name="line437"></a>
+<a name="line438"></a>  var basename = /** @type {string} */ (goog.array.peek(components)) || &#39;&#39;;
+<a name="line439"></a>  var dir = goog.string.startsWith(path, &#39;/&#39;) ?
+<a name="line440"></a>      this.getFileSystem().getRoot() : this;
+<a name="line441"></a>
+<a name="line442"></a>  goog.array.forEach(components.slice(0, -1), function(p) {
+<a name="line443"></a>    var subdir = dir.children[p];
+<a name="line444"></a>    if (!subdir) {
+<a name="line445"></a>      throw new goog.fs.Error(
+<a name="line446"></a>          goog.fs.Error.ErrorCode.NOT_FOUND,
+<a name="line447"></a>          &#39;loading &#39; + path + &#39; from &#39; + this.getFullPath() + &#39; (directory &#39; +
+<a name="line448"></a>          dir.getFullPath() + &#39;/&#39; + p + &#39;)&#39;);
+<a name="line449"></a>    }
+<a name="line450"></a>    dir = subdir;
+<a name="line451"></a>  }, this);
+<a name="line452"></a>
+<a name="line453"></a>  // If there is no basename, the path must resolve to the root directory.
+<a name="line454"></a>  var entry = basename ? dir.children[basename] : dir;
+<a name="line455"></a>
+<a name="line456"></a>  if (!entry) {
+<a name="line457"></a>    if (behavior == goog.fs.DirectoryEntry.Behavior.DEFAULT) {
+<a name="line458"></a>      throw new goog.fs.Error(
+<a name="line459"></a>          goog.fs.Error.ErrorCode.NOT_FOUND,
+<a name="line460"></a>          &#39;loading &#39; + path + &#39; from &#39; + this.getFullPath());
+<a name="line461"></a>    } else {
+<a name="line462"></a>      goog.asserts.assert(
+<a name="line463"></a>          behavior == goog.fs.DirectoryEntry.Behavior.CREATE ||
+<a name="line464"></a>          behavior == goog.fs.DirectoryEntry.Behavior.CREATE_EXCLUSIVE);
+<a name="line465"></a>      entry = createFn(dir, basename);
+<a name="line466"></a>      dir.children[basename] = entry;
+<a name="line467"></a>      this.lastModifiedTimestamp_ = goog.now();
+<a name="line468"></a>      return entry;
+<a name="line469"></a>    }
+<a name="line470"></a>  } else if (behavior == goog.fs.DirectoryEntry.Behavior.CREATE_EXCLUSIVE) {
+<a name="line471"></a>    throw new goog.fs.Error(
+<a name="line472"></a>        goog.fs.Error.ErrorCode.PATH_EXISTS,
+<a name="line473"></a>        &#39;loading &#39; + path + &#39; from &#39; + this.getFullPath());
+<a name="line474"></a>  } else if (entry.isFile() != isFile) {
+<a name="line475"></a>    throw new goog.fs.Error(
+<a name="line476"></a>        goog.fs.Error.ErrorCode.TYPE_MISMATCH,
+<a name="line477"></a>        &#39;loading &#39; + path + &#39; from &#39; + this.getFullPath());
+<a name="line478"></a>  } else {
+<a name="line479"></a>    if (behavior == goog.fs.DirectoryEntry.Behavior.CREATE) {
+<a name="line480"></a>      this.lastModifiedTimestamp_ = goog.now();
+<a name="line481"></a>    }
+<a name="line482"></a>    return entry;
+<a name="line483"></a>  }
+<a name="line484"></a>};
+<a name="line485"></a>
+<a name="line486"></a>
+<a name="line487"></a>/**
+<a name="line488"></a> * Returns whether this directory has a child with the given name.
+<a name="line489"></a> *
+<a name="line490"></a> * @param {string} name The name of the entry to check for.
+<a name="line491"></a> * @return {boolean} Whether or not this has a child with the given name.
+<a name="line492"></a> */
+<a name="line493"></a>goog.testing.fs.DirectoryEntry.prototype.hasChild = function(name) {
+<a name="line494"></a>  return name in this.children;
+<a name="line495"></a>};
+<a name="line496"></a>
+<a name="line497"></a>
+<a name="line498"></a>/**
+<a name="line499"></a> * @see {goog.fs.DirectoryEntry.removeRecursively}
+<a name="line500"></a> * @return {!goog.async.Deferred}
+<a name="line501"></a> */
+<a name="line502"></a>goog.testing.fs.DirectoryEntry.prototype.removeRecursively = function() {
+<a name="line503"></a>  var msg = &#39;removing &#39; + this.getFullPath() + &#39; recursively&#39;;
+<a name="line504"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line505"></a>    var d = goog.async.Deferred.succeed(null);
+<a name="line506"></a>    goog.object.forEach(this.children, function(child) {
+<a name="line507"></a>      d.awaitDeferred(
+<a name="line508"></a>          child.isDirectory() ? child.removeRecursively() : child.remove());
+<a name="line509"></a>    });
+<a name="line510"></a>    d.addCallback(function() { return this.remove(); }, this);
+<a name="line511"></a>    return d;
+<a name="line512"></a>  });
+<a name="line513"></a>};
+<a name="line514"></a>
+<a name="line515"></a>
+<a name="line516"></a>/**
+<a name="line517"></a> * @see {goog.fs.DirectoryEntry#listDirectory}
+<a name="line518"></a> * @return {!goog.async.Deferred}
+<a name="line519"></a> */
+<a name="line520"></a>goog.testing.fs.DirectoryEntry.prototype.listDirectory = function() {
+<a name="line521"></a>  var msg = &#39;listing &#39; + this.getFullPath();
+<a name="line522"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line523"></a>    return goog.object.getValues(this.children);
+<a name="line524"></a>  });
+<a name="line525"></a>};
+<a name="line526"></a>
+<a name="line527"></a>
+<a name="line528"></a>/**
+<a name="line529"></a> * @see {goog.fs.DirectoryEntry#createPath}
+<a name="line530"></a> * @return {!goog.async.Deferred}
+<a name="line531"></a> */
+<a name="line532"></a>goog.testing.fs.DirectoryEntry.prototype.createPath =
+<a name="line533"></a>    goog.fs.DirectoryEntry.prototype.createPath;
+<a name="line534"></a>
+<a name="line535"></a>
+<a name="line536"></a>
+<a name="line537"></a>/**
+<a name="line538"></a> * A mock file entry object.
+<a name="line539"></a> *
+<a name="line540"></a> * @param {!goog.testing.fs.FileSystem} fs The filesystem containing this entry.
+<a name="line541"></a> * @param {!goog.testing.fs.DirectoryEntry} parent The directory entry directly
+<a name="line542"></a> *     containing this entry.
+<a name="line543"></a> * @param {string} name The name of this entry.
+<a name="line544"></a> * @param {string} data The data initially contained in the file.
+<a name="line545"></a> * @constructor
+<a name="line546"></a> * @extends {goog.testing.fs.Entry}
+<a name="line547"></a> */
+<a name="line548"></a>goog.testing.fs.FileEntry = function(fs, parent, name, data) {
+<a name="line549"></a>  goog.base(this, fs, parent, name);
+<a name="line550"></a>
+<a name="line551"></a>  /**
+<a name="line552"></a>   * The internal file blob referenced by this file entry.
+<a name="line553"></a>   * @type {!goog.testing.fs.File}
+<a name="line554"></a>   * @private
+<a name="line555"></a>   */
+<a name="line556"></a>  this.file_ = new goog.testing.fs.File(name, new Date(goog.now()), data);
+<a name="line557"></a>};
+<a name="line558"></a>goog.inherits(goog.testing.fs.FileEntry, goog.testing.fs.Entry);
+<a name="line559"></a>
+<a name="line560"></a>
+<a name="line561"></a>/** @override */
+<a name="line562"></a>goog.testing.fs.FileEntry.prototype.isFile = function() {
+<a name="line563"></a>  return true;
+<a name="line564"></a>};
+<a name="line565"></a>
+<a name="line566"></a>
+<a name="line567"></a>/** @override */
+<a name="line568"></a>goog.testing.fs.FileEntry.prototype.isDirectory = function() {
+<a name="line569"></a>  return false;
+<a name="line570"></a>};
+<a name="line571"></a>
+<a name="line572"></a>
+<a name="line573"></a>/** @override */
+<a name="line574"></a>goog.testing.fs.FileEntry.prototype.clone = function() {
+<a name="line575"></a>  return new goog.testing.fs.FileEntry(
+<a name="line576"></a>      this.getFileSystem(), this.parent,
+<a name="line577"></a>      this.getName(), this.fileSync().toString());
+<a name="line578"></a>};
+<a name="line579"></a>
+<a name="line580"></a>
+<a name="line581"></a>/** @override */
+<a name="line582"></a>goog.testing.fs.FileEntry.prototype.getLastModified = function() {
+<a name="line583"></a>  return this.file().addCallback(function(file) {
+<a name="line584"></a>    return file.lastModifiedDate;
+<a name="line585"></a>  });
+<a name="line586"></a>};
+<a name="line587"></a>
+<a name="line588"></a>
+<a name="line589"></a>/**
+<a name="line590"></a> * @see {goog.fs.FileEntry#createWriter}
+<a name="line591"></a> * @return {!goog.async.Deferred}
+<a name="line592"></a> */
+<a name="line593"></a>goog.testing.fs.FileEntry.prototype.createWriter = function() {
+<a name="line594"></a>  var d = new goog.async.Deferred();
+<a name="line595"></a>  goog.Timer.callOnce(
+<a name="line596"></a>      goog.bind(d.callback, d, new goog.testing.fs.FileWriter(this)));
+<a name="line597"></a>  return d;
+<a name="line598"></a>};
+<a name="line599"></a>
+<a name="line600"></a>
+<a name="line601"></a>/**
+<a name="line602"></a> * @see {goog.fs.FileEntry#file}
+<a name="line603"></a> * @return {!goog.async.Deferred}
+<a name="line604"></a> */
+<a name="line605"></a>goog.testing.fs.FileEntry.prototype.file = function() {
+<a name="line606"></a>  var msg = &#39;getting file for &#39; + this.getFullPath();
+<a name="line607"></a>  return this.checkNotDeleted(msg).addCallback(function() {
+<a name="line608"></a>    return this.fileSync();
+<a name="line609"></a>  });
+<a name="line610"></a>};
+<a name="line611"></a>
+<a name="line612"></a>
+<a name="line613"></a>/**
+<a name="line614"></a> * Get the internal file representation synchronously, without waiting for a
+<a name="line615"></a> * Deferred to resolve.
+<a name="line616"></a> *
+<a name="line617"></a> * @return {!goog.testing.fs.File} The internal file blob referenced by this
+<a name="line618"></a> *     FileEntry.
+<a name="line619"></a> */
+<a name="line620"></a>goog.testing.fs.FileEntry.prototype.fileSync = function() {
+<a name="line621"></a>  return this.file_;
+<a name="line622"></a>};
+</pre>
+
+
+</body>
+</html>

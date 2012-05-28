@@ -1,0 +1,722 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>xhrio.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_net_xhrio.js.html">xhrio.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2007 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview Mock of XhrIo for unit testing.
+<a name="line17"></a> */
+<a name="line18"></a>
+<a name="line19"></a>goog.provide(&#39;goog.testing.net.XhrIo&#39;);
+<a name="line20"></a>
+<a name="line21"></a>goog.require(&#39;goog.array&#39;);
+<a name="line22"></a>goog.require(&#39;goog.dom.xml&#39;);
+<a name="line23"></a>goog.require(&#39;goog.events&#39;);
+<a name="line24"></a>goog.require(&#39;goog.events.EventTarget&#39;);
+<a name="line25"></a>goog.require(&#39;goog.json&#39;);
+<a name="line26"></a>goog.require(&#39;goog.net.ErrorCode&#39;);
+<a name="line27"></a>goog.require(&#39;goog.net.EventType&#39;);
+<a name="line28"></a>goog.require(&#39;goog.net.HttpStatus&#39;);
+<a name="line29"></a>goog.require(&#39;goog.net.XhrIo.ResponseType&#39;);
+<a name="line30"></a>goog.require(&#39;goog.net.XmlHttp&#39;);
+<a name="line31"></a>goog.require(&#39;goog.object&#39;);
+<a name="line32"></a>goog.require(&#39;goog.structs.Map&#39;);
+<a name="line33"></a>goog.require(&#39;goog.uri.utils&#39;);
+<a name="line34"></a>
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>/**
+<a name="line38"></a> * Mock implementation of goog.net.XhrIo. This doesn&#39;t provide a mock
+<a name="line39"></a> * implementation for all cases, but it&#39;s not too hard to add them as needed.
+<a name="line40"></a> * @param {goog.testing.TestQueue=} opt_testQueue Test queue for inserting test
+<a name="line41"></a> *     events.
+<a name="line42"></a> * @constructor
+<a name="line43"></a> * @extends {goog.events.EventTarget}
+<a name="line44"></a> */
+<a name="line45"></a>goog.testing.net.XhrIo = function(opt_testQueue) {
+<a name="line46"></a>  goog.events.EventTarget.call(this);
+<a name="line47"></a>
+<a name="line48"></a>  /**
+<a name="line49"></a>   * Map of default headers to add to every request, use:
+<a name="line50"></a>   * XhrIo.headers.set(name, value)
+<a name="line51"></a>   * @type {goog.structs.Map}
+<a name="line52"></a>   */
+<a name="line53"></a>  this.headers = new goog.structs.Map();
+<a name="line54"></a>
+<a name="line55"></a>  /**
+<a name="line56"></a>   * Queue of events write to.
+<a name="line57"></a>   * @type {goog.testing.TestQueue?}
+<a name="line58"></a>   * @private
+<a name="line59"></a>   */
+<a name="line60"></a>  this.testQueue_ = opt_testQueue || null;
+<a name="line61"></a>};
+<a name="line62"></a>goog.inherits(goog.testing.net.XhrIo, goog.events.EventTarget);
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * All non-disposed instances of goog.testing.net.XhrIo created
+<a name="line67"></a> * by {@link goog.testing.net.XhrIo.send} are in this Array.
+<a name="line68"></a> * @see goog.testing.net.XhrIo.cleanup
+<a name="line69"></a> * @type {Array.&lt;goog.testing.net.XhrIo&gt;}
+<a name="line70"></a> * @private
+<a name="line71"></a> */
+<a name="line72"></a>goog.testing.net.XhrIo.sendInstances_ = [];
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a> * Returns an Array containing all non-disposed instances of
+<a name="line77"></a> * goog.testing.net.XhrIo created by {@link goog.testing.net.XhrIo.send}.
+<a name="line78"></a> * @return {Array} Array of goog.testing.net.XhrIo instances.
+<a name="line79"></a> */
+<a name="line80"></a>goog.testing.net.XhrIo.getSendInstances = function() {
+<a name="line81"></a>  return goog.testing.net.XhrIo.sendInstances_;
+<a name="line82"></a>};
+<a name="line83"></a>
+<a name="line84"></a>
+<a name="line85"></a>/**
+<a name="line86"></a> * Disposes all non-disposed instances of goog.testing.net.XhrIo created by
+<a name="line87"></a> * {@link goog.testing.net.XhrIo.send}.
+<a name="line88"></a> * @see goog.net.XhrIo.cleanup
+<a name="line89"></a> */
+<a name="line90"></a>goog.testing.net.XhrIo.cleanup = function() {
+<a name="line91"></a>  var instances = goog.testing.net.XhrIo.sendInstances_;
+<a name="line92"></a>  while (instances.length) {
+<a name="line93"></a>    instances.pop().dispose();
+<a name="line94"></a>  }
+<a name="line95"></a>};
+<a name="line96"></a>
+<a name="line97"></a>
+<a name="line98"></a>/**
+<a name="line99"></a> * Simulates the static XhrIo send method.
+<a name="line100"></a> * @param {string} url Uri to make request to.
+<a name="line101"></a> * @param {Function=} opt_callback Callback function for when request is
+<a name="line102"></a> *     complete.
+<a name="line103"></a> * @param {string=} opt_method Send method, default: GET.
+<a name="line104"></a> * @param {string=} opt_content Post data.
+<a name="line105"></a> * @param {Object|goog.structs.Map=} opt_headers Map of headers to add to the
+<a name="line106"></a> *     request.
+<a name="line107"></a> * @param {number=} opt_timeoutInterval Number of milliseconds after which an
+<a name="line108"></a> *     incomplete request will be aborted; 0 means no timeout is set.
+<a name="line109"></a> */
+<a name="line110"></a>goog.testing.net.XhrIo.send = function(url, opt_callback, opt_method,
+<a name="line111"></a>                                       opt_content, opt_headers,
+<a name="line112"></a>                                       opt_timeoutInterval) {
+<a name="line113"></a>  var x = new goog.testing.net.XhrIo();
+<a name="line114"></a>  goog.testing.net.XhrIo.sendInstances_.push(x);
+<a name="line115"></a>  if (opt_callback) {
+<a name="line116"></a>    goog.events.listen(x, goog.net.EventType.COMPLETE, opt_callback);
+<a name="line117"></a>  }
+<a name="line118"></a>  goog.events.listen(x,
+<a name="line119"></a>                     goog.net.EventType.READY,
+<a name="line120"></a>                     goog.partial(goog.testing.net.XhrIo.cleanupSend_, x));
+<a name="line121"></a>  if (opt_timeoutInterval) {
+<a name="line122"></a>    x.setTimeoutInterval(opt_timeoutInterval);
+<a name="line123"></a>  }
+<a name="line124"></a>  x.send(url, opt_method, opt_content, opt_headers);
+<a name="line125"></a>};
+<a name="line126"></a>
+<a name="line127"></a>
+<a name="line128"></a>/**
+<a name="line129"></a> * Disposes of the specified goog.testing.net.XhrIo created by
+<a name="line130"></a> * {@link goog.testing.net.XhrIo.send} and removes it from
+<a name="line131"></a> * {@link goog.testing.net.XhrIo.pendingStaticSendInstances_}.
+<a name="line132"></a> * @param {goog.testing.net.XhrIo} XhrIo An XhrIo created by
+<a name="line133"></a> *     {@link goog.testing.net.XhrIo.send}.
+<a name="line134"></a> * @private
+<a name="line135"></a> */
+<a name="line136"></a>goog.testing.net.XhrIo.cleanupSend_ = function(XhrIo) {
+<a name="line137"></a>  XhrIo.dispose();
+<a name="line138"></a>  goog.array.remove(goog.testing.net.XhrIo.sendInstances_, XhrIo);
+<a name="line139"></a>};
+<a name="line140"></a>
+<a name="line141"></a>
+<a name="line142"></a>/**
+<a name="line143"></a> * Stores the simulated response headers for the requests which are sent through
+<a name="line144"></a> * this XhrIo.
+<a name="line145"></a> * @type {Object}
+<a name="line146"></a> * @private
+<a name="line147"></a> */
+<a name="line148"></a>goog.testing.net.XhrIo.prototype.responseHeaders_;
+<a name="line149"></a>
+<a name="line150"></a>
+<a name="line151"></a>/**
+<a name="line152"></a> * Whether MockXhrIo is active.
+<a name="line153"></a> * @type {boolean}
+<a name="line154"></a> * @private
+<a name="line155"></a> */
+<a name="line156"></a>goog.testing.net.XhrIo.prototype.active_ = false;
+<a name="line157"></a>
+<a name="line158"></a>
+<a name="line159"></a>/**
+<a name="line160"></a> * Last URI that was requested.
+<a name="line161"></a> * @type {string}
+<a name="line162"></a> * @private
+<a name="line163"></a> */
+<a name="line164"></a>goog.testing.net.XhrIo.prototype.lastUri_ = &#39;&#39;;
+<a name="line165"></a>
+<a name="line166"></a>
+<a name="line167"></a>/**
+<a name="line168"></a> * Last HTTP method that was requested.
+<a name="line169"></a> * @type {string|undefined}
+<a name="line170"></a> * @private
+<a name="line171"></a> */
+<a name="line172"></a>goog.testing.net.XhrIo.prototype.lastMethod_;
+<a name="line173"></a>
+<a name="line174"></a>
+<a name="line175"></a>/**
+<a name="line176"></a> * Last POST content that was requested.
+<a name="line177"></a> * @type {string|undefined}
+<a name="line178"></a> * @private
+<a name="line179"></a> */
+<a name="line180"></a>goog.testing.net.XhrIo.prototype.lastContent_;
+<a name="line181"></a>
+<a name="line182"></a>
+<a name="line183"></a>/**
+<a name="line184"></a> * Additional headers that were requested in the last query.
+<a name="line185"></a> * @type {Object|goog.structs.Map|undefined}
+<a name="line186"></a> * @private
+<a name="line187"></a> */
+<a name="line188"></a>goog.testing.net.XhrIo.prototype.lastHeaders_;
+<a name="line189"></a>
+<a name="line190"></a>
+<a name="line191"></a>/**
+<a name="line192"></a> * Last error code.
+<a name="line193"></a> * @type {goog.net.ErrorCode}
+<a name="line194"></a> * @private
+<a name="line195"></a> */
+<a name="line196"></a>goog.testing.net.XhrIo.prototype.lastErrorCode_ =
+<a name="line197"></a>    goog.net.ErrorCode.NO_ERROR;
+<a name="line198"></a>
+<a name="line199"></a>
+<a name="line200"></a>/**
+<a name="line201"></a> * Last error message.
+<a name="line202"></a> * @type {string}
+<a name="line203"></a> * @private
+<a name="line204"></a> */
+<a name="line205"></a>goog.testing.net.XhrIo.prototype.lastError_ = &#39;&#39;;
+<a name="line206"></a>
+<a name="line207"></a>
+<a name="line208"></a>/**
+<a name="line209"></a> * The response object.
+<a name="line210"></a> * @type {string|Document}
+<a name="line211"></a> * @private
+<a name="line212"></a> */
+<a name="line213"></a>goog.testing.net.XhrIo.prototype.response_ = &#39;&#39;;
+<a name="line214"></a>
+<a name="line215"></a>
+<a name="line216"></a>/**
+<a name="line217"></a> * Mock ready state.
+<a name="line218"></a> * @type {number}
+<a name="line219"></a> * @private
+<a name="line220"></a> */
+<a name="line221"></a>goog.testing.net.XhrIo.prototype.readyState_ =
+<a name="line222"></a>    goog.net.XmlHttp.ReadyState.UNINITIALIZED;
+<a name="line223"></a>
+<a name="line224"></a>
+<a name="line225"></a>/**
+<a name="line226"></a> * Number of milliseconds after which an incomplete request will be aborted and
+<a name="line227"></a> * a {@link goog.net.EventType.TIMEOUT} event raised; 0 means no timeout is set.
+<a name="line228"></a> * @type {number}
+<a name="line229"></a> * @private
+<a name="line230"></a> */
+<a name="line231"></a>goog.testing.net.XhrIo.prototype.timeoutInterval_ = 0;
+<a name="line232"></a>
+<a name="line233"></a>
+<a name="line234"></a>/**
+<a name="line235"></a> * Window timeout ID used to cancel the timeout event handler if the request
+<a name="line236"></a> * completes successfully.
+<a name="line237"></a> * @type {Object}
+<a name="line238"></a> * @private
+<a name="line239"></a> */
+<a name="line240"></a>goog.testing.net.XhrIo.prototype.timeoutId_ = null;
+<a name="line241"></a>
+<a name="line242"></a>
+<a name="line243"></a>/**
+<a name="line244"></a> * The requested type for the response. The empty string means use the default
+<a name="line245"></a> * XHR behavior.
+<a name="line246"></a> * @type {goog.net.XhrIo.ResponseType}
+<a name="line247"></a> * @private
+<a name="line248"></a> */
+<a name="line249"></a>goog.testing.net.XhrIo.prototype.responseType_ =
+<a name="line250"></a>    goog.net.XhrIo.ResponseType.DEFAULT;
+<a name="line251"></a>
+<a name="line252"></a>
+<a name="line253"></a>/**
+<a name="line254"></a> * Whether a &quot;credentialed&quot; request is to be sent (one that is aware of cookies
+<a name="line255"></a> * and authentication) . This is applicable only for cross-domain requests and
+<a name="line256"></a> * more recent browsers that support this part of the HTTP Access Control
+<a name="line257"></a> * standard.
+<a name="line258"></a> *
+<a name="line259"></a> * @see http://dev.w3.org/2006/webapi/XMLHttpRequest-2/#withcredentials
+<a name="line260"></a> *
+<a name="line261"></a> * @type {boolean}
+<a name="line262"></a> * @private
+<a name="line263"></a> */
+<a name="line264"></a>goog.testing.net.XhrIo.prototype.withCredentials_ = false;
+<a name="line265"></a>
+<a name="line266"></a>
+<a name="line267"></a>/**
+<a name="line268"></a> * Whether there&#39;s currently an underlying XHR object.
+<a name="line269"></a> * @type {boolean}
+<a name="line270"></a> * @private
+<a name="line271"></a> */
+<a name="line272"></a>goog.testing.net.XhrIo.prototype.xhr_ = false;
+<a name="line273"></a>
+<a name="line274"></a>
+<a name="line275"></a>/**
+<a name="line276"></a> * Returns the number of milliseconds after which an incomplete request will be
+<a name="line277"></a> * aborted, or 0 if no timeout is set.
+<a name="line278"></a> * @return {number} Timeout interval in milliseconds.
+<a name="line279"></a> */
+<a name="line280"></a>goog.testing.net.XhrIo.prototype.getTimeoutInterval = function() {
+<a name="line281"></a>  return this.timeoutInterval_;
+<a name="line282"></a>};
+<a name="line283"></a>
+<a name="line284"></a>
+<a name="line285"></a>/**
+<a name="line286"></a> * Sets the number of milliseconds after which an incomplete request will be
+<a name="line287"></a> * aborted and a {@link goog.net.EventType.TIMEOUT} event raised; 0 means no
+<a name="line288"></a> * timeout is set.
+<a name="line289"></a> * @param {number} ms Timeout interval in milliseconds; 0 means none.
+<a name="line290"></a> */
+<a name="line291"></a>goog.testing.net.XhrIo.prototype.setTimeoutInterval = function(ms) {
+<a name="line292"></a>  this.timeoutInterval_ = Math.max(0, ms);
+<a name="line293"></a>};
+<a name="line294"></a>
+<a name="line295"></a>
+<a name="line296"></a>/**
+<a name="line297"></a> * Causes timeout events to be fired.
+<a name="line298"></a> */
+<a name="line299"></a>goog.testing.net.XhrIo.prototype.simulateTimeout = function() {
+<a name="line300"></a>  this.lastErrorCode_ = goog.net.ErrorCode.TIMEOUT;
+<a name="line301"></a>  this.dispatchEvent(goog.net.EventType.TIMEOUT);
+<a name="line302"></a>  this.abort(goog.net.ErrorCode.TIMEOUT);
+<a name="line303"></a>};
+<a name="line304"></a>
+<a name="line305"></a>
+<a name="line306"></a>/**
+<a name="line307"></a> * Sets the desired type for the response. At time of writing, this is only
+<a name="line308"></a> * supported in very recent versions of WebKit (10.0.612.1 dev and later).
+<a name="line309"></a> *
+<a name="line310"></a> * If this is used, the response may only be accessed via {@link #getResponse}.
+<a name="line311"></a> *
+<a name="line312"></a> * @param {goog.net.XhrIo.ResponseType} type The desired type for the response.
+<a name="line313"></a> */
+<a name="line314"></a>goog.testing.net.XhrIo.prototype.setResponseType = function(type) {
+<a name="line315"></a>  this.responseType_ = type;
+<a name="line316"></a>};
+<a name="line317"></a>
+<a name="line318"></a>
+<a name="line319"></a>/**
+<a name="line320"></a> * Gets the desired type for the response.
+<a name="line321"></a> * @return {goog.net.XhrIo.ResponseType} The desired type for the response.
+<a name="line322"></a> */
+<a name="line323"></a>goog.testing.net.XhrIo.prototype.getResponseType = function() {
+<a name="line324"></a>  return this.responseType_;
+<a name="line325"></a>};
+<a name="line326"></a>
+<a name="line327"></a>
+<a name="line328"></a>/**
+<a name="line329"></a> * Sets whether a &quot;credentialed&quot; request that is aware of cookie and
+<a name="line330"></a> * authentication information should be made. This option is only supported by
+<a name="line331"></a> * browsers that support HTTP Access Control. As of this writing, this option
+<a name="line332"></a> * is not supported in IE.
+<a name="line333"></a> *
+<a name="line334"></a> * @param {boolean} withCredentials Whether this should be a &quot;credentialed&quot;
+<a name="line335"></a> *     request.
+<a name="line336"></a> */
+<a name="line337"></a>goog.testing.net.XhrIo.prototype.setWithCredentials =
+<a name="line338"></a>    function(withCredentials) {
+<a name="line339"></a>  this.withCredentials_ = withCredentials;
+<a name="line340"></a>};
+<a name="line341"></a>
+<a name="line342"></a>
+<a name="line343"></a>/**
+<a name="line344"></a> * Gets whether a &quot;credentialed&quot; request is to be sent.
+<a name="line345"></a> * @return {boolean} The desired type for the response.
+<a name="line346"></a> */
+<a name="line347"></a>goog.testing.net.XhrIo.prototype.getWithCredentials = function() {
+<a name="line348"></a>  return this.withCredentials_;
+<a name="line349"></a>};
+<a name="line350"></a>
+<a name="line351"></a>
+<a name="line352"></a>/**
+<a name="line353"></a> * Abort the current XMLHttpRequest
+<a name="line354"></a> * @param {goog.net.ErrorCode=} opt_failureCode Optional error code to use -
+<a name="line355"></a> *     defaults to ABORT.
+<a name="line356"></a> */
+<a name="line357"></a>goog.testing.net.XhrIo.prototype.abort = function(opt_failureCode) {
+<a name="line358"></a>  if (this.active_) {
+<a name="line359"></a>    try {
+<a name="line360"></a>      this.active_ = false;
+<a name="line361"></a>      this.lastErrorCode_ = opt_failureCode || goog.net.ErrorCode.ABORT;
+<a name="line362"></a>      this.dispatchEvent(goog.net.EventType.COMPLETE);
+<a name="line363"></a>      this.dispatchEvent(goog.net.EventType.ABORT);
+<a name="line364"></a>    } finally {
+<a name="line365"></a>      this.simulateReady();
+<a name="line366"></a>    }
+<a name="line367"></a>  }
+<a name="line368"></a>};
+<a name="line369"></a>
+<a name="line370"></a>
+<a name="line371"></a>/**
+<a name="line372"></a> * Simulates the XhrIo send.
+<a name="line373"></a> * @param {string} url Uri to make request too.
+<a name="line374"></a> * @param {string=} opt_method Send method, default: GET.
+<a name="line375"></a> * @param {string=} opt_content Post data.
+<a name="line376"></a> * @param {Object|goog.structs.Map=} opt_headers Map of headers to add to the
+<a name="line377"></a> *     request.
+<a name="line378"></a> */
+<a name="line379"></a>goog.testing.net.XhrIo.prototype.send = function(url, opt_method, opt_content,
+<a name="line380"></a>                                                 opt_headers) {
+<a name="line381"></a>  if (this.xhr_) {
+<a name="line382"></a>    throw Error(&#39;[goog.net.XhrIo] Object is active with another request&#39;);
+<a name="line383"></a>  }
+<a name="line384"></a>
+<a name="line385"></a>  this.lastUri_ = url;
+<a name="line386"></a>  this.lastMethod_ = opt_method || &#39;GET&#39;;
+<a name="line387"></a>  this.lastContent_ = opt_content;
+<a name="line388"></a>  this.lastHeaders_ = opt_headers;
+<a name="line389"></a>
+<a name="line390"></a>  if (this.testQueue_) {
+<a name="line391"></a>    this.testQueue_.enqueue([&#39;s&#39;, url, opt_method, opt_content, opt_headers]);
+<a name="line392"></a>  }
+<a name="line393"></a>  this.xhr_ = true;
+<a name="line394"></a>  this.active_ = true;
+<a name="line395"></a>  this.readyState_ = goog.net.XmlHttp.ReadyState.UNINITIALIZED;
+<a name="line396"></a>  this.simulateReadyStateChange(goog.net.XmlHttp.ReadyState.LOADING);
+<a name="line397"></a>};
+<a name="line398"></a>
+<a name="line399"></a>
+<a name="line400"></a>/**
+<a name="line401"></a> * Creates a new XHR object.
+<a name="line402"></a> * @return {XMLHttpRequest|GearsHttpRequest} The newly created XHR object.
+<a name="line403"></a> * @protected
+<a name="line404"></a> */
+<a name="line405"></a>goog.testing.net.XhrIo.prototype.createXhr = function() {
+<a name="line406"></a>  return goog.net.XmlHttp();
+<a name="line407"></a>};
+<a name="line408"></a>
+<a name="line409"></a>
+<a name="line410"></a>/**
+<a name="line411"></a> * Simulates changing to the new ready state.
+<a name="line412"></a> * @param {number} readyState Ready state to change to.
+<a name="line413"></a> */
+<a name="line414"></a>goog.testing.net.XhrIo.prototype.simulateReadyStateChange =
+<a name="line415"></a>    function(readyState) {
+<a name="line416"></a>  if (readyState &lt; this.readyState_) {
+<a name="line417"></a>    throw Error(&#39;Readystate cannot go backwards&#39;);
+<a name="line418"></a>  }
+<a name="line419"></a>
+<a name="line420"></a>  while (this.readyState_ &lt; readyState) {
+<a name="line421"></a>    this.readyState_++;
+<a name="line422"></a>    this.dispatchEvent(goog.net.EventType.READY_STATE_CHANGE);
+<a name="line423"></a>
+<a name="line424"></a>    if (this.readyState_ == goog.net.XmlHttp.ReadyState.COMPLETE) {
+<a name="line425"></a>      this.active_ = false;
+<a name="line426"></a>      this.dispatchEvent(goog.net.EventType.COMPLETE);
+<a name="line427"></a>    }
+<a name="line428"></a>  }
+<a name="line429"></a>};
+<a name="line430"></a>
+<a name="line431"></a>
+<a name="line432"></a>/**
+<a name="line433"></a> * Simulates receiving a response.
+<a name="line434"></a> * @param {number} statusCode Simulated status code.
+<a name="line435"></a> * @param {string|Document|null} response Simulated response.
+<a name="line436"></a> * @param {Object=} opt_headers Simulated response headers.
+<a name="line437"></a> */
+<a name="line438"></a>goog.testing.net.XhrIo.prototype.simulateResponse = function(statusCode,
+<a name="line439"></a>    response, opt_headers) {
+<a name="line440"></a>  this.statusCode_ = statusCode;
+<a name="line441"></a>  this.response_ = response || &#39;&#39;;
+<a name="line442"></a>  this.responseHeaders_ = opt_headers || {};
+<a name="line443"></a>
+<a name="line444"></a>  try {
+<a name="line445"></a>    if (this.isSuccess()) {
+<a name="line446"></a>      this.simulateReadyStateChange(goog.net.XmlHttp.ReadyState.COMPLETE);
+<a name="line447"></a>      this.dispatchEvent(goog.net.EventType.SUCCESS);
+<a name="line448"></a>    } else {
+<a name="line449"></a>      this.lastErrorCode_ = goog.net.ErrorCode.HTTP_ERROR;
+<a name="line450"></a>      this.lastError_ = this.getStatusText() + &#39; [&#39; + this.getStatus() + &#39;]&#39;;
+<a name="line451"></a>      this.simulateReadyStateChange(goog.net.XmlHttp.ReadyState.COMPLETE);
+<a name="line452"></a>      this.dispatchEvent(goog.net.EventType.ERROR);
+<a name="line453"></a>    }
+<a name="line454"></a>  } finally {
+<a name="line455"></a>    this.simulateReady();
+<a name="line456"></a>  }
+<a name="line457"></a>};
+<a name="line458"></a>
+<a name="line459"></a>
+<a name="line460"></a>/**
+<a name="line461"></a> * Simulates the Xhr is ready for the next request.
+<a name="line462"></a> */
+<a name="line463"></a>goog.testing.net.XhrIo.prototype.simulateReady = function() {
+<a name="line464"></a>  this.active_ = false;
+<a name="line465"></a>  this.xhr_ = false;
+<a name="line466"></a>  this.dispatchEvent(goog.net.EventType.READY);
+<a name="line467"></a>};
+<a name="line468"></a>
+<a name="line469"></a>
+<a name="line470"></a>/**
+<a name="line471"></a> * @return {boolean} Whether there is an active request.
+<a name="line472"></a> */
+<a name="line473"></a>goog.testing.net.XhrIo.prototype.isActive = function() {
+<a name="line474"></a>  return !!this.xhr_;
+<a name="line475"></a>};
+<a name="line476"></a>
+<a name="line477"></a>
+<a name="line478"></a>/**
+<a name="line479"></a> * Has the request completed.
+<a name="line480"></a> * @return {boolean} Whether the request has completed.
+<a name="line481"></a> */
+<a name="line482"></a>goog.testing.net.XhrIo.prototype.isComplete = function() {
+<a name="line483"></a>  return this.readyState_ == goog.net.XmlHttp.ReadyState.COMPLETE;
+<a name="line484"></a>};
+<a name="line485"></a>
+<a name="line486"></a>
+<a name="line487"></a>/**
+<a name="line488"></a> * Has the request compeleted with a success.
+<a name="line489"></a> * @return {boolean} Whether the request compeleted successfully.
+<a name="line490"></a> */
+<a name="line491"></a>goog.testing.net.XhrIo.prototype.isSuccess = function() {
+<a name="line492"></a>  switch (this.getStatus()) {
+<a name="line493"></a>    case goog.net.HttpStatus.OK:
+<a name="line494"></a>    case goog.net.HttpStatus.NO_CONTENT:
+<a name="line495"></a>    case goog.net.HttpStatus.NOT_MODIFIED:
+<a name="line496"></a>      return true;
+<a name="line497"></a>
+<a name="line498"></a>    default:
+<a name="line499"></a>      return false;
+<a name="line500"></a>  }
+<a name="line501"></a>};
+<a name="line502"></a>
+<a name="line503"></a>
+<a name="line504"></a>/**
+<a name="line505"></a> * Returns the readystate.
+<a name="line506"></a> * @return {number} goog.net.XmlHttp.ReadyState.*.
+<a name="line507"></a> */
+<a name="line508"></a>goog.testing.net.XhrIo.prototype.getReadyState = function() {
+<a name="line509"></a>  return this.readyState_;
+<a name="line510"></a>};
+<a name="line511"></a>
+<a name="line512"></a>
+<a name="line513"></a>/**
+<a name="line514"></a> * Get the status from the Xhr object.  Will only return correct result when
+<a name="line515"></a> * called from the context of a callback.
+<a name="line516"></a> * @return {number} Http status.
+<a name="line517"></a> */
+<a name="line518"></a>goog.testing.net.XhrIo.prototype.getStatus = function() {
+<a name="line519"></a>  return this.statusCode_;
+<a name="line520"></a>};
+<a name="line521"></a>
+<a name="line522"></a>
+<a name="line523"></a>/**
+<a name="line524"></a> * Get the status text from the Xhr object.  Will only return correct result
+<a name="line525"></a> * when called from the context of a callback.
+<a name="line526"></a> * @return {string} Status text.
+<a name="line527"></a> */
+<a name="line528"></a>goog.testing.net.XhrIo.prototype.getStatusText = function() {
+<a name="line529"></a>  return &#39;&#39;;
+<a name="line530"></a>};
+<a name="line531"></a>
+<a name="line532"></a>
+<a name="line533"></a>/**
+<a name="line534"></a> * Gets the last error message.
+<a name="line535"></a> * @return {goog.net.ErrorCode} Last error code.
+<a name="line536"></a> */
+<a name="line537"></a>goog.testing.net.XhrIo.prototype.getLastErrorCode = function() {
+<a name="line538"></a>  return this.lastErrorCode_;
+<a name="line539"></a>};
+<a name="line540"></a>
+<a name="line541"></a>
+<a name="line542"></a>/**
+<a name="line543"></a> * Gets the last error message.
+<a name="line544"></a> * @return {string} Last error message.
+<a name="line545"></a> */
+<a name="line546"></a>goog.testing.net.XhrIo.prototype.getLastError = function() {
+<a name="line547"></a>  return this.lastError_;
+<a name="line548"></a>};
+<a name="line549"></a>
+<a name="line550"></a>
+<a name="line551"></a>/**
+<a name="line552"></a> * Gets the last URI that was requested.
+<a name="line553"></a> * @return {string} Last URI.
+<a name="line554"></a> */
+<a name="line555"></a>goog.testing.net.XhrIo.prototype.getLastUri = function() {
+<a name="line556"></a>  return this.lastUri_;
+<a name="line557"></a>};
+<a name="line558"></a>
+<a name="line559"></a>
+<a name="line560"></a>/**
+<a name="line561"></a> * Gets the last HTTP method that was requested.
+<a name="line562"></a> * @return {string|undefined} Last HTTP method used by send.
+<a name="line563"></a> */
+<a name="line564"></a>goog.testing.net.XhrIo.prototype.getLastMethod = function() {
+<a name="line565"></a>  return this.lastMethod_;
+<a name="line566"></a>};
+<a name="line567"></a>
+<a name="line568"></a>
+<a name="line569"></a>/**
+<a name="line570"></a> * Gets the last POST content that was requested.
+<a name="line571"></a> * @return {string|undefined} Last POST content or undefined if last request was
+<a name="line572"></a> *      a GET.
+<a name="line573"></a> */
+<a name="line574"></a>goog.testing.net.XhrIo.prototype.getLastContent = function() {
+<a name="line575"></a>  return this.lastContent_;
+<a name="line576"></a>};
+<a name="line577"></a>
+<a name="line578"></a>
+<a name="line579"></a>/**
+<a name="line580"></a> * Gets the headers of the last request.
+<a name="line581"></a> * @return {Object|goog.structs.Map|undefined} Last headers manually set in send
+<a name="line582"></a> *      call or undefined if no additional headers were specified.
+<a name="line583"></a> */
+<a name="line584"></a>goog.testing.net.XhrIo.prototype.getLastRequestHeaders = function() {
+<a name="line585"></a>  return this.lastHeaders_;
+<a name="line586"></a>};
+<a name="line587"></a>
+<a name="line588"></a>
+<a name="line589"></a>/**
+<a name="line590"></a> * Gets the response text from the Xhr object.  Will only return correct result
+<a name="line591"></a> * when called from the context of a callback.
+<a name="line592"></a> * @return {string} Result from the server.
+<a name="line593"></a> */
+<a name="line594"></a>goog.testing.net.XhrIo.prototype.getResponseText = function() {
+<a name="line595"></a>  return goog.isString(this.response_) ? this.response_ :
+<a name="line596"></a>         goog.dom.xml.serialize(this.response_);
+<a name="line597"></a>};
+<a name="line598"></a>
+<a name="line599"></a>
+<a name="line600"></a>/**
+<a name="line601"></a> * Gets the response and evaluates it as JSON from the Xhr object.  Will only
+<a name="line602"></a> * return correct result when called from the context of a callback.
+<a name="line603"></a> * @param {string=} opt_xssiPrefix Optional XSSI prefix string to use for
+<a name="line604"></a> *     stripping of the response before parsing. This needs to be set only if
+<a name="line605"></a> *     your backend server prepends the same prefix string to the JSON response.
+<a name="line606"></a> * @return {Object} JavaScript object.
+<a name="line607"></a> */
+<a name="line608"></a>goog.testing.net.XhrIo.prototype.getResponseJson = function(opt_xssiPrefix) {
+<a name="line609"></a>  var responseText = this.getResponseText();
+<a name="line610"></a>  if (opt_xssiPrefix &amp;&amp; responseText.indexOf(opt_xssiPrefix) == 0) {
+<a name="line611"></a>    responseText = responseText.substring(opt_xssiPrefix.length);
+<a name="line612"></a>  }
+<a name="line613"></a>
+<a name="line614"></a>  return goog.json.parse(responseText);
+<a name="line615"></a>};
+<a name="line616"></a>
+<a name="line617"></a>
+<a name="line618"></a>/**
+<a name="line619"></a> * Gets the response XML from the Xhr object.  Will only return correct result
+<a name="line620"></a> * when called from the context of a callback.
+<a name="line621"></a> * @return {Document} Result from the server if it was XML.
+<a name="line622"></a> */
+<a name="line623"></a>goog.testing.net.XhrIo.prototype.getResponseXml = function() {
+<a name="line624"></a>  // NOTE(user): I haven&#39;t found out how to check in Internet Explorer
+<a name="line625"></a>  // whether the response is XML document, so I do it the other way around.
+<a name="line626"></a>  return goog.isString(this.response_) ? null : this.response_;
+<a name="line627"></a>};
+<a name="line628"></a>
+<a name="line629"></a>
+<a name="line630"></a>/**
+<a name="line631"></a> * Get the response as the type specificed by {@link #setResponseType}. At time
+<a name="line632"></a> * of writing, this is only supported in very recent versions of WebKit
+<a name="line633"></a> * (10.0.612.1 dev and later).
+<a name="line634"></a> *
+<a name="line635"></a> * @return {*} The response.
+<a name="line636"></a> */
+<a name="line637"></a>goog.testing.net.XhrIo.prototype.getResponse = function() {
+<a name="line638"></a>  return this.response_;
+<a name="line639"></a>};
+<a name="line640"></a>
+<a name="line641"></a>
+<a name="line642"></a>/**
+<a name="line643"></a> * Get the value of the response-header with the given name from the Xhr object
+<a name="line644"></a> * Will only return correct result when called from the context of a callback
+<a name="line645"></a> * and the request has completed
+<a name="line646"></a> * @param {string} key The name of the response-header to retrieve.
+<a name="line647"></a> * @return {string|undefined} The value of the response-header named key.
+<a name="line648"></a> */
+<a name="line649"></a>goog.testing.net.XhrIo.prototype.getResponseHeader = function(key) {
+<a name="line650"></a>  return this.isComplete() ? this.responseHeaders_[key] : undefined;
+<a name="line651"></a>};
+<a name="line652"></a>
+<a name="line653"></a>
+<a name="line654"></a>/**
+<a name="line655"></a> * Gets the text of all the headers in the response.
+<a name="line656"></a> * Will only return correct result when called from the context of a callback
+<a name="line657"></a> * and the request has completed
+<a name="line658"></a> * @return {string} The string containing all the response headers.
+<a name="line659"></a> */
+<a name="line660"></a>goog.testing.net.XhrIo.prototype.getAllResponseHeaders = function() {
+<a name="line661"></a>  if (!this.isComplete()) {
+<a name="line662"></a>    return &#39;&#39;;
+<a name="line663"></a>  }
+<a name="line664"></a>
+<a name="line665"></a>  var headers = [];
+<a name="line666"></a>  goog.object.forEach(this.responseHeaders_, function(value, name) {
+<a name="line667"></a>    headers.push(name + &#39;: &#39; + value);
+<a name="line668"></a>  });
+<a name="line669"></a>
+<a name="line670"></a>  return headers.join(&#39;\n&#39;);
+<a name="line671"></a>};
+</pre>
+
+
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!doctype html>
+
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>messageformat.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="colmask rightmenu">
+<div class="colleft">
+    <div class="col1">
+      <!-- Column 1 start -->
+
+<div id="title">
+       <span class="fn">messageformat.js</span>
+</div>
+
+<div class="g-section g-tpl-75-25">
+  <div class="g-unit g-first" id="description">
+    Message/plural format library with locale support.
+
+ Message format grammar:
+
+ messageFormatPattern := string ( &amp;quot;{&amp;quot; messageFormatElement &amp;quot;}&amp;quot; string )*
+ messageFormatElement := argumentIndex [ &amp;quot;,&amp;quot; elementFormat ]
+ elementFormat := &amp;quot;plural&amp;quot; &amp;quot;,&amp;quot; pluralStyle
+ | &amp;quot;select&amp;quot; &amp;quot;,&amp;quot; selectStyle
+ pluralStyle :=  pluralFormatPattern
+ selectStyle :=  selectFormatPattern
+ pluralFormatPattern := [ &amp;quot;offset&amp;quot; &amp;quot;:&amp;quot; offsetIndex ] pluralForms*
+ selectFormatPattern := pluralForms*
+ pluralForms := stringKey &amp;quot;{&amp;quot; ( &amp;quot;{&amp;quot; messageFormatElement &amp;quot;}&amp;quot;|string )* &amp;quot;}&amp;quot;
+
+
+ Message example:
+
+ I see {NUM_PEOPLE, plural, offset:1
+ =0 {no one at all}
+ =1 {{WHO}}
+ one {{WHO} and one other person}
+ other {{WHO} and # other people}}
+ in {PLACE}.
+
+ Calling format({&amp;#39;NUM_PEOPLE&amp;#39;: 2, &amp;#39;WHO&amp;#39;: &amp;#39;Mark&amp;#39;, &amp;#39;PLACE&amp;#39;: &amp;#39;Athens&amp;#39;}) would
+ produce &amp;quot;I see Mark and one other person in Athens.&amp;quot; as output.
+
+ See messageformat_test.html for more examples.
+  </div>
+  
+
+        <div class="g-unit" id="useful-links">
+          <div class="title">Useful links</div>
+          <ol>
+            <li><a href="closure_goog_i18n_messageformat.js.source.html"><span class='source-code-link'>Source Code</span></a></li>
+            <li><a href="http://code.google.com/p/closure-library/source/browse/trunk/closure/goog/i18n/messageformat.js">SVN</a></li>
+          </ol>
+        </div>
+</div>
+
+<h2 class="g-first">File Location</h2>
+  <div class="g-section g-tpl-20-80">
+    <div class="g-unit g-first">
+      <div class="g-c-cell code-label">i18n/messageformat.js</div>
+    </div>
+  </div>
+<hr/>
+
+
+  <h2>Classes</h2>
+ <div class="fn-constructor">
+        <a href="class_goog_i18n_MessageFormat.html">
+          goog.i18n.MessageFormat</a><br/>
+        <div class="class-details">Constructor of MessageFormat.</div>
+ </div>
+      
+<br/>
+
+  <div class="legend">
+        <span class="key publickey"></span><span>Public</span>
+        <span class="key protectedkey"></span><span>Protected</span>
+        <span class="key privatekey"></span><span>Private</span>
+  </div>
+
+
+
+<h2>Enumerations</h2>
+
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+  </table>
+</div>
+
+
+
+
+
+
+
+  <h2>Global Properties</h2>
+
+
+
+
+
+<div class="section">
+  <table class="horiz-rule">
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.i18n.MessageFormat.LITERAL_PLACEHOLDER_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.i18n.MessageFormat.</span><span class="entryName">LITERAL_PLACEHOLDER_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Literal strings, including '', are replaced with \uFDDF_x_ for
+parsing purposes, and recovered during format phase.
+\uFDDF is a Unicode nonprinting character, not expected to be found in the
+typical message.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_i18n_messageformat.js.source.html#line96">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.i18n.MessageFormat.OTHER_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.i18n.MessageFormat.</span><span class="entryName">OTHER_</span>
+        : <div class="fullType"><span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/String">string</a></span></div>
+     </div>
+
+
+     <div class="entryOverview">
+       Mandatory option in both select and plural form.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_i18n_messageformat.js.source.html#line129">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="even entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.i18n.MessageFormat.REGEX_DOUBLE_APOSTROPHE_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.i18n.MessageFormat.</span><span class="entryName">REGEX_DOUBLE_APOSTROPHE_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/RegExp">RegExp</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Regular expression for looking for '' in the message.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_i18n_messageformat.js.source.html#line145">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+     <tr class="odd entry private">
+       <td class="access"></td>
+
+
+
+
+
+  <a name="goog.i18n.MessageFormat.REGEX_LITERAL_"></a>
+
+  <td>
+
+
+     <div class="arg">
+        <img align="left" src="static/images/blank.gif">
+
+        <span class="entryNamespace">goog.i18n.MessageFormat.</span><span class="entryName">REGEX_LITERAL_</span>
+        : <div class="fullType">(<span class="type"><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/RegExp">RegExp</a></span><span>&nbsp;|&nbsp;</span><span class="type">null</span>)</div>
+     </div>
+
+
+     <div class="entryOverview">
+       Regular expression for looking for string literals.
+     </div>
+
+  </td>
+
+
+  <td class="view-code">
+     <a href="closure_goog_i18n_messageformat.js.source.html#line137">Code &raquo;</a>
+  </td>
+     </tr>
+
+
+  </table>
+</div>
+
+
+
+      <!-- Column 1 end -->
+    </div>
+
+        <div class="col2">
+          <!-- Column 2 start -->
+          <div class="col2-c">
+            <h2 id="ref-head">Directory i18n</h2>
+            <div id="localView"></div>
+          </div>
+
+          <div class="col2-c">
+            <h2 id="ref-head">File Reference</h2>
+            <div id="sideFileIndex" rootPath="" current="i18n/messageformat.js"></div>
+          </div>
+          <!-- Column 2 end -->
+        </div>
+</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>mock.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_testing_mock.js.html">mock.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview This file defines base classes used for creating mocks in
+<a name="line17"></a> * JavaScript. The API was inspired by EasyMock.
+<a name="line18"></a> *
+<a name="line19"></a> * The basic API is:
+<a name="line20"></a> * &lt;ul&gt;
+<a name="line21"></a> *   &lt;li&gt;Create an object to be mocked
+<a name="line22"></a> *   &lt;li&gt;Create a mock object, passing in the above object to the constructor
+<a name="line23"></a> *   &lt;li&gt;Set expectations by calling methods on the mock object
+<a name="line24"></a> *   &lt;li&gt;Call $replay() on the mock object
+<a name="line25"></a> *   &lt;li&gt;Pass the mock to code that will make real calls on it
+<a name="line26"></a> *   &lt;li&gt;Call $verify() to make sure that expectations were met
+<a name="line27"></a> * &lt;/ul&gt;
+<a name="line28"></a> *
+<a name="line29"></a> * For examples, please see the unit tests for LooseMock and StrictMock.
+<a name="line30"></a> *
+<a name="line31"></a> * Still TODO
+<a name="line32"></a> *   implement better (and pluggable) argument matching
+<a name="line33"></a> *   Have the exceptions for LooseMock show the number of expected/actual calls
+<a name="line34"></a> *   loose and strict mocks share a lot of code - move it to the base class
+<a name="line35"></a> *
+<a name="line36"></a> */
+<a name="line37"></a>
+<a name="line38"></a>goog.provide(&#39;goog.testing.Mock&#39;);
+<a name="line39"></a>goog.provide(&#39;goog.testing.MockExpectation&#39;);
+<a name="line40"></a>
+<a name="line41"></a>goog.require(&#39;goog.array&#39;);
+<a name="line42"></a>goog.require(&#39;goog.testing.JsUnitException&#39;);
+<a name="line43"></a>goog.require(&#39;goog.testing.MockInterface&#39;);
+<a name="line44"></a>goog.require(&#39;goog.testing.mockmatchers&#39;);
+<a name="line45"></a>
+<a name="line46"></a>
+<a name="line47"></a>
+<a name="line48"></a>/**
+<a name="line49"></a> * This is a class that represents an expectation.
+<a name="line50"></a> * @param {string} name The name of the method for this expectation.
+<a name="line51"></a> * @constructor
+<a name="line52"></a> */
+<a name="line53"></a>goog.testing.MockExpectation = function(name) {
+<a name="line54"></a>  /**
+<a name="line55"></a>   * The name of the method that is expected to be called.
+<a name="line56"></a>   * @type {string}
+<a name="line57"></a>   */
+<a name="line58"></a>  this.name = name;
+<a name="line59"></a>
+<a name="line60"></a>  /**
+<a name="line61"></a>   * An array of error messages for expectations not met.
+<a name="line62"></a>   * @type {Array}
+<a name="line63"></a>   */
+<a name="line64"></a>  this.errorMessages = [];
+<a name="line65"></a>};
+<a name="line66"></a>
+<a name="line67"></a>
+<a name="line68"></a>/**
+<a name="line69"></a> * The minimum number of times this method should be called.
+<a name="line70"></a> * @type {number}
+<a name="line71"></a> */
+<a name="line72"></a>goog.testing.MockExpectation.prototype.minCalls = 1;
+<a name="line73"></a>
+<a name="line74"></a>
+<a name="line75"></a>/**
+<a name="line76"></a>  * The maximum number of times this method should be called.
+<a name="line77"></a>  * @type {number}
+<a name="line78"></a>  */
+<a name="line79"></a>goog.testing.MockExpectation.prototype.maxCalls = 1;
+<a name="line80"></a>
+<a name="line81"></a>
+<a name="line82"></a>/**
+<a name="line83"></a> * The value that this method should return.
+<a name="line84"></a> * @type {*}
+<a name="line85"></a> */
+<a name="line86"></a>goog.testing.MockExpectation.prototype.returnValue;
+<a name="line87"></a>
+<a name="line88"></a>
+<a name="line89"></a>/**
+<a name="line90"></a> * The value that will be thrown when the method is called
+<a name="line91"></a> * @type {*}
+<a name="line92"></a> */
+<a name="line93"></a>goog.testing.MockExpectation.prototype.exceptionToThrow;
+<a name="line94"></a>
+<a name="line95"></a>
+<a name="line96"></a>/**
+<a name="line97"></a> * The arguments that are expected to be passed to this function
+<a name="line98"></a> * @type {Array.&lt;*&gt;}
+<a name="line99"></a> */
+<a name="line100"></a>goog.testing.MockExpectation.prototype.argumentList;
+<a name="line101"></a>
+<a name="line102"></a>
+<a name="line103"></a>/**
+<a name="line104"></a> * The number of times this method is called by real code.
+<a name="line105"></a> * @type {number}
+<a name="line106"></a> */
+<a name="line107"></a>goog.testing.MockExpectation.prototype.actualCalls = 0;
+<a name="line108"></a>
+<a name="line109"></a>
+<a name="line110"></a>/**
+<a name="line111"></a> * The number of times this method is called during the verification phase.
+<a name="line112"></a> * @type {number}
+<a name="line113"></a> */
+<a name="line114"></a>goog.testing.MockExpectation.prototype.verificationCalls = 0;
+<a name="line115"></a>
+<a name="line116"></a>
+<a name="line117"></a>/**
+<a name="line118"></a> * The function which will be executed when this method is called.
+<a name="line119"></a> * Method arguments will be passed to this function, and return value
+<a name="line120"></a> * of this function will be returned by the method.
+<a name="line121"></a> * @type {Function}
+<a name="line122"></a> */
+<a name="line123"></a>goog.testing.MockExpectation.prototype.toDo;
+<a name="line124"></a>
+<a name="line125"></a>
+<a name="line126"></a>/**
+<a name="line127"></a> * Allow expectation failures to include messages.
+<a name="line128"></a> * @param {string} message The failure message.
+<a name="line129"></a> */
+<a name="line130"></a>goog.testing.MockExpectation.prototype.addErrorMessage = function(message) {
+<a name="line131"></a>  this.errorMessages.push(message);
+<a name="line132"></a>};
+<a name="line133"></a>
+<a name="line134"></a>
+<a name="line135"></a>/**
+<a name="line136"></a> * Get the error messages seen so far.
+<a name="line137"></a> * @return {string} Error messages separated by \n.
+<a name="line138"></a> */
+<a name="line139"></a>goog.testing.MockExpectation.prototype.getErrorMessage = function() {
+<a name="line140"></a>  return this.errorMessages.join(&#39;\n&#39;);
+<a name="line141"></a>};
+<a name="line142"></a>
+<a name="line143"></a>
+<a name="line144"></a>/**
+<a name="line145"></a> * Get how many error messages have been seen so far.
+<a name="line146"></a> * @return {number} Count of error messages.
+<a name="line147"></a> */
+<a name="line148"></a>goog.testing.MockExpectation.prototype.getErrorMessageCount = function() {
+<a name="line149"></a>  return this.errorMessages.length;
+<a name="line150"></a>};
+<a name="line151"></a>
+<a name="line152"></a>
+<a name="line153"></a>
+<a name="line154"></a>/**
+<a name="line155"></a> * The base class for a mock object.
+<a name="line156"></a> * @param {Object|Function} objectToMock The object that should be mocked, or
+<a name="line157"></a> *    the constructor of an object to mock.
+<a name="line158"></a> * @param {boolean=} opt_mockStaticMethods An optional argument denoting that
+<a name="line159"></a> *     a mock should be constructed from the static functions of a class.
+<a name="line160"></a> * @param {boolean=} opt_createProxy An optional argument denoting that
+<a name="line161"></a> *     a proxy for the target mock should be created.
+<a name="line162"></a> * @constructor
+<a name="line163"></a> * @implements {goog.testing.MockInterface}
+<a name="line164"></a> */
+<a name="line165"></a>goog.testing.Mock = function(objectToMock, opt_mockStaticMethods,
+<a name="line166"></a>    opt_createProxy) {
+<a name="line167"></a>  if (!goog.isObject(objectToMock) &amp;&amp; !goog.isFunction(objectToMock)) {
+<a name="line168"></a>    throw new Error(&#39;objectToMock must be an object or constructor.&#39;);
+<a name="line169"></a>  }
+<a name="line170"></a>  if (opt_createProxy &amp;&amp; !opt_mockStaticMethods &amp;&amp;
+<a name="line171"></a>      goog.isFunction(objectToMock)) {
+<a name="line172"></a>    /** @constructor */
+<a name="line173"></a>    function tempCtor() {};
+<a name="line174"></a>    goog.inherits(tempCtor, objectToMock);
+<a name="line175"></a>    this.$proxy = new tempCtor();
+<a name="line176"></a>  } else if (opt_createProxy &amp;&amp; opt_mockStaticMethods &amp;&amp;
+<a name="line177"></a>      goog.isFunction(objectToMock)) {
+<a name="line178"></a>    throw Error(&#39;Cannot create a proxy when opt_mockStaticMethods is true&#39;);
+<a name="line179"></a>  } else if (opt_createProxy &amp;&amp; !goog.isFunction(objectToMock)) {
+<a name="line180"></a>    throw Error(&#39;Must have a constructor to create a proxy&#39;);
+<a name="line181"></a>  }
+<a name="line182"></a>
+<a name="line183"></a>  if (goog.isFunction(objectToMock) &amp;&amp; !opt_mockStaticMethods) {
+<a name="line184"></a>    this.$initializeFunctions_(objectToMock.prototype);
+<a name="line185"></a>  } else {
+<a name="line186"></a>    this.$initializeFunctions_(objectToMock);
+<a name="line187"></a>  }
+<a name="line188"></a>  this.$argumentListVerifiers_ = {};
+<a name="line189"></a>};
+<a name="line190"></a>
+<a name="line191"></a>
+<a name="line192"></a>/**
+<a name="line193"></a> * Option that may be passed when constructing function, method, and
+<a name="line194"></a> * constructor mocks. Indicates that the expected calls should be accepted in
+<a name="line195"></a> * any order.
+<a name="line196"></a> * @const
+<a name="line197"></a> * @type {number}
+<a name="line198"></a> */
+<a name="line199"></a>goog.testing.Mock.LOOSE = 1;
+<a name="line200"></a>
+<a name="line201"></a>
+<a name="line202"></a>/**
+<a name="line203"></a> * Option that may be passed when constructing function, method, and
+<a name="line204"></a> * constructor mocks. Indicates that the expected calls should be accepted in
+<a name="line205"></a> * the recorded order only.
+<a name="line206"></a> * @const
+<a name="line207"></a> * @type {number}
+<a name="line208"></a> */
+<a name="line209"></a>goog.testing.Mock.STRICT = 0;
+<a name="line210"></a>
+<a name="line211"></a>
+<a name="line212"></a>/**
+<a name="line213"></a> * A proxy for the mock.  This can be used for dependency injection in lieu of
+<a name="line214"></a> * the mock if the test requires a strict instanceof check.
+<a name="line215"></a> * @type {Object}
+<a name="line216"></a> */
+<a name="line217"></a>goog.testing.Mock.prototype.$proxy = null;
+<a name="line218"></a>
+<a name="line219"></a>
+<a name="line220"></a>/**
+<a name="line221"></a> * Map of argument name to optional argument list verifier function.
+<a name="line222"></a> * @type {Object}
+<a name="line223"></a> */
+<a name="line224"></a>goog.testing.Mock.prototype.$argumentListVerifiers_;
+<a name="line225"></a>
+<a name="line226"></a>
+<a name="line227"></a>/**
+<a name="line228"></a> * Whether or not we are in recording mode.
+<a name="line229"></a> * @type {boolean}
+<a name="line230"></a> * @private
+<a name="line231"></a> */
+<a name="line232"></a>goog.testing.Mock.prototype.$recording_ = true;
+<a name="line233"></a>
+<a name="line234"></a>
+<a name="line235"></a>/**
+<a name="line236"></a> * The expectation currently being created. All methods that modify the
+<a name="line237"></a> * current expectation return the Mock object for easy chaining, so this is
+<a name="line238"></a> * where we keep track of the expectation that&#39;s currently being modified.
+<a name="line239"></a> * @type {goog.testing.MockExpectation}
+<a name="line240"></a> * @protected
+<a name="line241"></a> */
+<a name="line242"></a>goog.testing.Mock.prototype.$pendingExpectation;
+<a name="line243"></a>
+<a name="line244"></a>
+<a name="line245"></a>/**
+<a name="line246"></a> * First exception thrown by this mock; used in $verify.
+<a name="line247"></a> * @type {Object}
+<a name="line248"></a> * @private
+<a name="line249"></a> */
+<a name="line250"></a>goog.testing.Mock.prototype.$threwException_ = null;
+<a name="line251"></a>
+<a name="line252"></a>
+<a name="line253"></a>/**
+<a name="line254"></a> * Initializes the functions on the mock object.
+<a name="line255"></a> * @param {Object} objectToMock The object being mocked.
+<a name="line256"></a> * @private
+<a name="line257"></a> */
+<a name="line258"></a>goog.testing.Mock.prototype.$initializeFunctions_ = function(objectToMock) {
+<a name="line259"></a>  // TODO (arv): Implement goog.object.getIterator and replace this loop.
+<a name="line260"></a>  for (var prop in objectToMock) {
+<a name="line261"></a>    if (typeof objectToMock[prop] == &#39;function&#39;) {
+<a name="line262"></a>      this[prop] = goog.bind(this.$mockMethod, this, prop);
+<a name="line263"></a>      if (this.$proxy) {
+<a name="line264"></a>        this.$proxy[prop] = goog.bind(this.$mockMethod, this, prop);
+<a name="line265"></a>      }
+<a name="line266"></a>    }
+<a name="line267"></a>  }
+<a name="line268"></a>};
+<a name="line269"></a>
+<a name="line270"></a>
+<a name="line271"></a>/**
+<a name="line272"></a> * Registers a verfifier function to use when verifying method argument lists.
+<a name="line273"></a> * @param {string} methodName The name of the method for which the verifierFn
+<a name="line274"></a> *     should be used.
+<a name="line275"></a> * @param {Function} fn Argument list verifier function.  Should take 2 argument
+<a name="line276"></a> *     arrays as arguments, and return true if they are considered equivalent.
+<a name="line277"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line278"></a> */
+<a name="line279"></a>goog.testing.Mock.prototype.$registerArgumentListVerifier = function(methodName,
+<a name="line280"></a>                                                                     fn) {
+<a name="line281"></a>  this.$argumentListVerifiers_[methodName] = fn;
+<a name="line282"></a>  return this;
+<a name="line283"></a>};
+<a name="line284"></a>
+<a name="line285"></a>
+<a name="line286"></a>/**
+<a name="line287"></a> * The function that replaces all methods on the mock object.
+<a name="line288"></a> * @param {string} name The name of the method being mocked.
+<a name="line289"></a> * @return {*} In record mode, returns the mock object. In replay mode, returns
+<a name="line290"></a> *    whatever the creator of the mock set as the return value.
+<a name="line291"></a> */
+<a name="line292"></a>goog.testing.Mock.prototype.$mockMethod = function(name) {
+<a name="line293"></a>  try {
+<a name="line294"></a>    // Shift off the name argument so that args contains the arguments to
+<a name="line295"></a>    // the mocked method.
+<a name="line296"></a>    var args = goog.array.slice(arguments, 1);
+<a name="line297"></a>    if (this.$recording_) {
+<a name="line298"></a>      this.$pendingExpectation = new goog.testing.MockExpectation(name);
+<a name="line299"></a>      this.$pendingExpectation.argumentList = args;
+<a name="line300"></a>      this.$recordExpectation();
+<a name="line301"></a>      return this;
+<a name="line302"></a>    } else {
+<a name="line303"></a>      return this.$recordCall(name, args);
+<a name="line304"></a>    }
+<a name="line305"></a>  } catch (ex) {
+<a name="line306"></a>    this.$recordAndThrow(ex);
+<a name="line307"></a>  }
+<a name="line308"></a>};
+<a name="line309"></a>
+<a name="line310"></a>
+<a name="line311"></a>/**
+<a name="line312"></a> * Records the currently pending expectation, intended to be overridden by a
+<a name="line313"></a> * subclass.
+<a name="line314"></a> * @protected
+<a name="line315"></a> */
+<a name="line316"></a>goog.testing.Mock.prototype.$recordExpectation = function() {};
+<a name="line317"></a>
+<a name="line318"></a>
+<a name="line319"></a>/**
+<a name="line320"></a> * Records an actual method call, intended to be overridden by a
+<a name="line321"></a> * subclass. The subclass must find the pending expectation and return the
+<a name="line322"></a> * correct value.
+<a name="line323"></a> * @param {string} name The name of the method being called.
+<a name="line324"></a> * @param {Array} args The arguments to the method.
+<a name="line325"></a> * @return {*} The return expected by the mock.
+<a name="line326"></a> * @protected
+<a name="line327"></a> */
+<a name="line328"></a>goog.testing.Mock.prototype.$recordCall = function(name, args) {
+<a name="line329"></a>  return undefined;
+<a name="line330"></a>};
+<a name="line331"></a>
+<a name="line332"></a>
+<a name="line333"></a>/**
+<a name="line334"></a> * If the expectation expects to throw, this method will throw.
+<a name="line335"></a> * @param {goog.testing.MockExpectation} expectation The expectation.
+<a name="line336"></a> */
+<a name="line337"></a>goog.testing.Mock.prototype.$maybeThrow = function(expectation) {
+<a name="line338"></a>  if (typeof expectation.exceptionToThrow != &#39;undefined&#39;) {
+<a name="line339"></a>    throw expectation.exceptionToThrow;
+<a name="line340"></a>  }
+<a name="line341"></a>};
+<a name="line342"></a>
+<a name="line343"></a>
+<a name="line344"></a>/**
+<a name="line345"></a> * If this expectation defines a function to be called,
+<a name="line346"></a> * it will be called and its result will be returned.
+<a name="line347"></a> * Otherwise, if the expectation expects to throw, it will throw.
+<a name="line348"></a> * Otherwise, this method will return defined value.
+<a name="line349"></a> * @param {goog.testing.MockExpectation} expectation The expectation.
+<a name="line350"></a> * @param {Array} args The arguments to the method.
+<a name="line351"></a> * @return {*} The return value expected by the mock.
+<a name="line352"></a> */
+<a name="line353"></a>goog.testing.Mock.prototype.$do = function(expectation, args) {
+<a name="line354"></a>  if (typeof expectation.toDo == &#39;undefined&#39;) {
+<a name="line355"></a>    this.$maybeThrow(expectation);
+<a name="line356"></a>    return expectation.returnValue;
+<a name="line357"></a>  } else {
+<a name="line358"></a>    return expectation.toDo.apply(this, args);
+<a name="line359"></a>  }
+<a name="line360"></a>};
+<a name="line361"></a>
+<a name="line362"></a>
+<a name="line363"></a>/**
+<a name="line364"></a> * Specifies a return value for the currently pending expectation.
+<a name="line365"></a> * @param {*} val The return value.
+<a name="line366"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line367"></a> */
+<a name="line368"></a>goog.testing.Mock.prototype.$returns = function(val) {
+<a name="line369"></a>  this.$pendingExpectation.returnValue = val;
+<a name="line370"></a>  return this;
+<a name="line371"></a>};
+<a name="line372"></a>
+<a name="line373"></a>
+<a name="line374"></a>/**
+<a name="line375"></a> * Specifies a value for the currently pending expectation to throw.
+<a name="line376"></a> * @param {*} val The value to throw.
+<a name="line377"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line378"></a> */
+<a name="line379"></a>goog.testing.Mock.prototype.$throws = function(val) {
+<a name="line380"></a>  this.$pendingExpectation.exceptionToThrow = val;
+<a name="line381"></a>  return this;
+<a name="line382"></a>};
+<a name="line383"></a>
+<a name="line384"></a>
+<a name="line385"></a>/**
+<a name="line386"></a> * Specifies a function to call for currently pending expectation.
+<a name="line387"></a> * Note, that using this method overrides declarations made
+<a name="line388"></a> * using $returns() and $throws() methods.
+<a name="line389"></a> * @param {Function} func The function to call.
+<a name="line390"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line391"></a> */
+<a name="line392"></a>goog.testing.Mock.prototype.$does = function(func) {
+<a name="line393"></a>  this.$pendingExpectation.toDo = func;
+<a name="line394"></a>  return this;
+<a name="line395"></a>};
+<a name="line396"></a>
+<a name="line397"></a>
+<a name="line398"></a>/**
+<a name="line399"></a> * Allows the expectation to be called 0 or 1 times.
+<a name="line400"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line401"></a> */
+<a name="line402"></a>goog.testing.Mock.prototype.$atMostOnce = function() {
+<a name="line403"></a>  this.$pendingExpectation.minCalls = 0;
+<a name="line404"></a>  this.$pendingExpectation.maxCalls = 1;
+<a name="line405"></a>  return this;
+<a name="line406"></a>};
+<a name="line407"></a>
+<a name="line408"></a>
+<a name="line409"></a>/**
+<a name="line410"></a> * Allows the expectation to be called any number of times, as long as it&#39;s
+<a name="line411"></a> * called once.
+<a name="line412"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line413"></a> */
+<a name="line414"></a>goog.testing.Mock.prototype.$atLeastOnce = function() {
+<a name="line415"></a>  this.$pendingExpectation.maxCalls = Infinity;
+<a name="line416"></a>  return this;
+<a name="line417"></a>};
+<a name="line418"></a>
+<a name="line419"></a>
+<a name="line420"></a>/**
+<a name="line421"></a> * Allows the expectation to be called any number of times.
+<a name="line422"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line423"></a> */
+<a name="line424"></a>goog.testing.Mock.prototype.$anyTimes = function() {
+<a name="line425"></a>  this.$pendingExpectation.minCalls = 0;
+<a name="line426"></a>  this.$pendingExpectation.maxCalls = Infinity;
+<a name="line427"></a>  return this;
+<a name="line428"></a>};
+<a name="line429"></a>
+<a name="line430"></a>
+<a name="line431"></a>/**
+<a name="line432"></a> * Specifies the number of times the expectation should be called.
+<a name="line433"></a> * @param {number} times The number of times this method will be called.
+<a name="line434"></a> * @return {goog.testing.Mock} This mock object.
+<a name="line435"></a> */
+<a name="line436"></a>goog.testing.Mock.prototype.$times = function(times) {
+<a name="line437"></a>  this.$pendingExpectation.minCalls = times;
+<a name="line438"></a>  this.$pendingExpectation.maxCalls = times;
+<a name="line439"></a>  return this;
+<a name="line440"></a>};
+<a name="line441"></a>
+<a name="line442"></a>
+<a name="line443"></a>/**
+<a name="line444"></a> * Switches from recording to replay mode.
+<a name="line445"></a> */
+<a name="line446"></a>goog.testing.Mock.prototype.$replay = function() {
+<a name="line447"></a>  this.$recording_ = false;
+<a name="line448"></a>};
+<a name="line449"></a>
+<a name="line450"></a>
+<a name="line451"></a>/**
+<a name="line452"></a> * Resets the state of this mock object. This clears all pending expectations
+<a name="line453"></a> * without verifying, and puts the mock in recording mode.
+<a name="line454"></a> */
+<a name="line455"></a>goog.testing.Mock.prototype.$reset = function() {
+<a name="line456"></a>  this.$recording_ = true;
+<a name="line457"></a>  this.$threwException_ = null;
+<a name="line458"></a>  delete this.$pendingExpectation;
+<a name="line459"></a>};
+<a name="line460"></a>
+<a name="line461"></a>
+<a name="line462"></a>/**
+<a name="line463"></a> * Throws an exception and records that an exception was thrown.
+<a name="line464"></a> * @param {string} comment A short comment about the exception.
+<a name="line465"></a> * @param {?string=} opt_message A longer message about the exception.
+<a name="line466"></a> * @throws {Object} JsUnitException object.
+<a name="line467"></a> * @protected
+<a name="line468"></a> */
+<a name="line469"></a>goog.testing.Mock.prototype.$throwException = function(comment, opt_message) {
+<a name="line470"></a>  this.$recordAndThrow(new goog.testing.JsUnitException(comment, opt_message));
+<a name="line471"></a>};
+<a name="line472"></a>
+<a name="line473"></a>
+<a name="line474"></a>/**
+<a name="line475"></a> * Throws an exception and records that an exception was thrown.
+<a name="line476"></a> * @param {Object} ex Exception.
+<a name="line477"></a> * @throws {Object} #ex.
+<a name="line478"></a> * @protected
+<a name="line479"></a> */
+<a name="line480"></a>goog.testing.Mock.prototype.$recordAndThrow = function(ex) {
+<a name="line481"></a>  // If it&#39;s an assert exception, record it.
+<a name="line482"></a>  if (ex[&#39;isJsUnitException&#39;]) {
+<a name="line483"></a>    var testRunner = goog.global[&#39;G_testRunner&#39;];
+<a name="line484"></a>    if (testRunner) {
+<a name="line485"></a>      var logTestFailureFunction = testRunner[&#39;logTestFailure&#39;];
+<a name="line486"></a>      if (logTestFailureFunction) {
+<a name="line487"></a>        logTestFailureFunction.call(testRunner, ex);
+<a name="line488"></a>      }
+<a name="line489"></a>    }
+<a name="line490"></a>
+<a name="line491"></a>    if (!this.$threwException_) {
+<a name="line492"></a>      // Only remember first exception thrown.
+<a name="line493"></a>      this.$threwException_ = ex;
+<a name="line494"></a>    }
+<a name="line495"></a>  }
+<a name="line496"></a>  throw ex;
+<a name="line497"></a>};
+<a name="line498"></a>
+<a name="line499"></a>
+<a name="line500"></a>/**
+<a name="line501"></a> * Verify that all of the expectations were met. Should be overridden by
+<a name="line502"></a> * subclasses.
+<a name="line503"></a> */
+<a name="line504"></a>goog.testing.Mock.prototype.$verify = function() {
+<a name="line505"></a>  if (this.$threwException_) {
+<a name="line506"></a>    throw this.$threwException_;
+<a name="line507"></a>  }
+<a name="line508"></a>};
+<a name="line509"></a>
+<a name="line510"></a>
+<a name="line511"></a>/**
+<a name="line512"></a> * Verifies that a method call matches an expectation.
+<a name="line513"></a> * @param {goog.testing.MockExpectation} expectation The expectation to check.
+<a name="line514"></a> * @param {string} name The name of the called method.
+<a name="line515"></a> * @param {Array.&lt;*&gt;?} args The arguments passed to the mock.
+<a name="line516"></a> * @return {boolean} Whether the call matches the expectation.
+<a name="line517"></a> */
+<a name="line518"></a>goog.testing.Mock.prototype.$verifyCall = function(expectation, name, args) {
+<a name="line519"></a>  if (expectation.name != name) {
+<a name="line520"></a>    return false;
+<a name="line521"></a>  }
+<a name="line522"></a>  var verifierFn =
+<a name="line523"></a>      this.$argumentListVerifiers_.hasOwnProperty(expectation.name) ?
+<a name="line524"></a>      this.$argumentListVerifiers_[expectation.name] :
+<a name="line525"></a>      goog.testing.mockmatchers.flexibleArrayMatcher;
+<a name="line526"></a>
+<a name="line527"></a>  return verifierFn(expectation.argumentList, args, expectation);
+<a name="line528"></a>};
+<a name="line529"></a>
+<a name="line530"></a>
+<a name="line531"></a>/**
+<a name="line532"></a> * Render the provided argument array to a string to help
+<a name="line533"></a> * clients with debugging tests.
+<a name="line534"></a> * @param {Array.&lt;*&gt;?} args The arguments passed to the mock.
+<a name="line535"></a> * @return {string} Human-readable string.
+<a name="line536"></a> */
+<a name="line537"></a>goog.testing.Mock.prototype.$argumentsAsString = function(args) {
+<a name="line538"></a>  var retVal = [];
+<a name="line539"></a>  for (var i = 0; i &lt; args.length; i++) {
+<a name="line540"></a>    try {
+<a name="line541"></a>      retVal.push(goog.typeOf(args[i]));
+<a name="line542"></a>    } catch (e) {
+<a name="line543"></a>      retVal.push(&#39;[unknown]&#39;);
+<a name="line544"></a>    }
+<a name="line545"></a>  }
+<a name="line546"></a>  return &#39;(&#39; + retVal.join(&#39;, &#39;) + &#39;)&#39;;
+<a name="line547"></a>};
+<a name="line548"></a>
+<a name="line549"></a>
+<a name="line550"></a>/**
+<a name="line551"></a> * Throw an exception based on an incorrect method call.
+<a name="line552"></a> * @param {string} name Name of method called.
+<a name="line553"></a> * @param {Array.&lt;*&gt;?} args Arguments passed to the mock.
+<a name="line554"></a> * @param {goog.testing.MockExpectation=} opt_expectation Expected next call,
+<a name="line555"></a> *     if any.
+<a name="line556"></a> */
+<a name="line557"></a>goog.testing.Mock.prototype.$throwCallException = function(name, args,
+<a name="line558"></a>                                                           opt_expectation) {
+<a name="line559"></a>  var errorStringBuffer = [];
+<a name="line560"></a>  var actualArgsString = this.$argumentsAsString(args);
+<a name="line561"></a>  var expectedArgsString = opt_expectation ?
+<a name="line562"></a>      this.$argumentsAsString(opt_expectation.argumentList) : &#39;&#39;;
+<a name="line563"></a>
+<a name="line564"></a>  if (opt_expectation &amp;&amp; opt_expectation.name == name) {
+<a name="line565"></a>    errorStringBuffer.push(&#39;Bad arguments to &#39;, name, &#39;().\n&#39;,
+<a name="line566"></a>                           &#39;Actual: &#39;, actualArgsString, &#39;\n&#39;,
+<a name="line567"></a>                           &#39;Expected: &#39;, expectedArgsString, &#39;\n&#39;,
+<a name="line568"></a>                           opt_expectation.getErrorMessage());
+<a name="line569"></a>  } else {
+<a name="line570"></a>    errorStringBuffer.push(&#39;Unexpected call to &#39;, name,
+<a name="line571"></a>                           actualArgsString, &#39;.&#39;);
+<a name="line572"></a>    if (opt_expectation) {
+<a name="line573"></a>      errorStringBuffer.push(&#39;\nNext expected call was to &#39;,
+<a name="line574"></a>                             opt_expectation.name,
+<a name="line575"></a>                             expectedArgsString);
+<a name="line576"></a>    }
+<a name="line577"></a>  }
+<a name="line578"></a>  this.$throwException(errorStringBuffer.join(&#39;&#39;));
+<a name="line579"></a>};
+</pre>
+
+
+</body>
+</html>

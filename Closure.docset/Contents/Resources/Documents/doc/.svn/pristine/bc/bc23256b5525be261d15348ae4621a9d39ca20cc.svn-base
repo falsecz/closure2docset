@@ -1,0 +1,432 @@
+<!doctype html>
+
+<html>
+<head>
+  <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+  <title>linkdialogplugin.js (Closure Library API Documentation - JavaScript)</title>
+  <link rel="stylesheet" href="static/css/base.css">
+  <link rel="stylesheet" href="static/css/doc.css">
+  <link rel="stylesheet" href="static/css/sidetree.css">
+  <link rel="stylesheet" href="static/css/prettify.css">
+
+  <script>
+     var _staticFilePath = "static/";
+     var _typeTreeName = "goog";
+     var _fileTreeName = "Source";
+  </script>
+
+  <script src="static/js/doc.js">
+  </script>
+
+
+  <meta charset="utf8">
+</head>
+
+<body onload="grokdoc.onLoad();">
+
+<div id="header">
+  <div class="g-section g-tpl-50-50 g-split">
+    <div class="g-unit g-first">
+      <a id="logo" href="index.html">Closure Library API Documentation</a>
+    </div>
+
+    <div class="g-unit">
+      <div class="g-c">
+        <strong>Go to class or file:</strong>
+        <input type="text" id="ac">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="clear"></div>
+
+<h2><a href="closure_goog_editor_plugins_linkdialogplugin.js.html">linkdialogplugin.js</a></h2>
+
+<pre class="prettyprint lang-js">
+<a name="line1"></a>// Copyright 2008 The Closure Library Authors. All Rights Reserved.
+<a name="line2"></a>//
+<a name="line3"></a>// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<a name="line4"></a>// you may not use this file except in compliance with the License.
+<a name="line5"></a>// You may obtain a copy of the License at
+<a name="line6"></a>//
+<a name="line7"></a>//      http://www.apache.org/licenses/LICENSE-2.0
+<a name="line8"></a>//
+<a name="line9"></a>// Unless required by applicable law or agreed to in writing, software
+<a name="line10"></a>// distributed under the License is distributed on an &quot;AS-IS&quot; BASIS,
+<a name="line11"></a>// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<a name="line12"></a>// See the License for the specific language governing permissions and
+<a name="line13"></a>// limitations under the License.
+<a name="line14"></a>
+<a name="line15"></a>/**
+<a name="line16"></a> * @fileoverview A plugin for the LinkDialog.
+<a name="line17"></a> *
+<a name="line18"></a> * @author nicksantos@google.com (Nick Santos)
+<a name="line19"></a> * @author marcosalmeida@google.com (Marcos Almeida)
+<a name="line20"></a> * @author robbyw@google.com (Robby Walker)
+<a name="line21"></a> */
+<a name="line22"></a>
+<a name="line23"></a>goog.provide(&#39;goog.editor.plugins.LinkDialogPlugin&#39;);
+<a name="line24"></a>
+<a name="line25"></a>goog.require(&#39;goog.array&#39;);
+<a name="line26"></a>goog.require(&#39;goog.editor.Command&#39;);
+<a name="line27"></a>goog.require(&#39;goog.editor.plugins.AbstractDialogPlugin&#39;);
+<a name="line28"></a>goog.require(&#39;goog.events.EventHandler&#39;);
+<a name="line29"></a>goog.require(&#39;goog.functions&#39;);
+<a name="line30"></a>goog.require(&#39;goog.ui.editor.AbstractDialog.EventType&#39;);
+<a name="line31"></a>goog.require(&#39;goog.ui.editor.LinkDialog&#39;);
+<a name="line32"></a>goog.require(&#39;goog.ui.editor.LinkDialog.EventType&#39;);
+<a name="line33"></a>goog.require(&#39;goog.ui.editor.LinkDialog.OkEvent&#39;);
+<a name="line34"></a>goog.require(&#39;goog.uri.utils&#39;);
+<a name="line35"></a>
+<a name="line36"></a>
+<a name="line37"></a>
+<a name="line38"></a>/**
+<a name="line39"></a> * A plugin that opens the link dialog.
+<a name="line40"></a> * @constructor
+<a name="line41"></a> * @extends {goog.editor.plugins.AbstractDialogPlugin}
+<a name="line42"></a> */
+<a name="line43"></a>goog.editor.plugins.LinkDialogPlugin = function() {
+<a name="line44"></a>  goog.base(this, goog.editor.Command.MODAL_LINK_EDITOR);
+<a name="line45"></a>
+<a name="line46"></a>  /**
+<a name="line47"></a>   * Event handler for this object.
+<a name="line48"></a>   * @type {goog.events.EventHandler}
+<a name="line49"></a>   * @private
+<a name="line50"></a>   */
+<a name="line51"></a>  this.eventHandler_ = new goog.events.EventHandler(this);
+<a name="line52"></a>
+<a name="line53"></a>
+<a name="line54"></a>  /**
+<a name="line55"></a>   * A list of whitelisted URL schemes which are safe to open.
+<a name="line56"></a>   * @type {Array.&lt;string&gt;}
+<a name="line57"></a>   * @private
+<a name="line58"></a>   */
+<a name="line59"></a>  this.safeToOpenSchemes_ = [&#39;http&#39;, &#39;https&#39;, &#39;ftp&#39;];
+<a name="line60"></a>};
+<a name="line61"></a>goog.inherits(goog.editor.plugins.LinkDialogPlugin,
+<a name="line62"></a>    goog.editor.plugins.AbstractDialogPlugin);
+<a name="line63"></a>
+<a name="line64"></a>
+<a name="line65"></a>/**
+<a name="line66"></a> * Link object that the dialog is editing.
+<a name="line67"></a> * @type {goog.editor.Link}
+<a name="line68"></a> * @protected
+<a name="line69"></a> */
+<a name="line70"></a>goog.editor.plugins.LinkDialogPlugin.prototype.currentLink_;
+<a name="line71"></a>
+<a name="line72"></a>
+<a name="line73"></a>/**
+<a name="line74"></a> * Optional warning to show about email addresses.
+<a name="line75"></a> * @type {string|undefined}
+<a name="line76"></a> * @private
+<a name="line77"></a> */
+<a name="line78"></a>goog.editor.plugins.LinkDialogPlugin.prototype.emailWarning_;
+<a name="line79"></a>
+<a name="line80"></a>
+<a name="line81"></a>/**
+<a name="line82"></a> * Whether to show a checkbox where the user can choose to have the link open in
+<a name="line83"></a> * a new window.
+<a name="line84"></a> * @type {boolean}
+<a name="line85"></a> * @private
+<a name="line86"></a> */
+<a name="line87"></a>goog.editor.plugins.LinkDialogPlugin.prototype.showOpenLinkInNewWindow_ = false;
+<a name="line88"></a>
+<a name="line89"></a>
+<a name="line90"></a>/**
+<a name="line91"></a> * Whether the &quot;open link in new window&quot; checkbox should be checked when the
+<a name="line92"></a> * dialog is shown, and also whether it was checked last time the dialog was
+<a name="line93"></a> * closed.
+<a name="line94"></a> * @type {boolean}
+<a name="line95"></a> * @private
+<a name="line96"></a> */
+<a name="line97"></a>goog.editor.plugins.LinkDialogPlugin.prototype.isOpenLinkInNewWindowChecked_ =
+<a name="line98"></a>    false;
+<a name="line99"></a>
+<a name="line100"></a>
+<a name="line101"></a>/**
+<a name="line102"></a> * Whether to stop referrer leaks.  Defaults to false.
+<a name="line103"></a> * @type {boolean}
+<a name="line104"></a> * @private
+<a name="line105"></a> */
+<a name="line106"></a>goog.editor.plugins.LinkDialogPlugin.prototype.stopReferrerLeaks_ = false;
+<a name="line107"></a>
+<a name="line108"></a>
+<a name="line109"></a>/**
+<a name="line110"></a> * Whether to block opening links with a non-whitelisted URL scheme.
+<a name="line111"></a> * @type {boolean}
+<a name="line112"></a> * @private
+<a name="line113"></a> */
+<a name="line114"></a>goog.editor.plugins.LinkDialogPlugin.prototype.blockOpeningUnsafeSchemes_ =
+<a name="line115"></a>    true;
+<a name="line116"></a>
+<a name="line117"></a>
+<a name="line118"></a>/** @override */
+<a name="line119"></a>goog.editor.plugins.LinkDialogPlugin.prototype.getTrogClassId =
+<a name="line120"></a>    goog.functions.constant(&#39;LinkDialogPlugin&#39;);
+<a name="line121"></a>
+<a name="line122"></a>
+<a name="line123"></a>/**
+<a name="line124"></a> * Tells the plugin whether to block URLs with schemes not in the whitelist.
+<a name="line125"></a> * If blocking is enabled, this plugin will stop the &#39;Test Link&#39; popup
+<a name="line126"></a> * window from being created. Blocking doesn&#39;t affect link creation--if the
+<a name="line127"></a> * user clicks the &#39;OK&#39; button with an unsafe URL, the link will still be
+<a name="line128"></a> * created as normal.
+<a name="line129"></a> * @param {boolean} blockOpeningUnsafeSchemes Whether to block non-whitelisted
+<a name="line130"></a> *     schemes.
+<a name="line131"></a> */
+<a name="line132"></a>goog.editor.plugins.LinkDialogPlugin.prototype.setBlockOpeningUnsafeSchemes =
+<a name="line133"></a>    function(blockOpeningUnsafeSchemes) {
+<a name="line134"></a>  this.blockOpeningUnsafeSchemes_ = blockOpeningUnsafeSchemes;
+<a name="line135"></a>};
+<a name="line136"></a>
+<a name="line137"></a>
+<a name="line138"></a>/**
+<a name="line139"></a> * Sets a whitelist of allowed URL schemes that are safe to open.
+<a name="line140"></a> * Schemes should all be in lowercase. If the plugin is set to block opening
+<a name="line141"></a> * unsafe schemes, user-entered URLs will be converted to lowercase and checked
+<a name="line142"></a> * against this list. The whitelist has no effect if blocking is not enabled.
+<a name="line143"></a> * @param {Array.&lt;String&gt;} schemes String array of URL schemes to allow (http,
+<a name="line144"></a> *     https, etc.).
+<a name="line145"></a> */
+<a name="line146"></a>goog.editor.plugins.LinkDialogPlugin.prototype.setSafeToOpenSchemes =
+<a name="line147"></a>    function(schemes) {
+<a name="line148"></a>  this.safeToOpenSchemes_ = schemes;
+<a name="line149"></a>};
+<a name="line150"></a>
+<a name="line151"></a>
+<a name="line152"></a>/**
+<a name="line153"></a> * Tells the dialog to show a checkbox where the user can choose to have the
+<a name="line154"></a> * link open in a new window.
+<a name="line155"></a> * @param {boolean} startChecked Whether to check the checkbox the first
+<a name="line156"></a> *     time the dialog is shown. Subesquent times the checkbox will remember its
+<a name="line157"></a> *     previous state.
+<a name="line158"></a> */
+<a name="line159"></a>goog.editor.plugins.LinkDialogPlugin.prototype.showOpenLinkInNewWindow =
+<a name="line160"></a>    function(startChecked) {
+<a name="line161"></a>  this.showOpenLinkInNewWindow_ = true;
+<a name="line162"></a>  this.isOpenLinkInNewWindowChecked_ = startChecked;
+<a name="line163"></a>};
+<a name="line164"></a>
+<a name="line165"></a>
+<a name="line166"></a>/**
+<a name="line167"></a> * Returns whether the&quot;open link in new window&quot; checkbox was checked last time
+<a name="line168"></a> * the dialog was closed.
+<a name="line169"></a> * @return {boolean} Whether the&quot;open link in new window&quot; checkbox was checked
+<a name="line170"></a> *     last time the dialog was closed.
+<a name="line171"></a> */
+<a name="line172"></a>goog.editor.plugins.LinkDialogPlugin.prototype.
+<a name="line173"></a>    getOpenLinkInNewWindowCheckedState = function() {
+<a name="line174"></a>  return this.isOpenLinkInNewWindowChecked_;
+<a name="line175"></a>};
+<a name="line176"></a>
+<a name="line177"></a>
+<a name="line178"></a>/**
+<a name="line179"></a> * Tells the plugin to stop leaking the page&#39;s url via the referrer header when
+<a name="line180"></a> * the &quot;test this link&quot; link is clicked. When the user clicks on a link, the
+<a name="line181"></a> * browser makes a request for the link url, passing the url of the current page
+<a name="line182"></a> * in the request headers. If the user wants the current url to be kept secret
+<a name="line183"></a> * (e.g. an unpublished document), the owner of the url that was clicked will
+<a name="line184"></a> * see the secret url in the request headers, and it will no longer be a secret.
+<a name="line185"></a> * Calling this method will not send a referrer header in the request, just as
+<a name="line186"></a> * if the user had opened a blank window and typed the url in themselves.
+<a name="line187"></a> */
+<a name="line188"></a>goog.editor.plugins.LinkDialogPlugin.prototype.stopReferrerLeaks = function() {
+<a name="line189"></a>  this.stopReferrerLeaks_ = true;
+<a name="line190"></a>};
+<a name="line191"></a>
+<a name="line192"></a>
+<a name="line193"></a>/**
+<a name="line194"></a> * Sets the warning message to show to users about including email addresses on
+<a name="line195"></a> * public web pages.
+<a name="line196"></a> * @param {string} emailWarning Warning message to show users about including
+<a name="line197"></a> *     email addresses on the web.
+<a name="line198"></a> */
+<a name="line199"></a>goog.editor.plugins.LinkDialogPlugin.prototype.setEmailWarning = function(
+<a name="line200"></a>    emailWarning) {
+<a name="line201"></a>  this.emailWarning_ = emailWarning;
+<a name="line202"></a>};
+<a name="line203"></a>
+<a name="line204"></a>
+<a name="line205"></a>/**
+<a name="line206"></a> * Handles execCommand by opening the dialog.
+<a name="line207"></a> * @param {string} command The command to execute.
+<a name="line208"></a> * @param {*=} opt_arg {@link A goog.editor.Link} object representing the link
+<a name="line209"></a> *     being edited.
+<a name="line210"></a> * @return {*} Always returns true, indicating the dialog was shown.
+<a name="line211"></a> * @protected
+<a name="line212"></a> * @override
+<a name="line213"></a> */
+<a name="line214"></a>goog.editor.plugins.LinkDialogPlugin.prototype.execCommandInternal = function(
+<a name="line215"></a>    command, opt_arg) {
+<a name="line216"></a>  this.currentLink_ = /** @type {goog.editor.Link} */(opt_arg);
+<a name="line217"></a>  return goog.base(this, &#39;execCommandInternal&#39;, command, opt_arg);
+<a name="line218"></a>};
+<a name="line219"></a>
+<a name="line220"></a>
+<a name="line221"></a>/**
+<a name="line222"></a> * Handles when the dialog closes.
+<a name="line223"></a> * @param {goog.events.Event} e The AFTER_HIDE event object.
+<a name="line224"></a> * @override
+<a name="line225"></a> * @protected
+<a name="line226"></a> */
+<a name="line227"></a>goog.editor.plugins.LinkDialogPlugin.prototype.handleAfterHide = function(e) {
+<a name="line228"></a>  goog.base(this, &#39;handleAfterHide&#39;, e);
+<a name="line229"></a>  this.currentLink_ = null;
+<a name="line230"></a>};
+<a name="line231"></a>
+<a name="line232"></a>
+<a name="line233"></a>/**
+<a name="line234"></a> * @return {goog.events.EventHandler} The event handler.
+<a name="line235"></a> * @protected
+<a name="line236"></a> */
+<a name="line237"></a>goog.editor.plugins.LinkDialogPlugin.prototype.getEventHandler = function() {
+<a name="line238"></a>  return this.eventHandler_;
+<a name="line239"></a>};
+<a name="line240"></a>
+<a name="line241"></a>
+<a name="line242"></a>/**
+<a name="line243"></a> * @return {goog.editor.Link} The link being edited.
+<a name="line244"></a> * @protected
+<a name="line245"></a> */
+<a name="line246"></a>goog.editor.plugins.LinkDialogPlugin.prototype.getCurrentLink = function() {
+<a name="line247"></a>  return this.currentLink_;
+<a name="line248"></a>};
+<a name="line249"></a>
+<a name="line250"></a>
+<a name="line251"></a>/**
+<a name="line252"></a> * Creates a new instance of the dialog and registers for the relevant events.
+<a name="line253"></a> * @param {goog.dom.DomHelper} dialogDomHelper The dom helper to be used to
+<a name="line254"></a> *     create the dialog.
+<a name="line255"></a> * @param {*} link The target link (should be a goog.editor.Link).
+<a name="line256"></a> * @return {goog.ui.editor.LinkDialog} The dialog.
+<a name="line257"></a> * @override
+<a name="line258"></a> * @protected
+<a name="line259"></a> */
+<a name="line260"></a>goog.editor.plugins.LinkDialogPlugin.prototype.createDialog = function(
+<a name="line261"></a>    dialogDomHelper, link) {
+<a name="line262"></a>  var dialog = new goog.ui.editor.LinkDialog(dialogDomHelper,
+<a name="line263"></a>      /** @type {goog.editor.Link} */ (link));
+<a name="line264"></a>  if (this.emailWarning_) {
+<a name="line265"></a>    dialog.setEmailWarning(this.emailWarning_);
+<a name="line266"></a>  }
+<a name="line267"></a>  if (this.showOpenLinkInNewWindow_) {
+<a name="line268"></a>    dialog.showOpenLinkInNewWindow(this.isOpenLinkInNewWindowChecked_);
+<a name="line269"></a>  }
+<a name="line270"></a>  dialog.setStopReferrerLeaks(this.stopReferrerLeaks_);
+<a name="line271"></a>  this.eventHandler_.
+<a name="line272"></a>      listen(dialog, goog.ui.editor.AbstractDialog.EventType.OK,
+<a name="line273"></a>          this.handleOk_).
+<a name="line274"></a>      listen(dialog, goog.ui.editor.AbstractDialog.EventType.CANCEL,
+<a name="line275"></a>          this.handleCancel_).
+<a name="line276"></a>      listen(dialog, goog.ui.editor.LinkDialog.EventType.BEFORE_TEST_LINK,
+<a name="line277"></a>          this.handleBeforeTestLink);
+<a name="line278"></a>  return dialog;
+<a name="line279"></a>};
+<a name="line280"></a>
+<a name="line281"></a>
+<a name="line282"></a>/** @override */
+<a name="line283"></a>goog.editor.plugins.LinkDialogPlugin.prototype.disposeInternal = function() {
+<a name="line284"></a>  goog.base(this, &#39;disposeInternal&#39;);
+<a name="line285"></a>  this.eventHandler_.dispose();
+<a name="line286"></a>};
+<a name="line287"></a>
+<a name="line288"></a>
+<a name="line289"></a>/**
+<a name="line290"></a> * Handles the OK event from the dialog by updating the link in the field.
+<a name="line291"></a> * @param {goog.ui.editor.LinkDialog.OkEvent} e OK event object.
+<a name="line292"></a> * @private
+<a name="line293"></a> */
+<a name="line294"></a>goog.editor.plugins.LinkDialogPlugin.prototype.handleOk_ = function(e) {
+<a name="line295"></a>  // We&#39;re not restoring the original selection, so clear it out.
+<a name="line296"></a>  this.disposeOriginalSelection();
+<a name="line297"></a>
+<a name="line298"></a>  this.currentLink_.setTextAndUrl(e.linkText, e.linkUrl);
+<a name="line299"></a>
+<a name="line300"></a>  if (this.showOpenLinkInNewWindow_) {
+<a name="line301"></a>    var anchor = this.currentLink_.getAnchor();
+<a name="line302"></a>    if (e.openInNewWindow) {
+<a name="line303"></a>      anchor.target = &#39;_blank&#39;;
+<a name="line304"></a>    } else {
+<a name="line305"></a>      if (anchor.target == &#39;_blank&#39;) {
+<a name="line306"></a>        anchor.target = &#39;&#39;;
+<a name="line307"></a>      }
+<a name="line308"></a>      // If user didn&#39;t indicate to open in a new window but the link already
+<a name="line309"></a>      // had a target other than &#39;_blank&#39;, let&#39;s leave what they had before.
+<a name="line310"></a>    }
+<a name="line311"></a>    // Save checkbox state for next time.
+<a name="line312"></a>    this.isOpenLinkInNewWindowChecked_ = e.openInNewWindow;
+<a name="line313"></a>  }
+<a name="line314"></a>
+<a name="line315"></a>  // Place cursor to the right of the modified link.
+<a name="line316"></a>  this.currentLink_.placeCursorRightOf();
+<a name="line317"></a>
+<a name="line318"></a>  this.fieldObject.dispatchSelectionChangeEvent();
+<a name="line319"></a>  this.fieldObject.dispatchChange();
+<a name="line320"></a>
+<a name="line321"></a>  this.eventHandler_.removeAll();
+<a name="line322"></a>};
+<a name="line323"></a>
+<a name="line324"></a>
+<a name="line325"></a>/**
+<a name="line326"></a> * Handles the CANCEL event from the dialog by clearing the anchor if needed.
+<a name="line327"></a> * @param {goog.events.Event} e Event object.
+<a name="line328"></a> * @private
+<a name="line329"></a> */
+<a name="line330"></a>goog.editor.plugins.LinkDialogPlugin.prototype.handleCancel_ = function(e) {
+<a name="line331"></a>  if (this.currentLink_.isNew()) {
+<a name="line332"></a>    goog.dom.flattenElement(this.currentLink_.getAnchor());
+<a name="line333"></a>    // Make sure listeners know the anchor was flattened out.
+<a name="line334"></a>    this.fieldObject.dispatchChange();
+<a name="line335"></a>  }
+<a name="line336"></a>
+<a name="line337"></a>  this.eventHandler_.removeAll();
+<a name="line338"></a>};
+<a name="line339"></a>
+<a name="line340"></a>
+<a name="line341"></a>/**
+<a name="line342"></a> * Handles the BeforeTestLink event fired when the &#39;test&#39; link is clicked.
+<a name="line343"></a> * @param {goog.ui.editor.LinkDialog.BeforeTestLinkEvent} e BeforeTestLink event
+<a name="line344"></a> *     object.
+<a name="line345"></a> * @protected
+<a name="line346"></a> */
+<a name="line347"></a>goog.editor.plugins.LinkDialogPlugin.prototype.handleBeforeTestLink =
+<a name="line348"></a>    function(e) {
+<a name="line349"></a>  if (!this.shouldOpenUrl(e.url)) {
+<a name="line350"></a>    /** @desc Message when the user tries to test (preview) a link, but the
+<a name="line351"></a>     * link cannot be tested. */
+<a name="line352"></a>    var MSG_UNSAFE_LINK = goog.getMsg(&#39;This link cannot be tested.&#39;);
+<a name="line353"></a>    alert(MSG_UNSAFE_LINK);
+<a name="line354"></a>    e.preventDefault();
+<a name="line355"></a>  }
+<a name="line356"></a>};
+<a name="line357"></a>
+<a name="line358"></a>
+<a name="line359"></a>/**
+<a name="line360"></a> * Checks whether the plugin should open the given url in a new window.
+<a name="line361"></a> * @param {string} url The url to check.
+<a name="line362"></a> * @return {boolean} If the plugin should open the given url in a new window.
+<a name="line363"></a> * @protected
+<a name="line364"></a> */
+<a name="line365"></a>goog.editor.plugins.LinkDialogPlugin.prototype.shouldOpenUrl = function(url) {
+<a name="line366"></a>  return !this.blockOpeningUnsafeSchemes_ || this.isSafeSchemeToOpen_(url);
+<a name="line367"></a>};
+<a name="line368"></a>
+<a name="line369"></a>
+<a name="line370"></a>/**
+<a name="line371"></a> * Determines whether or not a url has a scheme which is safe to open.
+<a name="line372"></a> * Schemes like javascript are unsafe due to the possibility of XSS.
+<a name="line373"></a> * @param {string} url A url.
+<a name="line374"></a> * @return {boolean} Whether the url has a safe scheme.
+<a name="line375"></a> * @private
+<a name="line376"></a> */
+<a name="line377"></a>goog.editor.plugins.LinkDialogPlugin.prototype.isSafeSchemeToOpen_ =
+<a name="line378"></a>    function(url) {
+<a name="line379"></a>  var scheme = goog.uri.utils.getScheme(url) || &#39;http&#39;;
+<a name="line380"></a>  return goog.array.contains(this.safeToOpenSchemes_, scheme.toLowerCase());
+<a name="line381"></a>};
+</pre>
+
+
+</body>
+</html>
