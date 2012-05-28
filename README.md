@@ -1,0 +1,1 @@
+Closure.docset/Contents/Resources/closure2docset.sh
